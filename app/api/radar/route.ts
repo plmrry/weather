@@ -20,6 +20,96 @@ type RadarFile = {
   scanTime: string | null
 }
 
+// Web-Mercator tile index for a coordinate at a given zoom (integer tile).
+function lonLatToTile(lon: number, lat: number, z: number): { x: number; y: number } {
+  const n = 2 ** z
+  const x = Math.floor(((lon + 180) / 360) * n)
+  const latRad = (lat * Math.PI) / 180
+  const y = Math.floor(((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n)
+  return { x: Math.max(0, Math.min(n - 1, x)), y: Math.max(0, Math.min(n - 1, y)) }
+}
+
+type ImageryBundle = {
+  // NWS RIDGE — government-rendered, per-station standalone images.
+  ridge: { latestUrl: string; loopUrl: string }
+  // Iowa Environmental Mesonet — WMS base-reflectivity mosaic around the point.
+  iem: { reflectivityUrl: string; bbox: number[] }
+  // RainViewer — global near-real-time mosaic (+ nowcast when active), tiled.
+  rainviewer: {
+    host: string
+    tileSize: number
+    zoom: number
+    color: number
+    options: string
+    center: { x: number; y: number }
+    basemapTemplate: string
+    frames: { time: number; path: string; kind: "past" | "nowcast" }[]
+  } | null
+}
+
+// Build the live imagery bundle. Never cached — these change every few minutes.
+async function buildImagery(stationId: string, lat: number, lon: number): Promise<ImageryBundle> {
+  const zoom = 7
+  const center = lonLatToTile(lon, lat, zoom)
+
+  // IEM WMS GetMap: ~4° box centered on the point (EPSG:4326, minx,miny,maxx,maxy).
+  const bbox = [lon - 2, lat - 2, lon + 2, lat + 2]
+  const reflectivityUrl =
+    "https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q.cgi?" +
+    new URLSearchParams({
+      SERVICE: "WMS",
+      VERSION: "1.1.1",
+      REQUEST: "GetMap",
+      LAYERS: "nexrad-n0q-900913",
+      SRS: "EPSG:4326",
+      BBOX: bbox.join(","),
+      WIDTH: "600",
+      HEIGHT: "600",
+      FORMAT: "image/png",
+      TRANSPARENT: "false",
+    }).toString()
+
+  let rainviewer: ImageryBundle["rainviewer"] = null
+  try {
+    const rv = await fetch("https://api.rainviewer.com/public/weather-maps.json", { cache: "no-store" })
+    if (rv.ok) {
+      const j = await rv.json()
+      const host: string = j.host
+      const past = (j.radar?.past ?? []).map((f: { time: number; path: string }) => ({
+        time: f.time,
+        path: f.path,
+        kind: "past" as const,
+      }))
+      const nowcast = (j.radar?.nowcast ?? []).map((f: { time: number; path: string }) => ({
+        time: f.time,
+        path: f.path,
+        kind: "nowcast" as const,
+      }))
+      rainviewer = {
+        host,
+        tileSize: 256,
+        zoom,
+        color: 4,
+        options: "1_1",
+        center,
+        basemapTemplate: "https://basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+        frames: [...past, ...nowcast],
+      }
+    }
+  } catch {
+    rainviewer = null
+  }
+
+  return {
+    ridge: {
+      latestUrl: `https://radar.weather.gov/ridge/standard/${stationId}_0.gif`,
+      loopUrl: `https://radar.weather.gov/ridge/standard/${stationId}_loop.gif`,
+    },
+    iem: { reflectivityUrl, bbox },
+    rainviewer,
+  }
+}
+
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371
   const toRad = (d: number) => (d * Math.PI) / 180
@@ -204,30 +294,42 @@ export async function GET(req: NextRequest) {
 
   const { stationId, location, station, pointUrl, stationUrl } = resolved
 
-  // 3) List raw NEXRAD Level II volume-scan files from the public S3 bucket (always live).
-  const now = new Date()
-  let files = await listLevel2Files(stationId, now)
-  let dateUsed = now
-  if (files.length === 0) {
-    // Early in the UTC day the current prefix may be empty; fall back to yesterday.
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-    files = await listLevel2Files(stationId, yesterday)
-    dateUsed = yesterday
+  const listUrlFor = (date: Date) => {
+    const y = date.getUTCFullYear()
+    const mo = String(date.getUTCMonth() + 1).padStart(2, "0")
+    const d = String(date.getUTCDate()).padStart(2, "0")
+    return `${NEXRAD_BUCKET}/?list-type=2&prefix=${encodeURIComponent(`${y}/${mo}/${d}/${stationId}/`)}`
   }
 
-  const y = dateUsed.getUTCFullYear()
-  const mo = String(dateUsed.getUTCMonth() + 1).padStart(2, "0")
-  const d = String(dateUsed.getUTCDate()).padStart(2, "0")
-  const prefix = `${y}/${mo}/${d}/${stationId}/`
+  // 3) List raw Level II volume-scan files live from the public S3 bucket, and
+  //    build the live rendered-imagery bundle — in parallel.
+  const now = new Date()
+  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  const [todayFiles, imagery] = await Promise.all([
+    listLevel2Files(stationId, now),
+    buildImagery(stationId, lat, lon),
+  ])
+
+  // Early in the UTC day the current-day prefix may be empty; fall back to yesterday.
+  let files = todayFiles
+  let listedDate = now
+  if (files.length === 0) {
+    files = await listLevel2Files(stationId, yesterday)
+    listedDate = yesterday
+  }
+
+  const bucketListing = listUrlFor(listedDate)
 
   return NextResponse.json({
     query: { lat, lon },
     location,
     station,
+    imagery,
     sources: {
       pointJson: pointUrl,
       stationJson: stationUrl,
-      bucketListing: `${NEXRAD_BUCKET}/?list-type=2&prefix=${encodeURIComponent(prefix)}`,
+      bucketListing,
+      bucketBrowser: bucketListing,
     },
     fileCount: files.length,
     files: files.slice(0, 50),
