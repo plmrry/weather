@@ -113,7 +113,7 @@ export function FileList({
           rel="noopener noreferrer"
           className="font-mono text-xs text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
         >
-          View raw S3 bucket listing (XML) →
+          View raw catalog listing (XML) →
         </a>
       </div>
     </section>

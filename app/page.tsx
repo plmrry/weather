@@ -85,7 +85,7 @@ export default function Page() {
         </div>
         <p className="text-sm leading-relaxed text-muted-foreground text-pretty">
           Enter a latitude and longitude (or use your location) to resolve the nearest WSR-88D radar station and
-          browse its raw Level II volume-scan files, served live from NOAA&apos;s public S3 archive.
+          browse its raw Level II volume-scan files, served live from the public NEXRAD archive.
         </p>
       </header>
 

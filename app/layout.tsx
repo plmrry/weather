@@ -9,7 +9,7 @@ const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono'
 export const metadata: Metadata = {
   title: 'NEXRAD Radar Explorer — Live NOAA Level II Data',
   description:
-    'Look up the nearest NOAA NWS NEXRAD radar station for any latitude/longitude and browse raw, live Level II volume-scan files straight from NOAA\'s public S3 bucket.',
+    'Look up the nearest NOAA NWS NEXRAD radar station for any latitude/longitude and browse raw, live Level II volume-scan files from the public NEXRAD archive.',
   generator: 'v0.app',
   manifest: '/manifest.json',
 }

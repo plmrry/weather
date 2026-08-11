@@ -33,7 +33,6 @@ export type RadarData = {
     pointJson: string
     stationJson: string
     bucketListing: string
-    bucketBrowser: string
   }
   fileCount: number
   retrievedAt: string

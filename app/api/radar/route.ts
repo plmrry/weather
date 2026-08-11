@@ -2,9 +2,11 @@ import { type NextRequest, NextResponse } from "next/server"
 import { cacheLife } from "next/cache"
 
 const NWS_BASE = "https://api.weather.gov"
-// Live raw NEXRAD Level II volume scans, served publicly by Unidata's THREDDS
-// data server (NOAA's real-time S3 bucket blocks anonymous listing).
-const THREDDS_BASE = "https://thredds.ucar.edu/thredds"
+// NOAA's primary archive bucket (`noaa-nexrad-level2`) blocks anonymous
+// ListBucket. This Unidata-maintained public bucket serves the same raw
+// NEXRAD Level II volume scans, allows anonymous listing, and uses the
+// identical YYYY/MM/DD/STATION/ key layout — including real-time data.
+const NEXRAD_BUCKET = "https://unidata-nexrad-level2.s3.amazonaws.com"
 
 // api.weather.gov requires a descriptive User-Agent identifying the app.
 const USER_AGENT = "v0-noaa-radar-explorer (contact: example@example.com)"
@@ -18,75 +20,73 @@ type RadarFile = {
   scanTime: string | null
 }
 
-// Extract UTC scan time from a Level II filename like "Level2_KMUX_20260811_2126.ar2v"
-function parseScanTime(name: string): string | null {
-  const m = name.match(/_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})/)
-  if (!m) return null
-  const [, y, mo, d, h, mi] = m
-  const t = Date.parse(`${y}-${mo}-${d}T${h}:${mi}:00Z`)
-  return Number.isNaN(t) ? null : new Date(t).toISOString()
-}
-
-// Parse a THREDDS dataset catalog into raw Level II volume-scan files.
-function parseThreddsCatalog(xml: string): RadarFile[] {
-  const files: RadarFile[] = []
-  const re = /<dataset\b([^>]*)>([\s\S]*?)<\/dataset>/g
-  let match: RegExpExecArray | null
-  while ((match = re.exec(xml)) !== null) {
-    const attrs = match[1]
-    const body = match[2]
-    const urlPath = attrs.match(/urlPath="([^"]*)"/)?.[1]
-    const name = attrs.match(/name="([^"]*)"/)?.[1]
-    // Only real volume-scan files have a urlPath and the .ar2v extension.
-    if (!urlPath || !name || !name.endsWith(".ar2v")) continue
-
-    const sizeMatch = body.match(/<dataSize units="([^"]*)">([\d.]+)<\/dataSize>/)
-    let size = 0
-    if (sizeMatch) {
-      const val = Number.parseFloat(sizeMatch[2])
-      const unit = sizeMatch[1].toLowerCase()
-      const mult = unit.startsWith("mbyte") ? 1024 ** 2 : unit.startsWith("kbyte") ? 1024 : 1
-      size = Math.round(val * mult)
-    }
-    const modified = body.match(/<date type="modified">([^<]*)<\/date>/)?.[1] ?? null
-
-    files.push({
-      key: urlPath,
-      name,
-      url: `${THREDDS_BASE}/fileServer/${urlPath}`,
-      size,
-      lastModified: modified,
-      scanTime: parseScanTime(name),
-    })
-  }
-  // Most recent scan first.
-  files.sort((a, b) => (b.scanTime ?? "").localeCompare(a.scanTime ?? ""))
-  return files
-}
-
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371
   const toRad = (d: number) => (d * Math.PI) / 180
   const dLat = toRad(lat2 - lat1)
   const dLon = toRad(lon2 - lon1)
   const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
+    Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
-// Build the dated THREDDS catalog URL for a station, and fetch + parse its live listing.
-async function listLevel2Files(stationId: string, date: Date): Promise<{ files: RadarFile[]; catalogUrl: string }> {
+// Extract UTC scan time from a NEXRAD key like "2026/08/11/KMUX/KMUX20260811_120000_V06"
+function parseScanTime(key: string): string | null {
+  const m = key.match(/[A-Z]{4}(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/)
+  if (!m) return null
+  const [, y, mo, d, h, mi, s] = m
+  const t = Date.parse(`${y}-${mo}-${d}T${h}:${mi}:${s}Z`)
+  return Number.isNaN(t) ? null : new Date(t).toISOString()
+}
+
+// Minimal XML tag extraction for the S3 ListObjectsV2 response.
+function extractAll(xml: string, tag: string): string[] {
+  const out: string[] = []
+  const re = new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`, "g")
+  let match: RegExpExecArray | null
+  while ((match = re.exec(xml)) !== null) out.push(match[1])
+  return out
+}
+
+function extractOne(block: string, tag: string): string | null {
+  const m = block.match(new RegExp(`<${tag}>([\\s\\S]*?)</${tag}>`))
+  return m ? m[1] : null
+}
+
+async function listLevel2Files(stationId: string, date: Date): Promise<RadarFile[]> {
   const y = date.getUTCFullYear()
   const mo = String(date.getUTCMonth() + 1).padStart(2, "0")
   const d = String(date.getUTCDate()).padStart(2, "0")
-  const day = `${y}${mo}${d}`
-  const catalogUrl = `${THREDDS_BASE}/catalog/nexrad/level2/${stationId}/${day}/catalog.xml`
+  const prefix = `${y}/${mo}/${d}/${stationId}/`
+  const listUrl = `${NEXRAD_BUCKET}/?list-type=2&prefix=${encodeURIComponent(prefix)}&max-keys=1000`
 
-  const res = await fetch(catalogUrl, { cache: "no-store" })
-  if (!res.ok) return { files: [], catalogUrl }
+  const res = await fetch(listUrl, { cache: "no-store" })
+  if (!res.ok) return []
   const xml = await res.text()
-  return { files: parseThreddsCatalog(xml), catalogUrl }
+
+  const files: RadarFile[] = extractAll(xml, "Contents")
+    .map((block) => {
+      const key = extractOne(block, "Key")
+      if (!key) return null
+      // Skip index/sidecar objects, keep actual volume scans.
+      if (key.endsWith("_MDM") || key.endsWith("/")) return null
+      const size = Number(extractOne(block, "Size") ?? "0")
+      const lastModified = extractOne(block, "LastModified")
+      const name = key.split("/").pop() ?? key
+      return {
+        key,
+        name,
+        url: `${NEXRAD_BUCKET}/${key}`,
+        size,
+        lastModified,
+        scanTime: parseScanTime(key),
+      } satisfies RadarFile
+    })
+    .filter((f): f is RadarFile => f !== null)
+
+  // Most recent scan first.
+  files.sort((a, b) => (b.scanTime ?? "").localeCompare(a.scanTime ?? ""))
+  return files
 }
 
 type StationResolution =
@@ -100,10 +100,11 @@ type StationResolution =
     }
   | { ok: false; status: number; error: string; location?: Record<string, unknown>; pointUrl: string }
 
-// The point -> radar-station mapping and station metadata change slowly for a
-// given location, so this lookup is cached. The live file listing below is not.
+// The point -> radar-station mapping and station metadata are effectively static
+// for a given location, so this lookup is cached. The live file listing below is not.
 async function resolveStation(lat: number, lon: number): Promise<StationResolution> {
   "use cache"
+  // Slowly-changing data (RDA status, latency): refresh at most hourly, serve stale meanwhile.
   cacheLife("hours")
 
   const headers = { "User-Agent": USER_AGENT, Accept: "application/geo+json" }
@@ -191,28 +192,33 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Coordinates out of range." }, { status: 400 })
   }
 
-  // 1) + 2) Resolve station (cached). Round coords so nearby lookups share a cache entry.
+  // 1) + 2) Resolve station (cached). Round coords to ~1km so nearby lookups share a cache entry.
   const resolved = await resolveStation(Number(lat.toFixed(2)), Number(lon.toFixed(2)))
 
   if (!resolved.ok) {
     return NextResponse.json(
-      { query: { lat, lon }, location: resolved.location ?? null, error: resolved.error },
+      { query: { lat, lon }, location: resolved.location, error: resolved.error },
       { status: resolved.status },
     )
   }
 
   const { stationId, location, station, pointUrl, stationUrl } = resolved
 
-  // 3) List raw Level II volume-scan files live from the THREDDS catalog.
+  // 3) List raw NEXRAD Level II volume-scan files from the public S3 bucket (always live).
   const now = new Date()
-  let { files, catalogUrl } = await listLevel2Files(stationId, now)
+  let files = await listLevel2Files(stationId, now)
+  let dateUsed = now
   if (files.length === 0) {
-    // Early in the UTC day the current-day catalog may be empty; fall back to yesterday.
+    // Early in the UTC day the current prefix may be empty; fall back to yesterday.
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-    const prev = await listLevel2Files(stationId, yesterday)
-    files = prev.files
-    catalogUrl = prev.catalogUrl
+    files = await listLevel2Files(stationId, yesterday)
+    dateUsed = yesterday
   }
+
+  const y = dateUsed.getUTCFullYear()
+  const mo = String(dateUsed.getUTCMonth() + 1).padStart(2, "0")
+  const d = String(dateUsed.getUTCDate()).padStart(2, "0")
+  const prefix = `${y}/${mo}/${d}/${stationId}/`
 
   return NextResponse.json({
     query: { lat, lon },
@@ -221,8 +227,7 @@ export async function GET(req: NextRequest) {
     sources: {
       pointJson: pointUrl,
       stationJson: stationUrl,
-      bucketListing: catalogUrl,
-      bucketBrowser: catalogUrl.replace("catalog.xml", "catalog.html"),
+      bucketListing: `${NEXRAD_BUCKET}/?list-type=2&prefix=${encodeURIComponent(prefix)}`,
     },
     fileCount: files.length,
     files: files.slice(0, 50),
