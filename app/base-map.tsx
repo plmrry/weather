@@ -39,23 +39,23 @@ export function BaseMap({
   const rendered = useMemo(() => {
     if (!data) return null
     // Equirectangular fitted to the box matches the plate-carrée radar framing.
-    const boxPolygon: Feature = {
+    // Fit to the four corner *points* (a MultiPoint) rather than a polygon:
+    // d3-geo treats polygon winding spherically, so a wrongly-wound box ring is
+    // read as "whole globe minus box" and collapses the projection to a dot.
+    const cornerPoints: Feature = {
       type: "Feature",
       properties: {},
       geometry: {
-        type: "Polygon",
+        type: "MultiPoint",
         coordinates: [
-          [
-            [minx, miny],
-            [maxx, miny],
-            [maxx, maxy],
-            [minx, maxy],
-            [minx, miny],
-          ],
+          [minx, miny],
+          [maxx, miny],
+          [maxx, maxy],
+          [minx, maxy],
         ],
       },
     }
-    const projection = geoEquirectangular().fitSize([SIZE, SIZE], boxPolygon)
+    const projection = geoEquirectangular().fitSize([SIZE, SIZE], cornerPoints)
     const path = geoPath(projection)
 
     const statePaths = data.states.features.map((f, i) => path(f) ?? "").filter(Boolean)
