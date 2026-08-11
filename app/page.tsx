@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { StationPanel, type RadarData } from "./station-panel"
 import { RadarImageryPanel, type RadarImagery } from "./radar-imagery"
 import { RelativeTime } from "./relative-time"
+import { RecentLocations, useLocationHistory } from "./location-history"
 
 type ApiResponse = RadarData & { imagery: RadarImagery; error?: string }
 
@@ -17,6 +18,7 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<ApiResponse | null>(null)
   const [showJson, setShowJson] = useState(false)
+  const { history, addLocation, clearHistory } = useLocationHistory()
 
   async function fetchRadar(useLat: string, useLon: string) {
     if (useLat.trim() === "" || useLon.trim() === "") {
@@ -34,6 +36,14 @@ export default function Page() {
         return
       }
       setData(json)
+      const place = [json.location?.city, json.location?.state].filter(Boolean).join(", ")
+      addLocation({
+        lat: useLat.trim(),
+        lon: useLon.trim(),
+        label: place || json.station?.id || `${useLat.trim()}, ${useLon.trim()}`,
+        station: json.station?.id ?? null,
+        at: Date.now(),
+      })
     } catch {
       setData(null)
       setError("Network error while contacting NOAA services.")
@@ -91,6 +101,20 @@ export default function Page() {
       </header>
 
       <section aria-label="Coordinate input" className="rounded-lg border border-border bg-card p-4">
+        {history.length > 0 && (
+          <div className="mb-4">
+            <RecentLocations
+              history={history}
+              onClear={clearHistory}
+              onSelect={(selLat, selLon) => {
+                setLat(selLat)
+                setLon(selLon)
+                void fetchRadar(selLat, selLon)
+              }}
+            />
+          </div>
+        )}
+
         <Button
           onClick={useMyLocation}
           disabled={locating || loading}
