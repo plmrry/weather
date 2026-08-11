@@ -74,7 +74,7 @@ export default function Page() {
         setLocating(false)
         setError(
           err.code === err.PERMISSION_DENIED
-            ? "Location permission denied. Enter coordinates manually."
+            ? "Location permission denied. Search for a city instead."
             : "Could not determine your location.",
         )
       },
@@ -134,8 +134,8 @@ export default function Page() {
           </div>
         </div>
         <p className="text-sm leading-relaxed text-muted-foreground text-pretty">
-          Search for a city, use your location, or enter coordinates to resolve the nearest WSR-88D radar station and
-          view live rendered imagery from three public radar sources.
+          Search for a city or use your location to resolve the nearest WSR-88D radar station and view live rendered
+          imagery from three public radar sources.
         </p>
       </header>
 
@@ -200,57 +200,19 @@ export default function Page() {
           Type a city and state and AI will estimate the coordinates for you.
         </p>
 
-        <div className="my-4 flex items-center gap-3" aria-hidden="true">
-          <span className="h-px flex-1 bg-border" />
-          <span className="text-xs uppercase tracking-wider text-muted-foreground">or enter coordinates</span>
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs uppercase tracking-wider text-muted-foreground">Latitude</span>
-            <input
-              inputMode="decimal"
-              value={lat}
-              onChange={(e) => setLat(e.target.value)}
-              placeholder="37.7749"
-              className="h-11 rounded-md border border-input bg-secondary/40 px-3 font-mono text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs uppercase tracking-wider text-muted-foreground">Longitude</span>
-            <input
-              inputMode="decimal"
-              value={lon}
-              onChange={(e) => setLon(e.target.value)}
-              placeholder="-122.4194"
-              className="h-11 rounded-md border border-input bg-secondary/40 px-3 font-mono text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </label>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button
-            variant="secondary"
-            onClick={() => fetchRadar(lat, lon)}
-            disabled={loading}
-            className="min-h-11 flex-1 sm:flex-none"
-          >
-            {loading ? <LoaderCircle className="size-4 animate-spin" /> : <Radar className="size-4" />}
-            {loading ? "Fetching…" : "Fetch radar data"}
-          </Button>
-          {data && (
+        {data && (
+          <div className="mt-4 flex">
             <Button
-              variant="ghost"
+              variant="secondary"
               onClick={() => fetchRadar(String(data.query.lat), String(data.query.lon))}
               disabled={loading}
-              className="min-h-11"
-              aria-label="Refresh radar data"
+              className="min-h-11 w-full"
             >
-              <RefreshCw className="size-4" />
+              {loading ? <LoaderCircle className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+              {loading ? "Refreshing…" : "Refresh radar data"}
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       {error && (
