@@ -4,10 +4,10 @@ import { useState } from "react"
 import { AlertTriangle, Code2, Crosshair, LoaderCircle, Radar, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { StationPanel, type RadarData } from "./station-panel"
-import { FileList, type RadarFile } from "./file-list"
 import { RadarImageryPanel, type RadarImagery } from "./radar-imagery"
+import { RelativeTime } from "./relative-time"
 
-type ApiResponse = RadarData & { files: RadarFile[]; imagery: RadarImagery; error?: string }
+type ApiResponse = RadarData & { imagery: RadarImagery; error?: string }
 
 export default function Page() {
   const [lat, setLat] = useState("")
@@ -85,8 +85,8 @@ export default function Page() {
           </div>
         </div>
         <p className="text-sm leading-relaxed text-muted-foreground text-pretty">
-          Enter a latitude and longitude (or use your location) to resolve the nearest WSR-88D radar station, view
-          live rendered imagery from three public radar sources, and browse its raw Level II volume-scan files.
+          Enter a latitude and longitude (or use your location) to resolve the nearest WSR-88D radar station and view
+          live rendered imagery from three public radar sources.
         </p>
       </header>
 
@@ -156,7 +156,6 @@ export default function Page() {
         <div className="flex flex-col gap-6">
           <StationPanel data={data} />
           {data.imagery && <RadarImageryPanel imagery={data.imagery} retrievedAt={data.retrievedAt} />}
-          <FileList files={data.files} fileCount={data.fileCount} bucketListing={data.sources.bucketListing} />
 
           <section className="rounded-lg border border-border bg-card">
             <button
@@ -198,7 +197,7 @@ export default function Page() {
           </section>
 
           <p className="text-center font-mono text-xs text-muted-foreground">
-            Retrieved {new Date(data.retrievedAt).toLocaleString()} · data © NOAA / NWS (public domain)
+            Last updated <RelativeTime iso={data.retrievedAt} /> · data © NOAA / NWS (public domain)
           </p>
         </div>
       )}
