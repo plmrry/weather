@@ -1,7 +1,21 @@
 "use client"
 
 import { useMemo } from "react"
-import { Image as ImageIcon, Layers, Radio, Satellite } from "lucide-react"
+import { Clock, Image as ImageIcon, Layers, Map as MapIcon, Radio, Satellite } from "lucide-react"
+import { RelativeTime } from "./relative-time"
+import { BaseMap } from "./base-map"
+
+/** Relative "updated N min ago" stamp shown above each image, computed with Temporal. */
+function Stamp({ iso }: { iso: string }) {
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <Clock className="size-3.5 shrink-0" />
+      <span>
+        Updated <RelativeTime iso={iso} className="text-foreground" />
+      </span>
+    </div>
+  )
+}
 
 export type RadarImagery = {
   ridge: { latestUrl: string; loopUrl: string }
@@ -55,6 +69,7 @@ function SourceBlock({
 function RidgeView({ imagery, token }: { imagery: RadarImagery; token: string }) {
   return (
     <div className="flex flex-col gap-3">
+      <Stamp iso={token} />
       <div className="overflow-hidden rounded-md border border-border bg-secondary/30">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -96,6 +111,7 @@ function RainViewerView({ imagery }: { imagery: RadarImagery }) {
 
   return (
     <div className="flex flex-col gap-3">
+      <Stamp iso={new Date(frame.time * 1000).toISOString()} />
       <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-md border border-border bg-[#0b0f14]">
         <div className="grid grid-cols-3 grid-rows-3">
           {cells.map(({ dx, dy }) => (
@@ -139,6 +155,7 @@ function RainViewerView({ imagery }: { imagery: RadarImagery }) {
 function IemView({ imagery, token }: { imagery: RadarImagery; token: string }) {
   return (
     <div className="flex flex-col gap-3">
+      <Stamp iso={token} />
       <div className="overflow-hidden rounded-md border border-border bg-secondary/30">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -178,6 +195,16 @@ export function RadarImageryPanel({
       </div>
 
       <div className="flex flex-col gap-6 p-4">
+        <SourceBlock icon={MapIcon} title="Reference map">
+          <BaseMap
+            bbox={imagery.iem.bbox as [number, number, number, number]}
+            center={{
+              lon: (imagery.iem.bbox[0] + imagery.iem.bbox[2]) / 2,
+              lat: (imagery.iem.bbox[1] + imagery.iem.bbox[3]) / 2,
+            }}
+          />
+        </SourceBlock>
+
         <SourceBlock icon={Radio} title="NWS RIDGE">
           <RidgeView imagery={imagery} token={retrievedAt} />
         </SourceBlock>
