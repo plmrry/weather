@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { AlertTriangle, Code2, Crosshair, LoaderCircle, Radar, RefreshCw } from "lucide-react"
+import { AlertTriangle, Code2, Crosshair, LoaderCircle, Radar, RefreshCw, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { StationPanel, type RadarData } from "./station-panel"
 import { RadarImageryPanel, type RadarImagery } from "./radar-imagery"
@@ -13,8 +13,10 @@ type ApiResponse = RadarData & { imagery: RadarImagery; error?: string }
 export default function Page() {
   const [lat, setLat] = useState("")
   const [lon, setLon] = useState("")
+  const [place, setPlace] = useState("")
   const [loading, setLoading] = useState(false)
   const [locating, setLocating] = useState(false)
+  const [geocoding, setGeocoding] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<ApiResponse | null>(null)
   const [showJson, setShowJson] = useState(false)
@@ -72,12 +74,49 @@ export default function Page() {
         setLocating(false)
         setError(
           err.code === err.PERMISSION_DENIED
-            ? "Location permission denied. Enter coordinates manually."
+            ? "Location permission denied. Search for a city instead."
             : "Could not determine your location.",
         )
       },
       { enableHighAccuracy: true, timeout: 10000 },
     )
+  }
+
+  async function geocodePlace() {
+    const q = place.trim()
+    if (q === "") {
+      setError("Enter a city or place name to search.")
+      return
+    }
+    setGeocoding(true)
+    setError(null)
+    try {
+      const res = await fetch("/api/geocode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: q }),
+      })
+      const json = (await res.json()) as {
+        lat?: number
+        lon?: number
+        resolvedName?: string
+        error?: string
+      }
+      if (!res.ok || json.lat == null || json.lon == null) {
+        setError(json.error ?? "Could not resolve that place.")
+        return
+      }
+      const la = String(json.lat)
+      const lo = String(json.lon)
+      setLat(la)
+      setLon(lo)
+      setGeocoding(false)
+      void fetchRadar(la, lo)
+    } catch {
+      setError("Network error while looking up that place.")
+    } finally {
+      setGeocoding(false)
+    }
   }
 
   return (
@@ -95,8 +134,8 @@ export default function Page() {
           </div>
         </div>
         <p className="text-sm leading-relaxed text-muted-foreground text-pretty">
-          Enter a latitude and longitude (or use your location) to resolve the nearest WSR-88D radar station and view
-          live rendered imagery from three public radar sources.
+          Search for a city or use your location to resolve the nearest WSR-88D radar station and view live rendered
+          imagery from three public radar sources.
         </p>
       </header>
 
@@ -126,55 +165,54 @@ export default function Page() {
 
         <div className="my-4 flex items-center gap-3" aria-hidden="true">
           <span className="h-px flex-1 bg-border" />
-          <span className="text-xs uppercase tracking-wider text-muted-foreground">or manually enter</span>
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">or search for a place</span>
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs uppercase tracking-wider text-muted-foreground">Latitude</span>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <label className="flex flex-1 flex-col gap-1.5">
+            <span className="sr-only">City or place name</span>
             <input
-              inputMode="decimal"
-              value={lat}
-              onChange={(e) => setLat(e.target.value)}
-              placeholder="37.7749"
-              className="h-11 rounded-md border border-input bg-secondary/40 px-3 font-mono text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              value={place}
+              onChange={(e) => setPlace(e.target.value)}
+              onKeyDown={(e) => {
+                // Don't submit while a CJK IME is composing the text.
+                if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+                  e.preventDefault()
+                  void geocodePlace()
+                }
+              }}
+              placeholder="e.g. Austin, TX"
+              className="h-11 w-full rounded-md border border-input bg-secondary/40 px-3 text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </label>
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs uppercase tracking-wider text-muted-foreground">Longitude</span>
-            <input
-              inputMode="decimal"
-              value={lon}
-              onChange={(e) => setLon(e.target.value)}
-              placeholder="-122.4194"
-              className="h-11 rounded-md border border-input bg-secondary/40 px-3 font-mono text-base text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </label>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
           <Button
             variant="secondary"
-            onClick={() => fetchRadar(lat, lon)}
-            disabled={loading}
-            className="min-h-11 flex-1 sm:flex-none"
+            onClick={geocodePlace}
+            disabled={geocoding || loading}
+            className="min-h-11"
           >
-            {loading ? <LoaderCircle className="size-4 animate-spin" /> : <Radar className="size-4" />}
-            {loading ? "Fetching…" : "Fetch radar data"}
+            {geocoding ? <LoaderCircle className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+            {geocoding ? "Finding…" : "Find location"}
           </Button>
-          {data && (
+        </div>
+        <p className="mt-1.5 text-xs text-muted-foreground">
+          Type a city and state and AI will estimate the coordinates for you.
+        </p>
+
+        {data && (
+          <div className="mt-4 flex">
             <Button
-              variant="ghost"
+              variant="secondary"
               onClick={() => fetchRadar(String(data.query.lat), String(data.query.lon))}
               disabled={loading}
-              className="min-h-11"
-              aria-label="Refresh radar data"
+              className="min-h-11 w-full"
             >
-              <RefreshCw className="size-4" />
+              {loading ? <LoaderCircle className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+              {loading ? "Refreshing…" : "Refresh radar data"}
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </section>
 
       {error && (
