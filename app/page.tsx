@@ -78,7 +78,7 @@ export default function Page() {
             <Radar className="size-5" />
           </div>
           <div>
-            <h1 className="text-xl font-semibold tracking-tight text-foreground text-balance">
+            <h1 className="font-pixel text-lg leading-none text-primary text-balance">
               NEXRAD Radar Explorer
             </h1>
             <p className="text-sm text-muted-foreground">Live NOAA / NWS Level II radar data by coordinate</p>
@@ -91,6 +91,21 @@ export default function Page() {
       </header>
 
       <section aria-label="Coordinate input" className="rounded-lg border border-border bg-card p-4">
+        <Button
+          onClick={useMyLocation}
+          disabled={locating || loading}
+          className="min-h-12 w-full text-base"
+        >
+          {locating ? <LoaderCircle className="size-5 animate-spin" /> : <Crosshair className="size-5" />}
+          {locating ? "Locating…" : "Use my location"}
+        </Button>
+
+        <div className="my-4 flex items-center gap-3" aria-hidden="true">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">or manually enter</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-1.5">
             <span className="text-xs uppercase tracking-wider text-muted-foreground">Latitude</span>
@@ -115,18 +130,14 @@ export default function Page() {
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
-          <Button onClick={() => fetchRadar(lat, lon)} disabled={loading} className="min-h-11 flex-1 sm:flex-none">
-            {loading ? <LoaderCircle className="size-4 animate-spin" /> : <Radar className="size-4" />}
-            {loading ? "Fetching…" : "Fetch radar data"}
-          </Button>
           <Button
             variant="secondary"
-            onClick={useMyLocation}
-            disabled={locating}
+            onClick={() => fetchRadar(lat, lon)}
+            disabled={loading}
             className="min-h-11 flex-1 sm:flex-none"
           >
-            {locating ? <LoaderCircle className="size-4 animate-spin" /> : <Crosshair className="size-4" />}
-            Use my location
+            {loading ? <LoaderCircle className="size-4 animate-spin" /> : <Radar className="size-4" />}
+            {loading ? "Fetching…" : "Fetch radar data"}
           </Button>
           {data && (
             <Button
