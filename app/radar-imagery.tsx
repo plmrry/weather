@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import { ChevronDown, Clock, Image as ImageIcon, Info, Map as MapIcon, Radio, Satellite } from "lucide-react"
+import { ChevronDown, Clock, Info, Map as MapIcon, Radio, Satellite } from "lucide-react"
 import { RelativeTime } from "./relative-time"
 import { BaseMap } from "./base-map"
 
@@ -241,41 +241,35 @@ export function RadarImageryPanel({
   imagery: RadarImagery
   retrievedAt: string
 }) {
-  const sourceCount = 2 + (imagery.rainviewer ? 1 : 0)
-
   return (
-    <section aria-labelledby="imagery-heading" className="rounded-lg border border-border bg-card">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
-        <div className="flex items-center gap-2">
-          <ImageIcon className="size-4 text-accent" />
-          <h2 id="imagery-heading" className="text-sm font-semibold uppercase tracking-wider text-foreground">
-            Rendered radar imagery
-          </h2>
+    <section aria-label="Rendered radar imagery" className="rounded-lg border border-border bg-card">
+      <div className="flex flex-col divide-y divide-border">
+        <div className="p-4">
+          <SourceBlock icon={MapIcon} title="MESONET">
+            <BaseMap
+              bbox={imagery.iem.bbox as [number, number, number, number]}
+              center={{
+                lon: (imagery.iem.bbox[0] + imagery.iem.bbox[2]) / 2,
+                lat: (imagery.iem.bbox[1] + imagery.iem.bbox[3]) / 2,
+              }}
+              overlayUrl={imagery.iem.reflectivityUrl}
+              overlayToken={retrievedAt}
+            />
+          </SourceBlock>
         </div>
-        <span className="font-mono text-xs text-muted-foreground">{sourceCount} sources</span>
-      </div>
 
-      <div className="flex flex-col gap-6 p-4">
-        <SourceBlock icon={MapIcon} title="MESONET">
-          <BaseMap
-            bbox={imagery.iem.bbox as [number, number, number, number]}
-            center={{
-              lon: (imagery.iem.bbox[0] + imagery.iem.bbox[2]) / 2,
-              lat: (imagery.iem.bbox[1] + imagery.iem.bbox[3]) / 2,
-            }}
-            overlayUrl={imagery.iem.reflectivityUrl}
-            overlayToken={retrievedAt}
-          />
-        </SourceBlock>
-
-        <SourceBlock icon={Radio} title="NWS RIDGE">
-          <RidgeView imagery={imagery} token={retrievedAt} />
-        </SourceBlock>
+        <div className="p-4">
+          <SourceBlock icon={Radio} title="NWS RIDGE">
+            <RidgeView imagery={imagery} token={retrievedAt} />
+          </SourceBlock>
+        </div>
 
         {imagery.rainviewer && (
-          <SourceBlock icon={Satellite} title="Live mosaic">
-            <RainViewerView imagery={imagery} />
-          </SourceBlock>
+          <div className="p-4">
+            <SourceBlock icon={Satellite} title="Live mosaic">
+              <RainViewerView imagery={imagery} />
+            </SourceBlock>
+          </div>
         )}
       </div>
     </section>
