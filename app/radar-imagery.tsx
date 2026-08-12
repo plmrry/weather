@@ -320,6 +320,8 @@ export function RadarImageryPanel({
               lon: (imagery.iem.bbox[0] + imagery.iem.bbox[2]) / 2,
               lat: (imagery.iem.bbox[1] + imagery.iem.bbox[3]) / 2,
             }}
+            overlayUrl={imagery.iem.reflectivityUrl}
+            overlayToken={retrievedAt}
           />
         </SourceBlock>
 

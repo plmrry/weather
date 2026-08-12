@@ -1,10 +1,14 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import useSWR from "swr"
 import { geoEquirectangular, geoPath } from "d3-geo"
 import type { Feature, FeatureCollection, Geometry } from "geojson"
-import { ChevronDown, Info, LoaderCircle, Map as MapIcon } from "lucide-react"
+import { ChevronDown, Info, Layers, LoaderCircle, Map as MapIcon } from "lucide-react"
+
+function bust(url: string, token: string) {
+  return `${url}${url.includes("?") ? "&" : "?"}_=${encodeURIComponent(token)}`
+}
 
 type City = { name: string; lon: number; lat: number; pop: number; capital: boolean }
 type BaseMapData = {
@@ -25,9 +29,14 @@ const fetcher = async (url: string): Promise<BaseMapData> => {
 export function BaseMap({
   bbox,
   center,
+  overlayUrl,
+  overlayToken,
 }: {
   bbox: [number, number, number, number]
   center: { lon: number; lat: number }
+  /** Raster layer sharing the same EPSG:4326 bbox — drawn beneath the vector map so the two align exactly. */
+  overlayUrl?: string
+  overlayToken?: string
 }) {
   const [minx, miny, maxx, maxy] = bbox
   const key = `/api/basemap?minx=${minx}&miny=${miny}&maxx=${maxx}&maxy=${maxy}`
@@ -35,6 +44,7 @@ export function BaseMap({
     revalidateOnFocus: false,
     dedupingInterval: 600_000,
   })
+  const [showOverlay, setShowOverlay] = useState(true)
 
   const rendered = useMemo(() => {
     if (!data) return null
@@ -71,6 +81,8 @@ export function BaseMap({
     return { statePaths, roadPaths, cityPoints, centerPoint }
   }, [data, minx, miny, maxx, maxy, center.lon, center.lat])
 
+  const hasOverlay = Boolean(overlayUrl && overlayToken)
+
   return (
     <div className="flex flex-col gap-3">
       <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-md border border-border bg-black">
@@ -85,67 +97,112 @@ export function BaseMap({
           </div>
         )}
         {rendered && (
-          <svg
-            viewBox={`0 0 ${SIZE} ${SIZE}`}
-            className="h-full w-full"
-            role="img"
-            aria-label="Black and white reference map showing state boundaries, primary roads, and cities for the radar coverage area"
-          >
-            {/* Primary roads — faint gray lines */}
-            <g fill="none" stroke="oklch(0.55 0 0)" strokeWidth={0.8} strokeLinejoin="round" strokeLinecap="round">
-              {rendered.roadPaths.map((d, i) => (
-                <path key={`r${i}`} d={d} />
-              ))}
-            </g>
-
-            {/* State boundaries — bright white outlines */}
-            <g fill="none" stroke="oklch(0.98 0 0)" strokeWidth={1.6} strokeLinejoin="round">
-              {rendered.statePaths.map((d, i) => (
-                <path key={`s${i}`} d={d} />
-              ))}
-            </g>
-
-            {/* Cities — white dots with haloed labels */}
-            <g
-              fontFamily="var(--font-mono, monospace)"
-              fontSize={12}
-              style={{ paintOrder: "stroke" }}
-              stroke="oklch(0 0 0)"
-              strokeWidth={3}
-            >
-              {rendered.cityPoints.map((c, i) => (
-                <g key={`c${i}`} transform={`translate(${c.x},${c.y})`}>
-                  <circle r={2.5} fill="oklch(0.98 0 0)" stroke="none" />
-                  <text x={5} y={4} fill="oklch(0.9 0 0)" stroke="oklch(0 0 0)" strokeWidth={3} paintOrder="stroke">
-                    {c.name}
-                  </text>
-                </g>
-              ))}
-            </g>
-
-            {/* Query point — accent crosshair */}
-            {rendered.centerPoint && (
-              <g
-                transform={`translate(${rendered.centerPoint[0]},${rendered.centerPoint[1]})`}
-                stroke="oklch(0.8 0.15 75)"
-                strokeWidth={1.5}
-                fill="none"
-              >
-                <circle r={7} />
-                <line x1={-11} y1={0} x2={-4} y2={0} />
-                <line x1={4} y1={0} x2={11} y2={0} />
-                <line x1={0} y1={-11} x2={0} y2={-4} />
-                <line x1={0} y1={4} x2={0} y2={11} />
-              </g>
+          <>
+            {/* Mesonet WMS reflectivity — same EPSG:4326 bbox as the projection fit below, so it lines up exactly. */}
+            {hasOverlay && showOverlay && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={overlayToken}
+                src={bust(overlayUrl!, overlayToken!) || "/placeholder.svg"}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 h-full w-full object-cover"
+                loading="lazy"
+              />
             )}
-          </svg>
+            <svg
+              viewBox={`0 0 ${SIZE} ${SIZE}`}
+              className="absolute inset-0 h-full w-full"
+              role="img"
+              aria-label={
+                hasOverlay && showOverlay
+                  ? "Reference map with state boundaries, primary roads, and cities layered over the live Mesonet reflectivity image for the radar coverage area"
+                  : "Black and white reference map showing state boundaries, primary roads, and cities for the radar coverage area"
+              }
+            >
+              {/* Primary roads — halo, then a bright line so they read over the color reflectivity layer */}
+              <g fill="none" strokeLinejoin="round" strokeLinecap="round">
+                <g stroke="oklch(0 0 0)" strokeOpacity={0.6} strokeWidth={2.2}>
+                  {rendered.roadPaths.map((d, i) => (
+                    <path key={`rh${i}`} d={d} />
+                  ))}
+                </g>
+                <g stroke={hasOverlay && showOverlay ? "oklch(0.92 0 0)" : "oklch(0.55 0 0)"} strokeWidth={0.8}>
+                  {rendered.roadPaths.map((d, i) => (
+                    <path key={`r${i}`} d={d} />
+                  ))}
+                </g>
+              </g>
+
+              {/* State boundaries — halo, then bright white outlines */}
+              <g fill="none" strokeLinejoin="round">
+                <g stroke="oklch(0 0 0)" strokeOpacity={0.6} strokeWidth={3.2}>
+                  {rendered.statePaths.map((d, i) => (
+                    <path key={`sh${i}`} d={d} />
+                  ))}
+                </g>
+                <g stroke="oklch(0.98 0 0)" strokeWidth={1.6}>
+                  {rendered.statePaths.map((d, i) => (
+                    <path key={`s${i}`} d={d} />
+                  ))}
+                </g>
+              </g>
+
+              {/* Cities — white dots with haloed labels */}
+              <g
+                fontFamily="var(--font-mono, monospace)"
+                fontSize={12}
+                style={{ paintOrder: "stroke" }}
+                stroke="oklch(0 0 0)"
+                strokeWidth={3}
+              >
+                {rendered.cityPoints.map((c, i) => (
+                  <g key={`c${i}`} transform={`translate(${c.x},${c.y})`}>
+                    <circle r={2.5} fill="oklch(0.98 0 0)" stroke="none" />
+                    <text x={5} y={4} fill="oklch(0.9 0 0)" stroke="oklch(0 0 0)" strokeWidth={3} paintOrder="stroke">
+                      {c.name}
+                    </text>
+                  </g>
+                ))}
+              </g>
+
+              {/* Query point — accent crosshair */}
+              {rendered.centerPoint && (
+                <g
+                  transform={`translate(${rendered.centerPoint[0]},${rendered.centerPoint[1]})`}
+                  stroke="oklch(0.8 0.15 75)"
+                  strokeWidth={1.5}
+                  fill="none"
+                >
+                  <circle r={7} />
+                  <line x1={-11} y1={0} x2={-4} y2={0} />
+                  <line x1={4} y1={0} x2={11} y2={0} />
+                  <line x1={0} y1={-11} x2={0} y2={-4} />
+                  <line x1={0} y1={4} x2={0} y2={11} />
+                </g>
+              )}
+            </svg>
+          </>
         )}
       </div>
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <MapIcon className="size-3.5 shrink-0" />
-        State boundaries (US Census / us-atlas), primary roads (Census TIGERweb), and cities (Natural Earth) for the
-        same coverage area. Rendered with d3-geo.
-      </p>
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <MapIcon className="size-3.5 shrink-0" />
+          State boundaries, primary roads (Census TIGERweb), and cities (Natural Earth). Rendered with d3-geo.
+        </p>
+        {hasOverlay && (
+          <button
+            type="button"
+            onClick={() => setShowOverlay((s) => !s)}
+            aria-pressed={showOverlay}
+            className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary/40"
+          >
+            <Layers className="size-3.5 text-accent" />
+            {showOverlay ? "Hide radar overlay" : "Show radar overlay"}
+          </button>
+        )}
+      </div>
       <details className="group rounded-md border border-border bg-secondary/20">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-xs font-medium text-foreground [&::-webkit-details-marker]:hidden">
           <span className="flex items-center gap-1.5">
@@ -163,11 +220,19 @@ export function BaseMap({
             </dd>
             <dt className="text-muted-foreground/70">Rendering</dt>
             <dd className="text-pretty text-foreground">
-              d3-geo equirectangular projection, fit to the same bounding box as the Mesonet WMS request below — the
-              two line up on the same coordinate grid.
+              d3-geo equirectangular projection, fit to the same EPSG:4326 bounding box as the Mesonet WMS request —
+              the two share one coordinate grid, so the radar image can be layered directly beneath the vector map
+              with no reprojection.
+            </dd>
+            <dt className="text-muted-foreground/70">Overlay</dt>
+            <dd className="text-pretty text-foreground">
+              The colored layer is the live Mesonet reflectivity mosaic — toggle it off for a plain black-and-white
+              reference map, or on to see roads, boundaries, and cities in context with current radar returns.
             </dd>
             <dt className="text-muted-foreground/70">Freshness</dt>
-            <dd className="text-pretty text-foreground">Static reference geography, not live radar data.</dd>
+            <dd className="text-pretty text-foreground">
+              Vector layer is static reference geography; the overlay updates on the same ~5 min Mesonet cadence.
+            </dd>
           </dl>
         </div>
       </details>
