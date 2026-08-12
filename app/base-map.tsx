@@ -44,8 +44,6 @@ export function BaseMap({
     revalidateOnFocus: false,
     dedupingInterval: 600_000,
   })
-  const [showOverlay, setShowOverlay] = useState(true)
-
   const rendered = useMemo(() => {
     if (!data) return null
     // Equirectangular fitted to the box matches the plate-carrée radar framing.
@@ -99,7 +97,7 @@ export function BaseMap({
         {rendered && (
           <>
             {/* Mesonet WMS reflectivity — same EPSG:4326 bbox as the projection fit below, so it lines up exactly. */}
-            {hasOverlay && showOverlay && (
+            {hasOverlay && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={overlayToken}
@@ -186,23 +184,10 @@ export function BaseMap({
         )}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <MapIcon className="size-3.5 shrink-0" />
-          State boundaries, primary roads (Census TIGERweb), and cities (Natural Earth). Rendered with d3-geo.
-        </p>
-        {hasOverlay && (
-          <button
-            type="button"
-            onClick={() => setShowOverlay((s) => !s)}
-            aria-pressed={showOverlay}
-            className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary/40"
-          >
-            <Layers className="size-3.5 text-accent" />
-            {showOverlay ? "Hide radar overlay" : "Show radar overlay"}
-          </button>
-        )}
-      </div>
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <MapIcon className="size-3.5 shrink-0" />
+        State boundaries, primary roads (Census TIGERweb), and cities (Natural Earth). Rendered with d3-geo.
+      </p>
       <details className="group rounded-md border border-border bg-secondary/20">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-xs font-medium text-foreground [&::-webkit-details-marker]:hidden">
           <span className="flex items-center gap-1.5">
