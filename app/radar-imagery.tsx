@@ -1,7 +1,16 @@
 "use client"
 
 import { useMemo } from "react"
-import { Clock, Image as ImageIcon, Layers, Map as MapIcon, Radio, Satellite } from "lucide-react"
+import {
+  ChevronDown,
+  Clock,
+  Image as ImageIcon,
+  Info,
+  Layers,
+  Map as MapIcon,
+  Radio,
+  Satellite,
+} from "lucide-react"
 import { RelativeTime } from "./relative-time"
 import { BaseMap } from "./base-map"
 
@@ -14,6 +23,36 @@ function Stamp({ iso }: { iso: string }) {
         Updated <RelativeTime iso={iso} className="text-foreground" />
       </span>
     </div>
+  )
+}
+
+/** Collapsible "more info" disclosure for a single source, using native <details> for a11y. */
+function MoreInfo({ children }: { children: React.ReactNode }) {
+  return (
+    <details className="group rounded-md border border-border bg-secondary/20">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-xs font-medium text-foreground [&::-webkit-details-marker]:hidden">
+        <span className="flex items-center gap-1.5">
+          <Info className="size-3.5 text-muted-foreground" />
+          More info
+        </span>
+        <ChevronDown className="size-3.5 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
+      </summary>
+      <div className="border-t border-border px-3 py-2.5">{children}</div>
+    </details>
+  )
+}
+
+/** Label/value definition list used inside MoreInfo blocks. */
+function InfoList({ items }: { items: { label: string; value: React.ReactNode }[] }) {
+  return (
+    <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs leading-relaxed">
+      {items.map((item, i) => (
+        <div className="contents" key={i}>
+          <dt className="text-muted-foreground/70">{item.label}</dt>
+          <dd className="text-foreground text-pretty">{item.value}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 
@@ -83,6 +122,33 @@ function RidgeView({ imagery, token }: { imagery: RadarImagery; token: string })
       <p className="text-xs text-muted-foreground">
         Base reflectivity rendered by the National Weather Service (RIDGE). Updates every volume scan (~4–6 min).
       </p>
+      <MoreInfo>
+        <InfoList
+          items={[
+            { label: "Provider", value: "National Weather Service — radar.weather.gov" },
+            { label: "Product", value: "Base reflectivity, standard resolution GIF" },
+            {
+              label: "Projection",
+              value:
+                "Pre-rendered per station by the NWS — a custom raster (not a plain lat/lon grid), with county lines and range rings baked in.",
+            },
+            { label: "Cadence", value: "~4–6 min, one image per volume scan" },
+            {
+              label: "Source",
+              value: (
+                <a
+                  href={imagery.ridge.latestUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline decoration-dotted underline-offset-4"
+                >
+                  Latest image →
+                </a>
+              ),
+            },
+          ]}
+        />
+      </MoreInfo>
     </div>
   )
 }
@@ -147,6 +213,32 @@ function RainViewerView({ imagery }: { imagery: RadarImagery }) {
         Latest global mosaic frame from RainViewer over a CARTO basemap (~10 min cadence). Blue → red = increasing
         precipitation intensity.
       </p>
+      <MoreInfo>
+        <InfoList
+          items={[
+            { label: "Provider", value: "RainViewer — global composite of national radar networks" },
+            { label: "Tiles", value: `256px Web Mercator XYZ tiles, zoom ${rv.zoom}` },
+            { label: "Basemap", value: "CARTO dark tiles, composited under the radar layer" },
+            {
+              label: "Cadence",
+              value: "~10 min for observed frames; nowcast frames are short-range extrapolations, not observations.",
+            },
+            {
+              label: "Source",
+              value: (
+                <a
+                  href="https://www.rainviewer.com/api.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline decoration-dotted underline-offset-4"
+                >
+                  RainViewer API →
+                </a>
+              ),
+            },
+          ]}
+        />
+      </MoreInfo>
     </div>
   )
 }
@@ -169,6 +261,32 @@ function IemView({ imagery, token }: { imagery: RadarImagery; token: string }) {
       <p className="text-xs text-muted-foreground">
         NEXRAD N0Q base-reflectivity mosaic served via the Iowa Environmental Mesonet WMS (~5 min cadence).
       </p>
+      <MoreInfo>
+        <InfoList
+          items={[
+            { label: "Provider", value: "Iowa Environmental Mesonet, Iowa State University" },
+            { label: "Layer", value: "nexrad-n0q — CONUS base-reflectivity mosaic" },
+            {
+              label: "Request",
+              value: `WMS GetMap, EPSG:4326, ~4° box centered on the point (${imagery.iem.bbox.map((n) => n.toFixed(2)).join(", ")})`,
+            },
+            { label: "Cadence", value: "~5 min" },
+            {
+              label: "Source",
+              value: (
+                <a
+                  href={imagery.iem.reflectivityUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline decoration-dotted underline-offset-4"
+                >
+                  WMS request →
+                </a>
+              ),
+            },
+          ]}
+        />
+      </MoreInfo>
     </div>
   )
 }
@@ -202,6 +320,8 @@ export function RadarImageryPanel({
               lon: (imagery.iem.bbox[0] + imagery.iem.bbox[2]) / 2,
               lat: (imagery.iem.bbox[1] + imagery.iem.bbox[3]) / 2,
             }}
+            overlayUrl={imagery.iem.reflectivityUrl}
+            overlayToken={retrievedAt}
           />
         </SourceBlock>
 

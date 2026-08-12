@@ -120,22 +120,11 @@ export default function Page() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:py-12">
-      <header className="flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-md bg-primary/15 text-primary">
-            <Radar className="size-5" />
-          </div>
-          <div>
-            <h1 className="font-pixel text-lg leading-none text-primary text-balance">
-              NEXRAD Radar Explorer
-            </h1>
-            <p className="text-sm text-muted-foreground">Live NOAA / NWS Level II radar data by coordinate</p>
-          </div>
-        </div>
-        <p className="text-sm leading-relaxed text-muted-foreground text-pretty">
-          Search for a city or use your location to resolve the nearest WSR-88D radar station and view live rendered
-          imagery from three public radar sources.
-        </p>
+      <header className="flex flex-col items-center justify-center gap-3 text-center">
+        <span className="text-9xl leading-none" role="img" aria-label="Coffee">
+          ☕
+        </span>
+        <h1 className="font-pixel text-5xl leading-none text-primary text-balance">Weather Café</h1>
       </header>
 
       <section aria-label="Coordinate input" className="rounded-lg border border-border bg-card p-4">
@@ -195,9 +184,6 @@ export default function Page() {
             {geocoding ? "Finding…" : "Find location"}
           </Button>
         </div>
-        <p className="mt-1.5 text-xs text-muted-foreground">
-          Type a city and state and AI will estimate the coordinates for you.
-        </p>
 
         {data && (
           <div className="mt-4 flex">
@@ -238,20 +224,7 @@ export default function Page() {
       {!data && !error && !loading && (
         <div className="rounded-lg border border-dashed border-border p-8 text-center">
           <Radar className="mx-auto size-8 text-muted-foreground" />
-          <p className="mt-3 text-sm text-muted-foreground text-pretty">
-            NEXRAD coverage spans the continental U.S., Alaska, Hawaii, Guam, and Puerto Rico. Try{" "}
-            <button
-              className="font-mono text-primary underline decoration-dotted underline-offset-4"
-              onClick={() => {
-                setLat("37.7749")
-                setLon("-122.4194")
-                void fetchRadar("37.7749", "-122.4194")
-              }}
-            >
-              37.7749, -122.4194
-            </button>{" "}
-            (San Francisco).
-          </p>
+          <p className="mt-3 text-sm text-muted-foreground text-pretty">Select a location</p>
         </div>
       )}
     </main>
