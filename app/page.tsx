@@ -227,20 +227,7 @@ export default function Page() {
       {!data && !error && !loading && (
         <div className="rounded-lg border border-dashed border-border p-8 text-center">
           <Radar className="mx-auto size-8 text-muted-foreground" />
-          <p className="mt-3 text-sm text-muted-foreground text-pretty">
-            NEXRAD coverage spans the continental U.S., Alaska, Hawaii, Guam, and Puerto Rico. Try{" "}
-            <button
-              className="font-mono text-primary underline decoration-dotted underline-offset-4"
-              onClick={() => {
-                setLat("37.7749")
-                setLon("-122.4194")
-                void fetchRadar("37.7749", "-122.4194")
-              }}
-            >
-              37.7749, -122.4194
-            </button>{" "}
-            (San Francisco).
-          </p>
+          <p className="mt-3 text-sm text-muted-foreground text-pretty">Select a location</p>
         </div>
       )}
     </main>
