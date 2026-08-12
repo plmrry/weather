@@ -1,10 +1,10 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import useSWR from "swr"
 import { geoEquirectangular, geoPath } from "d3-geo"
 import type { Feature, FeatureCollection, Geometry } from "geojson"
-import { ChevronDown, Info, Layers, LoaderCircle, Map as MapIcon } from "lucide-react"
+import { ChevronDown, Info, LoaderCircle, Map as MapIcon } from "lucide-react"
 
 function bust(url: string, token: string) {
   return `${url}${url.includes("?") ? "&" : "?"}_=${encodeURIComponent(token)}`
@@ -113,7 +113,7 @@ export function BaseMap({
               className="absolute inset-0 h-full w-full"
               role="img"
               aria-label={
-                hasOverlay && showOverlay
+                hasOverlay
                   ? "Reference map with state boundaries, primary roads, and cities layered over the live Mesonet reflectivity image for the radar coverage area"
                   : "Black and white reference map showing state boundaries, primary roads, and cities for the radar coverage area"
               }
@@ -125,7 +125,7 @@ export function BaseMap({
                     <path key={`rh${i}`} d={d} />
                   ))}
                 </g>
-                <g stroke={hasOverlay && showOverlay ? "oklch(0.92 0 0)" : "oklch(0.55 0 0)"} strokeWidth={0.8}>
+                <g stroke={hasOverlay ? "oklch(0.92 0 0)" : "oklch(0.55 0 0)"} strokeWidth={0.8}>
                   {rendered.roadPaths.map((d, i) => (
                     <path key={`r${i}`} d={d} />
                   ))}
@@ -211,8 +211,8 @@ export function BaseMap({
             </dd>
             <dt className="text-muted-foreground/70">Overlay</dt>
             <dd className="text-pretty text-foreground">
-              The colored layer is the live Mesonet reflectivity mosaic — toggle it off for a plain black-and-white
-              reference map, or on to see roads, boundaries, and cities in context with current radar returns.
+              The colored layer is the live Mesonet reflectivity mosaic, shown in context with roads, boundaries,
+              and cities.
             </dd>
             <dt className="text-muted-foreground/70">Freshness</dt>
             <dd className="text-pretty text-foreground">

@@ -1,16 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import {
-  ChevronDown,
-  Clock,
-  Image as ImageIcon,
-  Info,
-  Layers,
-  Map as MapIcon,
-  Radio,
-  Satellite,
-} from "lucide-react"
+import { ChevronDown, Clock, Image as ImageIcon, Info, Map as MapIcon, Radio, Satellite } from "lucide-react"
 import { RelativeTime } from "./relative-time"
 import { BaseMap } from "./base-map"
 
@@ -243,54 +234,6 @@ function RainViewerView({ imagery }: { imagery: RadarImagery }) {
   )
 }
 
-/** Iowa Environmental Mesonet — WMS base-reflectivity mosaic around the point. */
-function IemView({ imagery, token }: { imagery: RadarImagery; token: string }) {
-  return (
-    <div className="flex flex-col gap-3">
-      <Stamp iso={token} />
-      <div className="overflow-hidden rounded-md border border-border bg-secondary/30">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          key={token}
-          src={bust(imagery.iem.reflectivityUrl, token) || "/placeholder.svg"}
-          alt="Iowa Environmental Mesonet NEXRAD base reflectivity mosaic around the location"
-          className="h-auto w-full"
-          loading="lazy"
-        />
-      </div>
-      <p className="text-xs text-muted-foreground">
-        NEXRAD N0Q base-reflectivity mosaic served via the Iowa Environmental Mesonet WMS (~5 min cadence).
-      </p>
-      <MoreInfo>
-        <InfoList
-          items={[
-            { label: "Provider", value: "Iowa Environmental Mesonet, Iowa State University" },
-            { label: "Layer", value: "nexrad-n0q — CONUS base-reflectivity mosaic" },
-            {
-              label: "Request",
-              value: `WMS GetMap, EPSG:4326, ~4° box centered on the point (${imagery.iem.bbox.map((n) => n.toFixed(2)).join(", ")})`,
-            },
-            { label: "Cadence", value: "~5 min" },
-            {
-              label: "Source",
-              value: (
-                <a
-                  href={imagery.iem.reflectivityUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline decoration-dotted underline-offset-4"
-                >
-                  WMS request →
-                </a>
-              ),
-            },
-          ]}
-        />
-      </MoreInfo>
-    </div>
-  )
-}
-
 export function RadarImageryPanel({
   imagery,
   retrievedAt,
@@ -313,7 +256,7 @@ export function RadarImageryPanel({
       </div>
 
       <div className="flex flex-col gap-6 p-4">
-        <SourceBlock icon={MapIcon} title="Reference map">
+        <SourceBlock icon={MapIcon} title="MESONET">
           <BaseMap
             bbox={imagery.iem.bbox as [number, number, number, number]}
             center={{
@@ -334,10 +277,6 @@ export function RadarImageryPanel({
             <RainViewerView imagery={imagery} />
           </SourceBlock>
         )}
-
-        <SourceBlock icon={Layers} title="Mesonet">
-          <IemView imagery={imagery} token={retrievedAt} />
-        </SourceBlock>
       </div>
     </section>
   )
