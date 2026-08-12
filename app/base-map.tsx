@@ -1,10 +1,11 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import useSWR from "swr"
 import { geoEquirectangular, geoPath } from "d3-geo"
 import type { Feature, FeatureCollection, Geometry } from "geojson"
-import { ChevronDown, Info, Layers, LoaderCircle, Map as MapIcon } from "lucide-react"
+import { ChevronDown, Clock, Info, LoaderCircle, Map as MapIcon } from "lucide-react"
+import { RelativeTime } from "./relative-time"
 
 function bust(url: string, token: string) {
   return `${url}${url.includes("?") ? "&" : "?"}_=${encodeURIComponent(token)}`
@@ -44,8 +45,6 @@ export function BaseMap({
     revalidateOnFocus: false,
     dedupingInterval: 600_000,
   })
-  const [showOverlay, setShowOverlay] = useState(true)
-
   const rendered = useMemo(() => {
     if (!data) return null
     // Equirectangular fitted to the box matches the plate-carrée radar framing.
@@ -85,6 +84,51 @@ export function BaseMap({
 
   return (
     <div className="flex flex-col gap-3">
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <MapIcon className="size-3.5 shrink-0" />
+        State boundaries, primary roads (Census TIGERweb), and cities (Natural Earth). Rendered with d3-geo.
+      </p>
+      <details className="group rounded-md border border-border bg-secondary/20">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-xs font-medium text-foreground [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center gap-1.5">
+            <Info className="size-3.5 text-muted-foreground" />
+            More info
+          </span>
+          <ChevronDown className="size-3.5 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
+        </summary>
+        <div className="border-t border-border px-3 py-2.5">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs leading-relaxed">
+            <dt className="text-muted-foreground/70">Sources</dt>
+            <dd className="text-pretty text-foreground">
+              us-atlas TopoJSON (states), Census TIGERweb (primary roads, queried live per bounding box), Natural
+              Earth (cities)
+            </dd>
+            <dt className="text-muted-foreground/70">Rendering</dt>
+            <dd className="text-pretty text-foreground">
+              d3-geo equirectangular projection, fit to the same EPSG:4326 bounding box as the Mesonet WMS request —
+              the two share one coordinate grid, so the radar image can be layered directly beneath the vector map
+              with no reprojection.
+            </dd>
+            <dt className="text-muted-foreground/70">Overlay</dt>
+            <dd className="text-pretty text-foreground">
+              The colored layer is the live Mesonet reflectivity mosaic, shown in context with roads, boundaries,
+              and cities.
+            </dd>
+            <dt className="text-muted-foreground/70">Freshness</dt>
+            <dd className="text-pretty text-foreground">
+              Vector layer is static reference geography; the overlay updates on the same ~5 min Mesonet cadence.
+            </dd>
+          </dl>
+        </div>
+      </details>
+      {overlayToken && (
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Clock className="size-3.5 shrink-0" />
+          <span>
+            Updated <RelativeTime iso={overlayToken} className="text-foreground" />
+          </span>
+        </div>
+      )}
       <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-md border border-border bg-black">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -99,7 +143,7 @@ export function BaseMap({
         {rendered && (
           <>
             {/* Mesonet WMS reflectivity — same EPSG:4326 bbox as the projection fit below, so it lines up exactly. */}
-            {hasOverlay && showOverlay && (
+            {hasOverlay && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={overlayToken}
@@ -115,7 +159,7 @@ export function BaseMap({
               className="absolute inset-0 h-full w-full"
               role="img"
               aria-label={
-                hasOverlay && showOverlay
+                hasOverlay
                   ? "Reference map with state boundaries, primary roads, and cities layered over the live Mesonet reflectivity image for the radar coverage area"
                   : "Black and white reference map showing state boundaries, primary roads, and cities for the radar coverage area"
               }
@@ -127,7 +171,7 @@ export function BaseMap({
                     <path key={`rh${i}`} d={d} />
                   ))}
                 </g>
-                <g stroke={hasOverlay && showOverlay ? "oklch(0.92 0 0)" : "oklch(0.55 0 0)"} strokeWidth={0.8}>
+                <g stroke={hasOverlay ? "oklch(0.92 0 0)" : "oklch(0.55 0 0)"} strokeWidth={0.8}>
                   {rendered.roadPaths.map((d, i) => (
                     <path key={`r${i}`} d={d} />
                   ))}
@@ -185,57 +229,6 @@ export function BaseMap({
           </>
         )}
       </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <MapIcon className="size-3.5 shrink-0" />
-          State boundaries, primary roads (Census TIGERweb), and cities (Natural Earth). Rendered with d3-geo.
-        </p>
-        {hasOverlay && (
-          <button
-            type="button"
-            onClick={() => setShowOverlay((s) => !s)}
-            aria-pressed={showOverlay}
-            className="flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-secondary/40"
-          >
-            <Layers className="size-3.5 text-accent" />
-            {showOverlay ? "Hide radar overlay" : "Show radar overlay"}
-          </button>
-        )}
-      </div>
-      <details className="group rounded-md border border-border bg-secondary/20">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-xs font-medium text-foreground [&::-webkit-details-marker]:hidden">
-          <span className="flex items-center gap-1.5">
-            <Info className="size-3.5 text-muted-foreground" />
-            More info
-          </span>
-          <ChevronDown className="size-3.5 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
-        </summary>
-        <div className="border-t border-border px-3 py-2.5">
-          <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs leading-relaxed">
-            <dt className="text-muted-foreground/70">Sources</dt>
-            <dd className="text-pretty text-foreground">
-              us-atlas TopoJSON (states), Census TIGERweb (primary roads, queried live per bounding box), Natural
-              Earth (cities)
-            </dd>
-            <dt className="text-muted-foreground/70">Rendering</dt>
-            <dd className="text-pretty text-foreground">
-              d3-geo equirectangular projection, fit to the same EPSG:4326 bounding box as the Mesonet WMS request —
-              the two share one coordinate grid, so the radar image can be layered directly beneath the vector map
-              with no reprojection.
-            </dd>
-            <dt className="text-muted-foreground/70">Overlay</dt>
-            <dd className="text-pretty text-foreground">
-              The colored layer is the live Mesonet reflectivity mosaic — toggle it off for a plain black-and-white
-              reference map, or on to see roads, boundaries, and cities in context with current radar returns.
-            </dd>
-            <dt className="text-muted-foreground/70">Freshness</dt>
-            <dd className="text-pretty text-foreground">
-              Vector layer is static reference geography; the overlay updates on the same ~5 min Mesonet cadence.
-            </dd>
-          </dl>
-        </div>
-      </details>
     </div>
   )
 }

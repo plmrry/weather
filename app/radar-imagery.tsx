@@ -1,16 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
-import {
-  ChevronDown,
-  Clock,
-  Image as ImageIcon,
-  Info,
-  Layers,
-  Map as MapIcon,
-  Radio,
-  Satellite,
-} from "lucide-react"
+import { ChevronDown, Clock, Info, Map as MapIcon, Radio, Satellite } from "lucide-react"
 import { RelativeTime } from "./relative-time"
 import { BaseMap } from "./base-map"
 
@@ -108,17 +99,6 @@ function SourceBlock({
 function RidgeView({ imagery, token }: { imagery: RadarImagery; token: string }) {
   return (
     <div className="flex flex-col gap-3">
-      <Stamp iso={token} />
-      <div className="overflow-hidden rounded-md border border-border bg-secondary/30">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          key={token}
-          src={bust(imagery.ridge.latestUrl, token) || "/placeholder.svg"}
-          alt="NWS RIDGE base reflectivity latest frame"
-          className="h-auto w-full"
-          loading="lazy"
-        />
-      </div>
       <p className="text-xs text-muted-foreground">
         Base reflectivity rendered by the National Weather Service (RIDGE). Updates every volume scan (~4–6 min).
       </p>
@@ -149,6 +129,17 @@ function RidgeView({ imagery, token }: { imagery: RadarImagery; token: string })
           ]}
         />
       </MoreInfo>
+      <Stamp iso={token} />
+      <div className="overflow-hidden rounded-md border border-border bg-secondary/30">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          key={token}
+          src={bust(imagery.ridge.latestUrl, token) || "/placeholder.svg"}
+          alt="NWS RIDGE base reflectivity latest frame"
+          className="h-auto w-full"
+          loading="lazy"
+        />
+      </div>
     </div>
   )
 }
@@ -177,6 +168,36 @@ function RainViewerView({ imagery }: { imagery: RadarImagery }) {
 
   return (
     <div className="flex flex-col gap-3">
+      <p className="text-xs text-muted-foreground">
+        Latest global mosaic frame from RainViewer over a CARTO basemap (~10 min cadence). Blue → red = increasing
+        precipitation intensity.
+      </p>
+      <MoreInfo>
+        <InfoList
+          items={[
+            { label: "Provider", value: "RainViewer — global composite of national radar networks" },
+            { label: "Tiles", value: `256px Web Mercator XYZ tiles, zoom ${rv.zoom}` },
+            { label: "Basemap", value: "CARTO dark tiles, composited under the radar layer" },
+            {
+              label: "Cadence",
+              value: "~10 min for observed frames; nowcast frames are short-range extrapolations, not observations.",
+            },
+            {
+              label: "Source",
+              value: (
+                <a
+                  href="https://www.rainviewer.com/api.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline decoration-dotted underline-offset-4"
+                >
+                  RainViewer API →
+                </a>
+              ),
+            },
+          ]}
+        />
+      </MoreInfo>
       <Stamp iso={new Date(frame.time * 1000).toISOString()} />
       <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-md border border-border bg-[#0b0f14]">
         <div className="grid grid-cols-3 grid-rows-3">
@@ -209,84 +230,6 @@ function RainViewerView({ imagery }: { imagery: RadarImagery }) {
           {fmtClock(frame.time)}
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Latest global mosaic frame from RainViewer over a CARTO basemap (~10 min cadence). Blue → red = increasing
-        precipitation intensity.
-      </p>
-      <MoreInfo>
-        <InfoList
-          items={[
-            { label: "Provider", value: "RainViewer — global composite of national radar networks" },
-            { label: "Tiles", value: `256px Web Mercator XYZ tiles, zoom ${rv.zoom}` },
-            { label: "Basemap", value: "CARTO dark tiles, composited under the radar layer" },
-            {
-              label: "Cadence",
-              value: "~10 min for observed frames; nowcast frames are short-range extrapolations, not observations.",
-            },
-            {
-              label: "Source",
-              value: (
-                <a
-                  href="https://www.rainviewer.com/api.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline decoration-dotted underline-offset-4"
-                >
-                  RainViewer API →
-                </a>
-              ),
-            },
-          ]}
-        />
-      </MoreInfo>
-    </div>
-  )
-}
-
-/** Iowa Environmental Mesonet — WMS base-reflectivity mosaic around the point. */
-function IemView({ imagery, token }: { imagery: RadarImagery; token: string }) {
-  return (
-    <div className="flex flex-col gap-3">
-      <Stamp iso={token} />
-      <div className="overflow-hidden rounded-md border border-border bg-secondary/30">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          key={token}
-          src={bust(imagery.iem.reflectivityUrl, token) || "/placeholder.svg"}
-          alt="Iowa Environmental Mesonet NEXRAD base reflectivity mosaic around the location"
-          className="h-auto w-full"
-          loading="lazy"
-        />
-      </div>
-      <p className="text-xs text-muted-foreground">
-        NEXRAD N0Q base-reflectivity mosaic served via the Iowa Environmental Mesonet WMS (~5 min cadence).
-      </p>
-      <MoreInfo>
-        <InfoList
-          items={[
-            { label: "Provider", value: "Iowa Environmental Mesonet, Iowa State University" },
-            { label: "Layer", value: "nexrad-n0q — CONUS base-reflectivity mosaic" },
-            {
-              label: "Request",
-              value: `WMS GetMap, EPSG:4326, ~4° box centered on the point (${imagery.iem.bbox.map((n) => n.toFixed(2)).join(", ")})`,
-            },
-            { label: "Cadence", value: "~5 min" },
-            {
-              label: "Source",
-              value: (
-                <a
-                  href={imagery.iem.reflectivityUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary underline decoration-dotted underline-offset-4"
-                >
-                  WMS request →
-                </a>
-              ),
-            },
-          ]}
-        />
-      </MoreInfo>
     </div>
   )
 }
@@ -298,46 +241,36 @@ export function RadarImageryPanel({
   imagery: RadarImagery
   retrievedAt: string
 }) {
-  const sourceCount = 2 + (imagery.rainviewer ? 1 : 0)
-
   return (
-    <section aria-labelledby="imagery-heading" className="rounded-lg border border-border bg-card">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border p-4">
-        <div className="flex items-center gap-2">
-          <ImageIcon className="size-4 text-accent" />
-          <h2 id="imagery-heading" className="text-sm font-semibold uppercase tracking-wider text-foreground">
-            Rendered radar imagery
-          </h2>
+    <section aria-label="Rendered radar imagery" className="rounded-lg border border-border bg-card">
+      <div className="flex flex-col divide-y divide-border">
+        <div className="p-4">
+          <SourceBlock icon={MapIcon} title="MESONET">
+            <BaseMap
+              bbox={imagery.iem.bbox as [number, number, number, number]}
+              center={{
+                lon: (imagery.iem.bbox[0] + imagery.iem.bbox[2]) / 2,
+                lat: (imagery.iem.bbox[1] + imagery.iem.bbox[3]) / 2,
+              }}
+              overlayUrl={imagery.iem.reflectivityUrl}
+              overlayToken={retrievedAt}
+            />
+          </SourceBlock>
         </div>
-        <span className="font-mono text-xs text-muted-foreground">{sourceCount} sources</span>
-      </div>
 
-      <div className="flex flex-col gap-6 p-4">
-        <SourceBlock icon={MapIcon} title="Reference map">
-          <BaseMap
-            bbox={imagery.iem.bbox as [number, number, number, number]}
-            center={{
-              lon: (imagery.iem.bbox[0] + imagery.iem.bbox[2]) / 2,
-              lat: (imagery.iem.bbox[1] + imagery.iem.bbox[3]) / 2,
-            }}
-            overlayUrl={imagery.iem.reflectivityUrl}
-            overlayToken={retrievedAt}
-          />
-        </SourceBlock>
-
-        <SourceBlock icon={Radio} title="NWS RIDGE">
-          <RidgeView imagery={imagery} token={retrievedAt} />
-        </SourceBlock>
+        <div className="p-4">
+          <SourceBlock icon={Radio} title="NWS RIDGE">
+            <RidgeView imagery={imagery} token={retrievedAt} />
+          </SourceBlock>
+        </div>
 
         {imagery.rainviewer && (
-          <SourceBlock icon={Satellite} title="Live mosaic">
-            <RainViewerView imagery={imagery} />
-          </SourceBlock>
+          <div className="p-4">
+            <SourceBlock icon={Satellite} title="Live mosaic">
+              <RainViewerView imagery={imagery} />
+            </SourceBlock>
+          </div>
         )}
-
-        <SourceBlock icon={Layers} title="Mesonet">
-          <IemView imagery={imagery} token={retrievedAt} />
-        </SourceBlock>
       </div>
     </section>
   )
