@@ -66,7 +66,7 @@ async function buildImagery(stationId: string, lat: number, lon: number): Promis
       WIDTH: "600",
       HEIGHT: "600",
       FORMAT: "image/png",
-      TRANSPARENT: "false",
+      TRANSPARENT: "true",
     }).toString()
 
   let rainviewer: ImageryBundle["rainviewer"] = null
