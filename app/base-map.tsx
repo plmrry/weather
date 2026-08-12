@@ -4,7 +4,8 @@ import { useMemo } from "react"
 import useSWR from "swr"
 import { geoEquirectangular, geoPath } from "d3-geo"
 import type { Feature, FeatureCollection, Geometry } from "geojson"
-import { ChevronDown, Info, LoaderCircle, Map as MapIcon } from "lucide-react"
+import { ChevronDown, Clock, Info, LoaderCircle, Map as MapIcon } from "lucide-react"
+import { RelativeTime } from "./relative-time"
 
 function bust(url: string, token: string) {
   return `${url}${url.includes("?") ? "&" : "?"}_=${encodeURIComponent(token)}`
@@ -120,6 +121,14 @@ export function BaseMap({
           </dl>
         </div>
       </details>
+      {overlayToken && (
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Clock className="size-3.5 shrink-0" />
+          <span>
+            Updated <RelativeTime iso={overlayToken} className="text-foreground" />
+          </span>
+        </div>
+      )}
       <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-md border border-border bg-black">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center">
