@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { AlertTriangle, Code2, Crosshair, LoaderCircle, Radar, RefreshCw, Sparkles } from "lucide-react"
+import { AlertTriangle, Crosshair, LoaderCircle, Radar, RefreshCw, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { StationPanel, type RadarData } from "./station-panel"
 import { RadarImageryPanel, type RadarImagery } from "./radar-imagery"
@@ -19,7 +19,6 @@ export default function Page() {
   const [geocoding, setGeocoding] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [data, setData] = useState<ApiResponse | null>(null)
-  const [showJson, setShowJson] = useState(false)
   const { history, addLocation, clearHistory } = useLocationHistory()
 
   async function fetchRadar(useLat: string, useLon: string) {
@@ -229,45 +228,6 @@ export default function Page() {
         <div className="flex flex-col gap-6">
           <StationPanel data={data} />
           {data.imagery && <RadarImageryPanel imagery={data.imagery} retrievedAt={data.retrievedAt} />}
-
-          <section className="rounded-lg border border-border bg-card">
-            <button
-              onClick={() => setShowJson((s) => !s)}
-              className="flex w-full items-center justify-between gap-2 p-4 text-left"
-              aria-expanded={showJson}
-            >
-              <span className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-foreground">
-                <Code2 className="size-4 text-primary" />
-                Raw station metadata (JSON)
-              </span>
-              <span className="font-mono text-xs text-muted-foreground">{showJson ? "hide" : "show"}</span>
-            </button>
-            {showJson && (
-              <div className="border-t border-border p-4">
-                <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs">
-                  <a
-                    href={data.sources.pointJson}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline decoration-dotted underline-offset-4"
-                  >
-                    /points JSON →
-                  </a>
-                  <a
-                    href={data.sources.stationJson}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline decoration-dotted underline-offset-4"
-                  >
-                    /radar/stations JSON →
-                  </a>
-                </div>
-                <pre className="max-h-96 overflow-auto rounded-md bg-secondary/40 p-3 font-mono text-xs leading-relaxed text-muted-foreground">
-                  {JSON.stringify({ location: data.location, station: data.station }, null, 2)}
-                </pre>
-              </div>
-            )}
-          </section>
 
           <p className="text-center font-mono text-xs text-muted-foreground">
             Last updated <RelativeTime iso={data.retrievedAt} /> · data © NOAA / NWS (public domain)
