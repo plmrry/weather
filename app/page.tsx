@@ -184,9 +184,6 @@ export default function Page() {
             {geocoding ? "Finding…" : "Find location"}
           </Button>
         </div>
-        <p className="mt-1.5 text-xs text-muted-foreground">
-          Type a city and state and AI will estimate the coordinates for you.
-        </p>
 
         {data && (
           <div className="mt-4 flex">
