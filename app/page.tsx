@@ -120,22 +120,11 @@ export default function Page() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:py-12">
-      <header className="flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-md bg-primary/15 text-primary">
-            <Radar className="size-5" />
-          </div>
-          <div>
-            <h1 className="font-pixel text-lg leading-none text-primary text-balance">
-              NEXRAD Radar Explorer
-            </h1>
-            <p className="text-sm text-muted-foreground">Live NOAA / NWS Level II radar data by coordinate</p>
-          </div>
-        </div>
-        <p className="text-sm leading-relaxed text-muted-foreground text-pretty">
-          Search for a city or use your location to resolve the nearest WSR-88D radar station and view live rendered
-          imagery from three public radar sources.
-        </p>
+      <header className="flex items-center gap-3">
+        <span className="text-3xl leading-none" role="img" aria-label="Coffee">
+          ☕
+        </span>
+        <h1 className="font-pixel text-lg leading-none text-primary text-balance">Weather Café</h1>
       </header>
 
       <section aria-label="Coordinate input" className="rounded-lg border border-border bg-card p-4">
