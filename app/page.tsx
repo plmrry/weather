@@ -216,7 +216,7 @@ export default function Page() {
           {data.imagery && <RadarImageryPanel imagery={data.imagery} retrievedAt={data.retrievedAt} />}
 
           <p className="text-center font-mono text-xs text-muted-foreground">
-            Last updated <RelativeTime iso={data.retrievedAt} /> · data © NOAA / NWS (public domain)
+            Last updated <RelativeTime iso={data.retrievedAt} /> · data © NOAA / NWS (public domain) · made by paul murray with v0
           </p>
         </div>
       )}
