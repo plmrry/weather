@@ -266,7 +266,7 @@ export function RadarImageryPanel({
 
         {imagery.rainviewer && (
           <div className="p-4">
-            <SourceBlock icon={Satellite} title="Live mosaic">
+            <SourceBlock icon={Satellite} title="RainViewer">
               <RainViewerView imagery={imagery} />
             </SourceBlock>
           </div>
