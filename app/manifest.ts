@@ -1,20 +1,20 @@
-import type { MetadataRoute } from "next"
+import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "NEXRAD Radar Explorer",
-    short_name: "NEXRAD",
-    description: "Live NOAA / NWS Level II radar data by latitude and longitude.",
-    start_url: "/",
-    display: "standalone",
     background_color: "#0b1220",
-    theme_color: "#0b1220",
+    description: "Live NOAA / NWS Level II radar data by latitude and longitude.",
+    display: "standalone",
     icons: [
       {
-        src: "/icon.svg",
         sizes: "any",
+        src: "/icon.svg",
         type: "image/svg+xml",
       },
     ],
-  }
+    name: "NEXRAD Radar Explorer",
+    short_name: "NEXRAD",
+    start_url: "/",
+    theme_color: "#0b1220",
+  };
 }

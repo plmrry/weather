@@ -1,11 +1,20 @@
-import { bust, MoreInfo, InfoList, Stamp, type RadarImagery } from "./shared"
+import type { JSX } from "react";
+
+import { bust, MoreInfo, InfoList, Stamp, type RadarImagery } from "./shared";
 
 /** NWS RIDGE — government per-station imagery: latest still. */
-export function RidgePanel({ imagery, token }: { imagery: RadarImagery; token: string }) {
+export function RidgePanel({
+  imagery,
+  token,
+}: {
+  imagery: RadarImagery;
+  token: string;
+}): JSX.Element {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-xs text-muted-foreground">
-        Base reflectivity rendered by the National Weather Service (RIDGE). Updates every volume scan (~4–6 min).
+        Base reflectivity rendered by the National Weather Service (RIDGE). Updates every volume
+        scan (~4–6 min).
       </p>
       <MoreInfo>
         <InfoList
@@ -46,5 +55,5 @@ export function RidgePanel({ imagery, token }: { imagery: RadarImagery; token: s
         />
       </div>
     </div>
-  )
+  );
 }

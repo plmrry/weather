@@ -1,55 +1,56 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Antenna, ChevronDown, Gauge, MapPin, Mountain, Timer } from "lucide-react"
+import { Antenna, ChevronDown, Gauge, MapPin, Mountain, Timer } from "lucide-react";
+import type { JSX } from "react";
+import { useState } from "react";
 
 export type RadarData = {
-  query: { lat: number; lon: number }
+  query: { lat: number; lon: number };
   location: {
-    city: string | null
-    state: string | null
-    timeZone: string | null
-    forecastOffice: string | null
-    gridId: string | null
-    gridX: number | null
-    gridY: number | null
-  }
+    city: string | null;
+    state: string | null;
+    timeZone: string | null;
+    forecastOffice: string | null;
+    gridId: string | null;
+    gridX: number | null;
+    gridY: number | null;
+  };
   station: {
-    id: string
-    name?: string | null
-    stationType?: string | null
-    lat?: number | null
-    lon?: number | null
-    elevationMeters?: number | null
-    timeZone?: string | null
-    distanceKm?: number | null
+    id: string;
+    name?: string | null;
+    stationType?: string | null;
+    lat?: number | null;
+    lon?: number | null;
+    elevationMeters?: number | null;
+    timeZone?: string | null;
+    distanceKm?: number | null;
     rda?: {
-      operabilityStatus?: string | null
-      mode?: string | null
-      volumeCoveragePattern?: string | null
-      reflectivity?: boolean | null
-    } | null
-    latencyCurrentSeconds?: number | null
-    latencyAverageSeconds?: number | null
-  }
+      operabilityStatus?: string | null;
+      mode?: string | null;
+      volumeCoveragePattern?: string | null;
+      reflectivity?: boolean | null;
+    } | null;
+    latencyCurrentSeconds?: number | null;
+    latencyAverageSeconds?: number | null;
+  };
   sources: {
-    pointJson: string
-    stationJson: string
-    bucketListing: string
-  }
-  fileCount: number
-  retrievedAt: string
-}
+    pointJson: string;
+    stationJson: string;
+    bucketListing: string;
+  };
+  fileCount: number;
+  retrievedAt: string;
+};
 
 function Stat({
   icon: Icon,
   label,
   value,
 }: {
-  icon: React.ComponentType<{ className?: string }>
-  label: string
-  value: string
-}) {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}): JSX.Element {
   return (
     <div className="flex items-start gap-3 rounded-md border border-border bg-secondary/40 p-3">
       <Icon className="mt-0.5 size-4 shrink-0 text-primary" />
@@ -58,15 +59,15 @@ function Stat({
         <div className="truncate font-mono text-sm text-foreground">{value}</div>
       </div>
     </div>
-  )
+  );
 }
 
-export function WeatherPanels({ data }: { data: RadarData }) {
-  const { station, location } = data
-  const place = [location.city, location.state].filter(Boolean).join(", ") || "Unknown locality"
-  const status = station.rda?.operabilityStatus ?? null
-  const online = status ? /oper|up|rda/i.test(status) : null
-  const [open, setOpen] = useState(false)
+export function StationInfo({ data }: { data: RadarData }): JSX.Element {
+  const { station, location } = data;
+  const place = [location.city, location.state].filter(Boolean).join(", ") || "Unknown locality";
+  const status = station.rda?.operabilityStatus ?? null;
+  const online = status ? /oper|up|rda/i.test(status) : null;
+  const [open, setOpen] = useState(false);
 
   return (
     <section aria-labelledby="station-heading" className="rounded-lg border border-border bg-card">
@@ -103,7 +104,9 @@ export function WeatherPanels({ data }: { data: RadarData }) {
               {status}
             </span>
           )}
-          <ChevronDown className={`size-5 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+          <ChevronDown
+            className={`size-5 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+          />
         </div>
       </button>
 
@@ -118,17 +121,25 @@ export function WeatherPanels({ data }: { data: RadarData }) {
           <Stat
             icon={Mountain}
             label="Elevation"
-            value={station.elevationMeters != null ? `${Math.round(station.elevationMeters)} m` : "—"}
+            value={
+              station.elevationMeters != null ? `${Math.round(station.elevationMeters)} m` : "—"
+            }
           />
           <Stat
             icon={Gauge}
             label="Volume coverage pattern"
-            value={station.rda?.volumeCoveragePattern ? `VCP ${station.rda.volumeCoveragePattern}` : "—"}
+            value={
+              station.rda?.volumeCoveragePattern ? `VCP ${station.rda.volumeCoveragePattern}` : "—"
+            }
           />
           <Stat
             icon={Timer}
             label="Feed latency"
-            value={station.latencyCurrentSeconds != null ? `${Math.round(station.latencyCurrentSeconds)} s` : "—"}
+            value={
+              station.latencyCurrentSeconds != null
+                ? `${Math.round(station.latencyCurrentSeconds)} s`
+                : "—"
+            }
           />
           <Stat
             icon={MapPin}
@@ -142,5 +153,5 @@ export function WeatherPanels({ data }: { data: RadarData }) {
         </div>
       )}
     </section>
-  )
+  );
 }

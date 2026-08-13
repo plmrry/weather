@@ -1,27 +1,29 @@
-"use client"
+"use client";
 
-import { useMemo } from "react"
-import useSWR from "swr"
-import { geoEquirectangular, geoPath } from "d3-geo"
-import type { Feature, FeatureCollection, Geometry } from "geojson"
-import { LoaderCircle, Map as MapIcon } from "lucide-react"
-import { bust, MoreInfo, InfoList, Stamp } from "./shared"
+import { geoEquirectangular, geoPath } from "d3-geo";
+import type { Feature, FeatureCollection, Geometry } from "geojson";
+import { LoaderCircle, Map as MapIcon } from "lucide-react";
+import type { JSX } from "react";
+import { useMemo } from "react";
+import useSWR from "swr";
 
-type City = { name: string; lon: number; lat: number; pop: number; capital: boolean }
+import { bust, MoreInfo, InfoList, Stamp } from "./shared";
+
+type City = { name: string; lon: number; lat: number; pop: number; capital: boolean };
 type BaseMapData = {
-  bbox: [number, number, number, number]
-  states: FeatureCollection<Geometry>
-  roads: FeatureCollection<Geometry>
-  cities: City[]
-}
+  bbox: [number, number, number, number];
+  states: FeatureCollection<Geometry>;
+  roads: FeatureCollection<Geometry>;
+  cities: City[];
+};
 
-const SIZE = 600
+const SIZE = 600;
 
 const fetcher = async (url: string): Promise<BaseMapData> => {
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`basemap ${res.status}`)
-  return res.json()
-}
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`basemap ${res.status}`);
+  return res.json();
+};
 
 /** Iowa Environmental Mesonet — WMS reflectivity mosaic layered beneath a d3-geo reference map. */
 export function MesonetPanel({
@@ -30,60 +32,61 @@ export function MesonetPanel({
   overlayUrl,
   overlayToken,
 }: {
-  bbox: [number, number, number, number]
-  center: { lon: number; lat: number }
+  bbox: [number, number, number, number];
+  center: { lon: number; lat: number };
   /** Raster layer sharing the same EPSG:4326 bbox — drawn beneath the vector map so the two align exactly. */
-  overlayUrl?: string
-  overlayToken?: string
-}) {
-  const [minx, miny, maxx, maxy] = bbox
-  const key = `/api/basemap?minx=${minx}&miny=${miny}&maxx=${maxx}&maxy=${maxy}`
+  overlayUrl?: string;
+  overlayToken?: string;
+}): JSX.Element {
+  const [minx, miny, maxx, maxy] = bbox;
+  const key = `/api/basemap?minx=${minx}&miny=${miny}&maxx=${maxx}&maxy=${maxy}`;
   const { data, error, isLoading } = useSWR(key, fetcher, {
-    revalidateOnFocus: false,
     dedupingInterval: 600_000,
-  })
+    revalidateOnFocus: false,
+  });
   const rendered = useMemo(() => {
-    if (!data) return null
+    if (!data) return null;
     // Equirectangular fitted to the box matches the plate-carrée radar framing.
     // Fit to the four corner *points* (a MultiPoint) rather than a polygon:
     // d3-geo treats polygon winding spherically, so a wrongly-wound box ring is
     // read as "whole globe minus box" and collapses the projection to a dot.
     const cornerPoints: Feature = {
-      type: "Feature",
-      properties: {},
       geometry: {
-        type: "MultiPoint",
         coordinates: [
           [minx, miny],
           [maxx, miny],
           [maxx, maxy],
           [minx, maxy],
         ],
+        type: "MultiPoint",
       },
-    }
-    const projection = geoEquirectangular().fitSize([SIZE, SIZE], cornerPoints)
-    const path = geoPath(projection)
+      properties: {},
+      type: "Feature",
+    };
+    const projection = geoEquirectangular().fitSize([SIZE, SIZE], cornerPoints);
+    const path = geoPath(projection);
 
-    const statePaths = data.states.features.map((f, i) => path(f) ?? "").filter(Boolean)
-    const roadPaths = data.roads.features.map((f) => path(f) ?? "").filter(Boolean)
+    const statePaths = data.states.features.map((f, i) => path(f) ?? "").filter(Boolean);
+    const roadPaths = data.roads.features.map((f) => path(f) ?? "").filter(Boolean);
     const cityPoints = data.cities
       .map((c) => {
-        const p = projection([c.lon, c.lat])
-        return p ? { ...c, x: p[0], y: p[1] } : null
+        const p = projection([c.lon, c.lat]);
+        return p ? { ...c, x: p[0], y: p[1] } : null;
       })
-      .filter((c): c is City & { x: number; y: number } => c !== null)
-    const centerPoint = projection([center.lon, center.lat])
+      .filter((c): c is City & { x: number; y: number } => c !== null);
+    const centerPoint = projection([center.lon, center.lat]);
 
-    return { statePaths, roadPaths, cityPoints, centerPoint }
-  }, [data, minx, miny, maxx, maxy, center.lon, center.lat])
+    return { centerPoint, cityPoints, roadPaths, statePaths };
+  }, [data, minx, miny, maxx, maxy, center.lon, center.lat]);
 
-  const hasOverlay = Boolean(overlayUrl && overlayToken)
+  const hasOverlay = Boolean(overlayUrl && overlayToken);
 
   return (
     <div className="flex flex-col gap-3">
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <MapIcon className="size-3.5 shrink-0" />
-        State boundaries, primary roads (Census TIGERweb), and cities (Natural Earth). Rendered with d3-geo.
+        State boundaries, primary roads (Census TIGERweb), and cities (Natural Earth). Rendered with
+        d3-geo.
       </p>
       <MoreInfo>
         <InfoList
@@ -105,7 +108,8 @@ export function MesonetPanel({
             },
             {
               label: "Freshness",
-              value: "Vector layer is static reference geography; the overlay updates on the same ~5 min Mesonet cadence.",
+              value:
+                "Vector layer is static reference geography; the overlay updates on the same ~5 min Mesonet cadence.",
             },
           ]}
         />
@@ -185,7 +189,14 @@ export function MesonetPanel({
                 {rendered.cityPoints.map((c, i) => (
                   <g key={`c${i}`} transform={`translate(${c.x},${c.y})`}>
                     <circle r={2.5} fill="oklch(0.98 0 0)" stroke="none" />
-                    <text x={5} y={4} fill="oklch(0.9 0 0)" stroke="oklch(0 0 0)" strokeWidth={3} paintOrder="stroke">
+                    <text
+                      x={5}
+                      y={4}
+                      fill="oklch(0.9 0 0)"
+                      stroke="oklch(0 0 0)"
+                      strokeWidth={3}
+                      paintOrder="stroke"
+                    >
                       {c.name}
                     </text>
                   </g>
@@ -212,5 +223,5 @@ export function MesonetPanel({
         )}
       </div>
     </div>
-  )
+  );
 }

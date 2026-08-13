@@ -1,28 +1,40 @@
-import { Map as MapIcon, Radio, Satellite } from "lucide-react"
-import { SourceBlock, type RadarImagery } from "./panels/shared"
-import { MesonetPanel } from "./panels/mesonet-panel"
-import { RidgePanel } from "./panels/ridge-panel"
-import { RainViewerPanel } from "./panels/rainviewer-panel"
+import { Map as MapIcon, Radio, Satellite } from "lucide-react";
+import type { JSX } from "react";
 
-export type { RadarImagery }
+import { MesonetPanel } from "./panels/mesonet-panel";
+import { MesonetPanelV2 } from "./panels/mesonet";
+import { RainViewerPanel } from "./panels/rainviewer-panel";
+import { RidgePanel } from "./panels/ridge-panel";
+import { SourceBlock, type RadarImagery } from "./panels/shared";
 
-export function RadarImageryPanel({
+export type { RadarImagery };
+
+export function Panels({
   imagery,
   retrievedAt,
 }: {
-  imagery: RadarImagery
-  retrievedAt: string
-}) {
+  imagery: RadarImagery;
+  retrievedAt: string;
+}): JSX.Element {
   return (
-    <section aria-label="Rendered radar imagery" className="rounded-lg border border-border bg-card">
+    <section
+      aria-label="Rendered radar imagery"
+      className="rounded-lg border border-border bg-card"
+    >
       <div className="flex flex-col divide-y divide-border">
+        <div className="p-4">
+          <SourceBlock icon={MapIcon} title="FOOFOO">
+            <MesonetPanelV2 />
+          </SourceBlock>
+        </div>
+
         <div className="p-4">
           <SourceBlock icon={MapIcon} title="MESONET">
             <MesonetPanel
               bbox={imagery.iem.bbox as [number, number, number, number]}
               center={{
-                lon: (imagery.iem.bbox[0] + imagery.iem.bbox[2]) / 2,
                 lat: (imagery.iem.bbox[1] + imagery.iem.bbox[3]) / 2,
+                lon: (imagery.iem.bbox[0] + imagery.iem.bbox[2]) / 2,
               }}
               overlayUrl={imagery.iem.reflectivityUrl}
               overlayToken={retrievedAt}
@@ -45,5 +57,5 @@ export function RadarImageryPanel({
         )}
       </div>
     </section>
-  )
+  );
 }

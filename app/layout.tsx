@@ -1,34 +1,36 @@
-import { Analytics } from '@vercel/analytics/next'
-import { SpeedInsights } from '@vercel/speed-insights/next'
-import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { GeistPixelGrid } from 'geist/font/pixel'
-import './globals.css'
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { GeistPixelGrid } from "geist/font/pixel";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import type { JSX } from "react";
 
-const geistSans = Geist({ subsets: ['latin'], variable: '--font-geist-sans' })
-const geistMono = Geist_Mono({ subsets: ['latin'], variable: '--font-geist-mono' })
+import "./globals.css";
+
+const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
-  title: 'Weather Café',
   description:
-    'Look up the nearest NOAA NWS NEXRAD radar station for any latitude/longitude and browse raw, live Level II volume-scan files from the public NEXRAD archive.',
-  generator: 'v0.app',
-  manifest: '/manifest.json',
-}
+    "Look up the nearest NOAA NWS NEXRAD radar station for any latitude/longitude and browse raw, live Level II volume-scan files from the public NEXRAD archive.",
+  generator: "v0.app",
+  manifest: "/manifest.json",
+  title: "Weather Café",
+};
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  colorScheme: "dark",
   initialScale: 1,
   maximumScale: 1,
-  colorScheme: 'dark',
-  themeColor: '#0b1220',
-}
+  themeColor: "#0b1220",
+  width: "device-width",
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
-}>) {
+  children: React.ReactNode;
+}>): JSX.Element {
   return (
     <html
       lang="en"
@@ -36,9 +38,9 @@ export default function RootLayout({
     >
       <body className="antialiased font-sans">
         {children}
-        {process.env.NODE_ENV === 'production' && <Analytics />}
-        {process.env.NODE_ENV === 'production' && <SpeedInsights />}
+        {process.env.NODE_ENV === "production" && <Analytics />}
+        {process.env.NODE_ENV === "production" && <SpeedInsights />}
       </body>
     </html>
-  )
+  );
 }

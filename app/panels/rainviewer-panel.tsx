@@ -1,45 +1,51 @@
-"use client"
+"use client";
 
-import { useMemo } from "react"
-import { fmtClock, MoreInfo, InfoList, Stamp, type RadarImagery } from "./shared"
+import type { JSX } from "react";
+import { useMemo } from "react";
+
+import { fmtClock, MoreInfo, InfoList, Stamp, type RadarImagery } from "./shared";
 
 /** RainViewer — most recent global mosaic frame composited over a basemap (static). */
-export function RainViewerPanel({ imagery }: { imagery: RadarImagery }) {
-  const rv = imagery.rainviewer!
+export function RainViewerPanel({ imagery }: { imagery: RadarImagery }): JSX.Element {
+  const rv = imagery.rainviewer!;
   const cells = useMemo(() => {
-    const out: { dx: number; dy: number }[] = []
-    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) out.push({ dx, dy })
-    return out
-  }, [])
+    const out: { dx: number; dy: number }[] = [];
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) out.push({ dx, dy });
+    return out;
+  }, []);
 
   // Only the last available "past" frame — the most recent real observation.
-  const pastFrames = rv.frames.filter((f) => f.kind === "past")
-  const frame = pastFrames[pastFrames.length - 1] ?? rv.frames[rv.frames.length - 1]
-  if (!frame) return null
+  const pastFrames = rv.frames.filter((f) => f.kind === "past");
+  const frame = pastFrames[pastFrames.length - 1] ?? rv.frames[rv.frames.length - 1];
+  if (!frame) return <></>;
 
   const tileUrl = (dx: number, dy: number) =>
-    `${rv.host}${frame.path}/${rv.tileSize}/${rv.zoom}/${rv.center.x + dx}/${rv.center.y + dy}/${rv.color}/${rv.options}.png`
+    `${rv.host}${frame.path}/${rv.tileSize}/${rv.zoom}/${rv.center.x + dx}/${rv.center.y + dy}/${rv.color}/${rv.options}.png`;
   const baseUrl = (dx: number, dy: number) =>
     rv.basemapTemplate
       .replace("{z}", String(rv.zoom))
       .replace("{x}", String(rv.center.x + dx))
-      .replace("{y}", String(rv.center.y + dy))
+      .replace("{y}", String(rv.center.y + dy));
 
   return (
     <div className="flex flex-col gap-3">
       <p className="text-xs text-muted-foreground">
-        Latest global mosaic frame from RainViewer over a CARTO basemap (~10 min cadence). Blue → red = increasing
-        precipitation intensity.
+        Latest global mosaic frame from RainViewer over a CARTO basemap (~10 min cadence). Blue →
+        red = increasing precipitation intensity.
       </p>
       <MoreInfo>
         <InfoList
           items={[
-            { label: "Provider", value: "RainViewer — global composite of national radar networks" },
+            {
+              label: "Provider",
+              value: "RainViewer — global composite of national radar networks",
+            },
             { label: "Tiles", value: `256px Web Mercator XYZ tiles, zoom ${rv.zoom}` },
             { label: "Basemap", value: "CARTO dark tiles, composited under the radar layer" },
             {
               label: "Cadence",
-              value: "~10 min for observed frames; nowcast frames are short-range extrapolations, not observations.",
+              value:
+                "~10 min for observed frames; nowcast frames are short-range extrapolations, not observations.",
             },
             {
               label: "Source",
@@ -90,5 +96,5 @@ export function RainViewerPanel({ imagery }: { imagery: RadarImagery }) {
         </div>
       </div>
     </div>
-  )
+  );
 }

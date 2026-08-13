@@ -1,25 +1,26 @@
-import type { ComponentType, ReactNode } from "react"
-import { ChevronDown, Clock, Info } from "lucide-react"
-import { RelativeTime } from "../relative-time"
+import { ChevronDown, Clock, Info } from "lucide-react";
+import type { ComponentType, JSX, ReactNode } from "react";
+
+import { RelativeTime } from "../relative-time";
 
 export type RadarImagery = {
-  ridge: { latestUrl: string; loopUrl: string }
-  iem: { reflectivityUrl: string; bbox: number[] }
+  ridge: { latestUrl: string; loopUrl: string };
+  iem: { reflectivityUrl: string; bbox: number[] };
   rainviewer: {
-    host: string
-    tileSize: number
-    zoom: number
-    color: number
-    options: string
-    center: { x: number; y: number }
-    basemapTemplate: string
-    frames: { time: number; path: string; kind: "past" | "nowcast" }[]
-  } | null
-}
+    host: string;
+    tileSize: number;
+    zoom: number;
+    color: number;
+    options: string;
+    center: { x: number; y: number };
+    basemapTemplate: string;
+    frames: { time: number; path: string; kind: "past" | "nowcast" }[];
+  } | null;
+};
 
 /** Cache-busts an image URL with an opaque token (e.g. the fetch timestamp). */
 export function bust(url: string, token: string) {
-  return `${url}${url.includes("?") ? "&" : "?"}_=${encodeURIComponent(token)}`
+  return `${url}${url.includes("?") ? "&" : "?"}_=${encodeURIComponent(token)}`;
 }
 
 export function fmtClock(unixSeconds: number) {
@@ -27,11 +28,11 @@ export function fmtClock(unixSeconds: number) {
     hour: "2-digit",
     minute: "2-digit",
     timeZoneName: "short",
-  })
+  });
 }
 
 /** Relative "updated N min ago" stamp shown above each image, computed with Temporal. */
-export function Stamp({ iso }: { iso: string }) {
+export function Stamp({ iso }: { iso: string }): JSX.Element {
   return (
     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
       <Clock className="size-3.5 shrink-0" />
@@ -39,11 +40,11 @@ export function Stamp({ iso }: { iso: string }) {
         Updated <RelativeTime iso={iso} className="text-foreground" />
       </span>
     </div>
-  )
+  );
 }
 
 /** Collapsible "more info" disclosure for a single source, using native <details> for a11y. */
-export function MoreInfo({ children }: { children: ReactNode }) {
+export function MoreInfo({ children }: { children: ReactNode }): JSX.Element {
   return (
     <details className="group rounded-md border border-border bg-secondary/20">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-3 py-2 text-xs font-medium text-foreground [&::-webkit-details-marker]:hidden">
@@ -55,11 +56,11 @@ export function MoreInfo({ children }: { children: ReactNode }) {
       </summary>
       <div className="border-t border-border px-3 py-2.5">{children}</div>
     </details>
-  )
+  );
 }
 
 /** Label/value definition list used inside MoreInfo blocks. */
-export function InfoList({ items }: { items: { label: string; value: ReactNode }[] }) {
+export function InfoList({ items }: { items: { label: string; value: ReactNode }[] }): JSX.Element {
   return (
     <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs leading-relaxed">
       {items.map((item, i) => (
@@ -69,7 +70,7 @@ export function InfoList({ items }: { items: { label: string; value: ReactNode }
         </div>
       ))}
     </dl>
-  )
+  );
 }
 
 /** Wraps each source in a titled block so the stack reads clearly. */
@@ -78,10 +79,10 @@ export function SourceBlock({
   title,
   children,
 }: {
-  icon: ComponentType<{ className?: string }>
-  title: string
-  children: ReactNode
-}) {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  children: ReactNode;
+}): JSX.Element {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-1.5">
@@ -90,5 +91,5 @@ export function SourceBlock({
       </div>
       {children}
     </div>
-  )
+  );
 }

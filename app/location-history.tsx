@@ -1,60 +1,65 @@
-"use client"
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from "react"
-import { ChevronDown, History, MapPin, Trash2 } from "lucide-react"
-import { RelativeTime } from "./relative-time"
+import { ChevronDown, History, MapPin, Trash2 } from "lucide-react";
+import type { JSX } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { RelativeTime } from "./relative-time";
 
 export type LocationEntry = {
-  lat: string
-  lon: string
-  label: string
-  station: string | null
-  at: number
-}
+  lat: string;
+  lon: string;
+  label: string;
+  station: string | null;
+  at: number;
+};
 
-const STORAGE_KEY = "nexrad:location-history"
-const MAX_ENTRIES = 8
+const STORAGE_KEY = "nexrad:location-history";
+const MAX_ENTRIES = 8;
 
-const entryKey = (e: Pick<LocationEntry, "lat" | "lon">) => `${e.lat},${e.lon}`
+const entryKey = (e: Pick<LocationEntry, "lat" | "lon">) => `${e.lat},${e.lon}`;
 
 /** localStorage-backed history of resolved locations, most-recent-first. */
 export function useLocationHistory() {
-  const [history, setHistory] = useState<LocationEntry[]>([])
+  const [history, setHistory] = useState<LocationEntry[]>([]);
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY)
+      const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw)
-        if (Array.isArray(parsed)) setHistory(parsed)
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setHistory(parsed);
       }
     } catch {
       // Ignore malformed/unavailable storage.
     }
-  }, [])
+  }, []);
 
   const addLocation = useCallback((entry: LocationEntry) => {
     setHistory((prev) => {
-      const next = [entry, ...prev.filter((e) => entryKey(e) !== entryKey(entry))].slice(0, MAX_ENTRIES)
+      const next = [entry, ...prev.filter((e) => entryKey(e) !== entryKey(entry))].slice(
+        0,
+        MAX_ENTRIES,
+      );
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       } catch {
         // Ignore write failures (private mode, quota).
       }
-      return next
-    })
-  }, [])
+      return next;
+    });
+  }, []);
 
   const clearHistory = useCallback(() => {
-    setHistory([])
+    setHistory([]);
     try {
-      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(STORAGE_KEY);
     } catch {
       // Ignore.
     }
-  }, [])
+  }, []);
 
-  return { history, addLocation, clearHistory }
+  return { addLocation, clearHistory, history };
 }
 
 /** Dropdown of previously-viewed locations. Renders nothing when history is empty. */
@@ -63,32 +68,32 @@ export function RecentLocations({
   onSelect,
   onClear,
 }: {
-  history: LocationEntry[]
-  onSelect: (lat: string, lon: string) => void
-  onClear: () => void
-}) {
-  const [open, setOpen] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
+  history: LocationEntry[];
+  onSelect: (lat: string, lon: string) => void;
+  onClear: () => void;
+}): JSX.Element {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open) return
+    if (!open) return;
     function onDocClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false)
+        setOpen(false);
       }
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false)
+      if (e.key === "Escape") setOpen(false);
     }
-    document.addEventListener("mousedown", onDocClick)
-    document.addEventListener("keydown", onKey)
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onDocClick)
-      document.removeEventListener("keydown", onKey)
-    }
-  }, [open])
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
-  if (history.length === 0) return null
+  if (history.length === 0) return <></>;
 
   return (
     <div ref={containerRef} className="relative">
@@ -102,9 +107,13 @@ export function RecentLocations({
         <span className="flex items-center gap-2">
           <History className="size-4 text-primary" />
           Recent locations
-          <span className="rounded-full bg-primary/15 px-1.5 font-mono text-xs text-primary">{history.length}</span>
+          <span className="rounded-full bg-primary/15 px-1.5 font-mono text-xs text-primary">
+            {history.length}
+          </span>
         </span>
-        <ChevronDown className={`size-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`size-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+        />
       </button>
 
       {open && (
@@ -120,8 +129,8 @@ export function RecentLocations({
               role="option"
               aria-selected={false}
               onClick={() => {
-                onSelect(entry.lat, entry.lon)
-                setOpen(false)
+                onSelect(entry.lat, entry.lon);
+                setOpen(false);
               }}
               className="flex w-full items-center gap-3 rounded-sm px-2 py-2 text-left hover:bg-secondary/60 focus-visible:bg-secondary/60 focus-visible:outline-none"
             >
@@ -143,8 +152,8 @@ export function RecentLocations({
             <button
               type="button"
               onClick={() => {
-                onClear()
-                setOpen(false)
+                onClear();
+                setOpen(false);
               }}
               className="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none"
             >
@@ -155,5 +164,5 @@ export function RecentLocations({
         </div>
       )}
     </div>
-  )
+  );
 }
