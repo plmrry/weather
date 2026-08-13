@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { AlertTriangle, Crosshair, LoaderCircle, Radar, RefreshCw, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { StationPanel, type RadarData } from "./station-panel"
+import { WeatherPanels, type RadarData } from "./station-panel"
 import { RadarImageryPanel, type RadarImagery } from "./radar-imagery"
 import { RelativeTime } from "./relative-time"
 import { RecentLocations, useLocationHistory } from "./location-history"
@@ -212,11 +212,11 @@ export default function Page() {
 
       {data && !error && (
         <div className="flex flex-col gap-6">
-          <StationPanel data={data} />
+          <WeatherPanels data={data} />
           {data.imagery && <RadarImageryPanel imagery={data.imagery} retrievedAt={data.retrievedAt} />}
 
           <p className="text-center font-mono text-xs text-muted-foreground">
-            Last updated <RelativeTime iso={data.retrievedAt} /> · data © NOAA / NWS (public domain) · made by paul murray with v0
+            Data © NOAA / NWS (public domain) · Made by Paul Murray with v0.
           </p>
         </div>
       )}

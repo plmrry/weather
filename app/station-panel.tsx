@@ -61,7 +61,7 @@ function Stat({
   )
 }
 
-export function StationPanel({ data }: { data: RadarData }) {
+export function WeatherPanels({ data }: { data: RadarData }) {
   const { station, location } = data
   const place = [location.city, location.state].filter(Boolean).join(", ") || "Unknown locality"
   const status = station.rda?.operabilityStatus ?? null
