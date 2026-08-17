@@ -2,7 +2,16 @@
 
 import { ChevronDown, History, MapPin, Trash2 } from "lucide-react";
 import type { JSX } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { RelativeTime } from "./relative-time";
 
@@ -72,37 +81,17 @@ export function RecentLocations({
   onSelect: (lat: string, lon: string) => void;
   onClear: () => void;
 }): JSX.Element {
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    function onDocClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
   if (history.length === 0) return <></>;
 
   return (
-    <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        className="flex min-h-11 w-full items-center justify-between gap-2 rounded-md border border-border bg-secondary/40 px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="outline"
+            className="min-h-11 w-full justify-between bg-secondary/40 px-3 dark:bg-secondary/40"
+          />
+        }
       >
         <span className="flex items-center gap-2">
           <History className="size-4 text-primary" />
@@ -111,58 +100,41 @@ export function RecentLocations({
             {history.length}
           </span>
         </span>
-        <ChevronDown
-          className={`size-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-        />
-      </button>
+        <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[popup-open]/button:rotate-180" />
+      </DropdownMenuTrigger>
 
-      {open && (
-        <div
-          role="listbox"
-          aria-label="Recent locations"
-          className="absolute z-20 mt-1 max-h-80 w-full overflow-auto rounded-md border border-border bg-popover p-1 shadow-lg"
+      <DropdownMenuContent align="start" className="max-h-80">
+        {history.map((entry) => (
+          <DropdownMenuItem
+            key={`${entryKey(entry)}-${entry.at}`}
+            label={entry.label}
+            onClick={() => onSelect(entry.lat, entry.lon)}
+            className="gap-3 px-2 py-2"
+          >
+            <MapPin className="size-4 shrink-0 text-primary" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm text-foreground">{entry.label}</span>
+              <span className="block truncate font-mono text-xs text-muted-foreground">
+                {entry.lat}, {entry.lon}
+                {entry.station ? ` · ${entry.station}` : ""}
+              </span>
+            </span>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              <RelativeTime iso={new Date(entry.at).toISOString()} />
+            </span>
+          </DropdownMenuItem>
+        ))}
+
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          onClick={onClear}
+          className="gap-2 px-2 py-2 text-xs"
         >
-          {history.map((entry) => (
-            <button
-              key={`${entryKey(entry)}-${entry.at}`}
-              type="button"
-              role="option"
-              aria-selected={false}
-              onClick={() => {
-                onSelect(entry.lat, entry.lon);
-                setOpen(false);
-              }}
-              className="flex w-full items-center gap-3 rounded-sm px-2 py-2 text-left hover:bg-secondary/60 focus-visible:bg-secondary/60 focus-visible:outline-none"
-            >
-              <MapPin className="size-4 shrink-0 text-primary" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm text-foreground">{entry.label}</span>
-                <span className="block truncate font-mono text-xs text-muted-foreground">
-                  {entry.lat}, {entry.lon}
-                  {entry.station ? ` · ${entry.station}` : ""}
-                </span>
-              </span>
-              <span className="shrink-0 text-xs text-muted-foreground">
-                <RelativeTime iso={new Date(entry.at).toISOString()} />
-              </span>
-            </button>
-          ))}
-
-          <div className="mt-1 border-t border-border pt-1">
-            <button
-              type="button"
-              onClick={() => {
-                onClear();
-                setOpen(false);
-              }}
-              className="flex w-full items-center gap-2 rounded-sm px-2 py-2 text-left text-xs text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none"
-            >
-              <Trash2 className="size-3.5" />
-              Clear history
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+          <Trash2 className="size-3.5" />
+          Clear history
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

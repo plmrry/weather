@@ -1,7 +1,9 @@
 import { defineConfig } from "oxfmt";
 
 export default defineConfig({
-  sortImports: true,
+  sortImports: {
+    newlinesBetween: false,
+  },
   sortPackageJson: {
     sortScripts: true,
   },

@@ -15,3 +15,5 @@ node_modules
 next-env.d.ts
 .turbo/
 .DS_Store
+.vercel
+.env*
