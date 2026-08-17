@@ -16,6 +16,13 @@ const nextConfig = {
     ];
   },
   images: {
+    remotePatterns: [
+      {
+        hostname: "mesonet.agron.iastate.edu",
+        pathname: "/cgi-bin/wms/nexrad/n0q.cgi",
+        protocol: "https",
+      },
+    ],
     unoptimized: true,
   },
   typescript: {

@@ -1,7 +1,9 @@
-import type { JSX } from "react";
+import { Suspense, type JSX } from "react";
+import { ClearButton } from "./clear-button";
 import { FindStation } from "./find-station";
+import { MesonetPanel, Panels } from "./panels";
 
-export default function Page(): JSX.Element {
+export default function Page({ searchParams }: PageProps<"/">): JSX.Element {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-6 px-4 py-8 sm:py-12">
       <header className="flex flex-col items-center justify-center gap-3 text-center">
@@ -12,6 +14,12 @@ export default function Page(): JSX.Element {
       </header>
 
       <FindStation />
+
+      <Suspense fallback={<MesonetPanel disabled />}>
+        <Panels searchParams={searchParams} />
+      </Suspense>
+
+      <ClearButton />
     </main>
   );
 }

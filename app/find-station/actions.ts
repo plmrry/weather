@@ -1,52 +1,80 @@
 "use server";
 
 import { generateText, Output, jsonSchema } from "ai";
+import { redirect } from "next/navigation";
 
 const MODEL = "openai/gpt-4.1-nano";
 
-type LocationResult = {
-  found: boolean;
-  lat: number | null;
-  lon: number | null;
-  resolvedName: string | null;
+export type LocationResult = {
+  latitude: number;
+  longitude: number;
+  name: string;
 };
 
 const schema = jsonSchema<LocationResult>({
   additionalProperties: false,
   properties: {
-    found: {
-      description: "True only if the input clearly names a real place that can be located.",
-      type: "boolean",
+    latitude: {
+      description: "Latitude in decimal degrees (WGS84).",
+      maximum: 90,
+      minimum: -90,
+      type: "number",
     },
-    lat: {
-      description: "Latitude in decimal degrees (WGS84), or null if not found.",
-      type: ["number", "null"],
+    longitude: {
+      description: "Longitude in decimal degrees (WGS84).",
+      maximum: 180,
+      minimum: -180,
+      type: "number",
     },
-    lon: {
-      description: "Longitude in decimal degrees (WGS84), or null if not found.",
-      type: ["number", "null"],
-    },
-    resolvedName: {
-      description: 'Canonical place name, e.g. "San Francisco, California, USA".',
-      type: ["string", "null"],
+    name: {
+      description: 'City and full state name, e.g. "Arlington, Virginia".',
+      type: "string",
     },
   },
-  required: ["found", "lat", "lon", "resolvedName"],
+  required: ["latitude", "longitude", "name"],
   type: "object",
 });
 
-export async function getLocationFromText(formData: FormData) {
+export async function getLocation(formData: FormData): Promise<LocationResult> {
   const query = formData.get("query");
-  if (typeof query !== "string") {
-    throw new TypeError("A location query is required.");
+  const latitudeValue = formData.get("latitude");
+  const longitudeValue = formData.get("longitude");
+  const latitude = typeof latitudeValue === "string" ? Number(latitudeValue) : Number.NaN;
+  const longitude = typeof longitudeValue === "string" ? Number(longitudeValue) : Number.NaN;
+  const hasCoordinates =
+    Number.isFinite(latitude) &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    Number.isFinite(longitude) &&
+    longitude >= -180 &&
+    longitude <= 180;
+
+  let prompt: string;
+  if (typeof query === "string" && query.trim() !== "") {
+    prompt = `Geocode this United States place description: ${JSON.stringify(query.trim())}`;
+  } else if (hasCoordinates) {
+    prompt = `Reverse geocode latitude ${latitude} and longitude ${longitude}. Return those exact coordinates with the location name.`;
+  } else {
+    throw new TypeError("A location query or valid latitude and longitude are required.");
   }
 
   const { output } = await generateText({
     model: MODEL,
     output: Output.object({ schema }),
-    prompt: `Geocode this place: "${query}"`,
-    system: `You are a geocoding service for United States locations. The input will always describe a place in the United States. Given a free-form place description (usually a city and optional state), return its approximate center coordinates in decimal degrees. Prefer the most well-known place matching the input. If the input is ambiguous or not a real place, set found=false and null coordinates.`,
+    prompt,
+    system: `You are a geocoding service for United States locations. Given either a free-form place description or coordinates, return latitude, longitude, and a name formatted as city and full state name, such as "Arlington, Virginia". For a place description, use the approximate center coordinates of the most well-known matching place. For coordinates, preserve the supplied coordinates exactly and identify their city or nearest locality and state.`,
     temperature: 0.2,
   });
-  return output;
+  return hasCoordinates ? { ...output, latitude, longitude } : output;
+}
+
+export async function findStation(formData: FormData): Promise<void> {
+  const location = await getLocation(formData);
+
+  const searchParams = new URLSearchParams({
+    latitude: String(location.latitude.toPrecision(6)),
+    longitude: String(location.longitude.toPrecision(6)),
+    name: location.name,
+  });
+  redirect(`/?${searchParams.toString()}`);
 }

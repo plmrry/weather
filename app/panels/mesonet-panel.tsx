@@ -1,227 +1,84 @@
-"use client";
-
-import { geoEquirectangular, geoPath } from "d3-geo";
-import type { Feature, FeatureCollection, Geometry } from "geojson";
-import { LoaderCircle, Map as MapIcon } from "lucide-react";
+import { Map as MapIcon } from "lucide-react";
+import Image from "next/image";
 import type { JSX } from "react";
-import { useMemo } from "react";
-import useSWR from "swr";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { MapOverlay } from "./map-overlay";
 
-import { bust, MoreInfo, InfoList, Stamp } from "./shared";
-
-type City = { name: string; lon: number; lat: number; pop: number; capital: boolean };
-type BaseMapData = {
-  bbox: [number, number, number, number];
-  states: FeatureCollection<Geometry>;
-  roads: FeatureCollection<Geometry>;
-  cities: City[];
-};
-
-const SIZE = 600;
-
-const fetcher = async (url: string): Promise<BaseMapData> => {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`basemap ${res.status}`);
-  return res.json();
-};
-
-/** Iowa Environmental Mesonet — WMS reflectivity mosaic layered beneath a d3-geo reference map. */
-export function MesonetPanel({
-  bbox,
-  center,
-  overlayUrl,
-  overlayToken,
-}: {
-  bbox: [number, number, number, number];
-  center: { lon: number; lat: number };
-  /** Raster layer sharing the same EPSG:4326 bbox — drawn beneath the vector map so the two align exactly. */
-  overlayUrl?: string;
-  overlayToken?: string;
-}): JSX.Element {
-  const [minx, miny, maxx, maxy] = bbox;
-  const key = `/api/basemap?minx=${minx}&miny=${miny}&maxx=${maxx}&maxy=${maxy}`;
-  const { data, error, isLoading } = useSWR(key, fetcher, {
-    dedupingInterval: 600_000,
-    revalidateOnFocus: false,
+function getMesonetImageUrl(latitude: number, longitude: number): string {
+  const bbox = [longitude - 2, latitude - 2, longitude + 2, latitude + 2];
+  const searchParams = new URLSearchParams({
+    BBOX: bbox.join(","),
+    FORMAT: "image/png",
+    HEIGHT: "600",
+    LAYERS: "nexrad-n0q",
+    REQUEST: "GetMap",
+    SERVICE: "WMS",
+    SRS: "EPSG:4326",
+    TRANSPARENT: "true",
+    VERSION: "1.1.1",
+    WIDTH: "600",
   });
-  const rendered = useMemo(() => {
-    if (!data) return null;
-    // Equirectangular fitted to the box matches the plate-carrée radar framing.
-    // Fit to the four corner *points* (a MultiPoint) rather than a polygon:
-    // d3-geo treats polygon winding spherically, so a wrongly-wound box ring is
-    // read as "whole globe minus box" and collapses the projection to a dot.
-    const cornerPoints: Feature = {
-      geometry: {
-        coordinates: [
-          [minx, miny],
-          [maxx, miny],
-          [maxx, maxy],
-          [minx, maxy],
-        ],
-        type: "MultiPoint",
-      },
-      properties: {},
-      type: "Feature",
-    };
-    const projection = geoEquirectangular().fitSize([SIZE, SIZE], cornerPoints);
-    const path = geoPath(projection);
 
-    const statePaths = data.states.features.map((f, i) => path(f) ?? "").filter(Boolean);
-    const roadPaths = data.roads.features.map((f) => path(f) ?? "").filter(Boolean);
-    const cityPoints = data.cities
-      .map((c) => {
-        const p = projection([c.lon, c.lat]);
-        return p ? { ...c, x: p[0], y: p[1] } : null;
-      })
-      .filter((c): c is City & { x: number; y: number } => c !== null);
-    const centerPoint = projection([center.lon, center.lat]);
+  return `https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q.cgi?${searchParams}`;
+}
 
-    return { centerPoint, cityPoints, roadPaths, statePaths };
-  }, [data, minx, miny, maxx, maxy, center.lon, center.lat]);
-
-  const hasOverlay = Boolean(overlayUrl && overlayToken);
+export function MesonetPanel({
+  disabled = false,
+  latitude,
+  longitude,
+}: {
+  disabled?: boolean;
+  latitude?: number;
+  longitude?: number;
+}): JSX.Element {
+  const hasCoordinates = latitude !== undefined && longitude !== undefined;
+  const isDisabled = disabled || !hasCoordinates;
 
   return (
-    <div className="flex flex-col gap-3">
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <MapIcon className="size-3.5 shrink-0" />
-        State boundaries, primary roads (Census TIGERweb), and cities (Natural Earth). Rendered with
-        d3-geo.
-      </p>
-      <MoreInfo>
-        <InfoList
-          items={[
-            {
-              label: "Sources",
-              value:
-                "us-atlas TopoJSON (states), Census TIGERweb (primary roads, queried live per bounding box), Natural Earth (cities)",
-            },
-            {
-              label: "Rendering",
-              value:
-                "d3-geo equirectangular projection, fit to the same EPSG:4326 bounding box as the Mesonet WMS request — the two share one coordinate grid, so the radar image can be layered directly beneath the vector map with no reprojection.",
-            },
-            {
-              label: "Overlay",
-              value:
-                "The colored layer is the live Mesonet reflectivity mosaic, shown in context with roads, boundaries, and cities.",
-            },
-            {
-              label: "Freshness",
-              value:
-                "Vector layer is static reference geography; the overlay updates on the same ~5 min Mesonet cadence.",
-            },
-          ]}
-        />
-      </MoreInfo>
-      {overlayToken && <Stamp iso={overlayToken} />}
-      <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-md border border-border bg-black">
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <LoaderCircle className="size-5 animate-spin text-muted-foreground" />
-          </div>
-        )}
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center px-4 text-center text-xs text-muted-foreground">
-            Reference map unavailable.
-          </div>
-        )}
-        {rendered && (
-          <>
-            {/* Mesonet WMS reflectivity — same EPSG:4326 bbox as the projection fit below, so it lines up exactly. */}
-            {hasOverlay && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={overlayToken}
-                src={bust(overlayUrl!, overlayToken!) || "/placeholder.svg"}
-                alt=""
-                aria-hidden="true"
-                className="absolute inset-0 h-full w-full object-cover"
-                loading="lazy"
+    <Card
+      aria-disabled={isDisabled}
+      aria-label="Mesonet radar"
+      className={cn(isDisabled && "pointer-events-none select-none opacity-50")}
+    >
+      <CardHeader className="flex flex-row items-center gap-1.5">
+        <MapIcon aria-hidden="true" className="size-3.5 text-accent" />
+        <CardTitle>
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+            Mesonet
+          </h2>
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent>
+        <AspectRatio
+          ratio={1}
+          aria-label={
+            isDisabled
+              ? "Mesonet map unavailable until a location is selected"
+              : "Current Mesonet radar near the selected location"
+          }
+          className="mx-auto flex w-full max-w-md items-center justify-center overflow-hidden rounded-md border border-dashed border-border bg-black"
+          role="img"
+        >
+          {hasCoordinates ? (
+            <>
+              <Image
+                alt="Current Mesonet base-reflectivity radar near the selected location"
+                className="size-full object-cover"
+                height={600}
+                sizes="(max-width: 512px) calc(100vw - 4rem), 448px"
+                src={getMesonetImageUrl(latitude, longitude)}
+                width={600}
               />
-            )}
-            <svg
-              viewBox={`0 0 ${SIZE} ${SIZE}`}
-              className="absolute inset-0 h-full w-full"
-              role="img"
-              aria-label={
-                hasOverlay
-                  ? "Reference map with state boundaries, primary roads, and cities layered over the live Mesonet reflectivity image for the radar coverage area"
-                  : "Black and white reference map showing state boundaries, primary roads, and cities for the radar coverage area"
-              }
-            >
-              {/* Primary roads — halo, then a bright line so they read over the color reflectivity layer */}
-              <g fill="none" strokeLinejoin="round" strokeLinecap="round">
-                <g stroke="oklch(0 0 0)" strokeOpacity={0.6} strokeWidth={2.2}>
-                  {rendered.roadPaths.map((d, i) => (
-                    <path key={`rh${i}`} d={d} />
-                  ))}
-                </g>
-                <g stroke={hasOverlay ? "oklch(0.92 0 0)" : "oklch(0.55 0 0)"} strokeWidth={0.8}>
-                  {rendered.roadPaths.map((d, i) => (
-                    <path key={`r${i}`} d={d} />
-                  ))}
-                </g>
-              </g>
-
-              {/* State boundaries — halo, then bright white outlines */}
-              <g fill="none" strokeLinejoin="round">
-                <g stroke="oklch(0 0 0)" strokeOpacity={0.6} strokeWidth={3.2}>
-                  {rendered.statePaths.map((d, i) => (
-                    <path key={`sh${i}`} d={d} />
-                  ))}
-                </g>
-                <g stroke="oklch(0.98 0 0)" strokeWidth={1.6}>
-                  {rendered.statePaths.map((d, i) => (
-                    <path key={`s${i}`} d={d} />
-                  ))}
-                </g>
-              </g>
-
-              {/* Cities — white dots with haloed labels */}
-              <g
-                fontFamily="var(--font-mono, monospace)"
-                fontSize={12}
-                style={{ paintOrder: "stroke" }}
-                stroke="oklch(0 0 0)"
-                strokeWidth={3}
-              >
-                {rendered.cityPoints.map((c, i) => (
-                  <g key={`c${i}`} transform={`translate(${c.x},${c.y})`}>
-                    <circle r={2.5} fill="oklch(0.98 0 0)" stroke="none" />
-                    <text
-                      x={5}
-                      y={4}
-                      fill="oklch(0.9 0 0)"
-                      stroke="oklch(0 0 0)"
-                      strokeWidth={3}
-                      paintOrder="stroke"
-                    >
-                      {c.name}
-                    </text>
-                  </g>
-                ))}
-              </g>
-
-              {/* Query point — accent crosshair */}
-              {rendered.centerPoint && (
-                <g
-                  transform={`translate(${rendered.centerPoint[0]},${rendered.centerPoint[1]})`}
-                  stroke="oklch(0.8 0.15 75)"
-                  strokeWidth={1.5}
-                  fill="none"
-                >
-                  <circle r={7} />
-                  <line x1={-11} y1={0} x2={-4} y2={0} />
-                  <line x1={4} y1={0} x2={11} y2={0} />
-                  <line x1={0} y1={-11} x2={0} y2={-4} />
-                  <line x1={0} y1={4} x2={0} y2={11} />
-                </g>
-              )}
-            </svg>
-          </>
-        )}
-      </div>
-    </div>
+              <MapOverlay latitude={latitude} longitude={longitude} />
+            </>
+          ) : (
+            <MapIcon aria-hidden="true" className="size-10 text-muted-foreground" />
+          )}
+        </AspectRatio>
+      </CardContent>
+    </Card>
   );
 }

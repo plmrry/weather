@@ -1,39 +1,44 @@
-import React from "react";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { getLocationFromText } from "./actions";
+import { findStation } from "./actions";
 
 export function FindStationForm(): React.JSX.Element {
-  async function getCoordinates(formData: FormData): Promise<void> {
-    "use server";
+  const name = useSearchParams().get("name") ?? "";
 
-    const coordinates = await getLocationFromText(formData);
-    if (!coordinates.found || coordinates.lat === null || coordinates.lon === null) {
-      return;
-    }
+  return <FindStationFormFields key={name} initialQuery={name} />;
+}
 
-    const searchParams = new URLSearchParams({
-      latitude: String(coordinates.lat),
-      longitude: String(coordinates.lon),
-    });
-    redirect(`/?${searchParams.toString()}`);
-  }
+function FindStationFormFields({ initialQuery }: { initialQuery: string }): React.JSX.Element {
+  const [query, setQuery] = useState(initialQuery);
 
   return (
-    <form action={getCoordinates} className="flex flex-col gap-2 sm:flex-row">
-      <label className="flex flex-1 flex-col gap-1.5">
-        <span className="sr-only">City or place name</span>
+    <form action={findStation}>
+      <Field className="gap-2 sm:flex-row sm:[&>*]:w-auto">
+        <FieldLabel className="sr-only" htmlFor="location-query">
+          City or place name
+        </FieldLabel>
         <Input
+          id="location-query"
           name="query"
           placeholder="e.g. Austin, TX"
-          className="h-11 bg-secondary/40 px-3 text-base md:text-base dark:bg-secondary/40"
+          className="h-11 bg-secondary/40 px-3 text-base sm:flex-1 md:text-base dark:bg-secondary/40"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
           required
         />
-      </label>
-      <Button type="submit" variant="secondary" className="min-h-11">
-        Find Station
-      </Button>
+        <Button
+          type="submit"
+          className="min-h-11 cursor-pointer sm:w-auto"
+          disabled={query.trim() === ""}
+        >
+          Find Station
+        </Button>
+      </Field>
     </form>
   );
 }
