@@ -108,7 +108,7 @@ export function RecentLocationsClient({ name }: { name: string | null }): JSX.El
           render={
             <Button
               className={cn(
-                "inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-1.5 rounded-full bg-primary px-4 text-base font-medium text-primary-foreground whitespace-nowrap transition-colors outline-none hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+                "inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 text-base font-medium text-primary-foreground whitespace-nowrap transition-colors outline-none hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
                 recentLocations.length > 0 && "cursor-pointer",
               )}
               disabled={recentLocations.length === 0 || isPending}
