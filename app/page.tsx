@@ -1,7 +1,7 @@
 import { Suspense, type JSX } from "react";
 import { ClearButton } from "./clear-button";
 import { FindStation } from "./find-station";
-import { MesonetPanel, Panels } from "./panels";
+import { MesonetAnimatedPanel, MesonetPanel, Panels } from "./panels";
 
 export default function Page({ searchParams }: PageProps<"/">): JSX.Element {
   return (
@@ -15,7 +15,14 @@ export default function Page({ searchParams }: PageProps<"/">): JSX.Element {
 
       <FindStation />
 
-      <Suspense fallback={<MesonetPanel disabled />}>
+      <Suspense
+        fallback={
+          <>
+            <MesonetPanel disabled />
+            <MesonetAnimatedPanel disabled />
+          </>
+        }
+      >
         <Panels searchParams={searchParams} />
       </Suspense>
 

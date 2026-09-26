@@ -1,4 +1,5 @@
 import type { JSX } from "react";
+import { MesonetAnimatedPanel } from "./mesonet-animated-panel";
 import { MesonetPanel } from "./mesonet-panel";
 
 export async function Panels({
@@ -16,9 +17,15 @@ export async function Panels({
     parsedLongitude <= 180;
 
   return (
-    <MesonetPanel
-      latitude={coordinatesAreValid ? parsedLatitude : undefined}
-      longitude={coordinatesAreValid ? parsedLongitude : undefined}
-    />
+    <>
+      <MesonetPanel
+        latitude={coordinatesAreValid ? parsedLatitude : undefined}
+        longitude={coordinatesAreValid ? parsedLongitude : undefined}
+      />
+      <MesonetAnimatedPanel
+        latitude={coordinatesAreValid ? parsedLatitude : undefined}
+        longitude={coordinatesAreValid ? parsedLongitude : undefined}
+      />
+    </>
   );
 }
