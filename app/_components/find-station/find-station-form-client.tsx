@@ -39,7 +39,7 @@ export function FindStationFormClient({
           id="location-query"
           name="query"
           placeholder="e.g. Austin, TX"
-          className="flex h-11 w-full min-w-0 rounded-md border border-input bg-secondary/40 px-3 text-base shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 md:text-base dark:bg-secondary/40"
+          className="flex h-11 w-full min-w-0 rounded-xl border border-input bg-secondary/40 px-3 text-base shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 md:text-base dark:bg-secondary/40"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           required
