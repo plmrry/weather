@@ -35,16 +35,13 @@ export async function CurrentStation({ params }: { params?: Params }): Promise<J
             <dd className="font-medium">{coordinates?.longitude ?? "—"}</dd>
           </div>
           <div className="col-span-full">
+            <dt className="text-muted-foreground">Station name</dt>
+            <dd className="font-medium">{observation ? observation.stationName : "—"}</dd>
+          </div>
+          <div className="col-span-full">
             <dt className="text-muted-foreground">Last updated</dt>
             <dd className="font-medium">
-              {observation ? (
-                <>
-                  <LastUpdated timestamp={observation.timestamp} />
-                  <span className="text-muted-foreground"> · {observation.stationName}</span>
-                </>
-              ) : (
-                "—"
-              )}
+              {observation ? <LastUpdated timestamp={observation.timestamp} /> : "—"}
             </dd>
           </div>
         </dl>
