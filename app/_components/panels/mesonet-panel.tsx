@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { AspectRatio } from "#/app/_components/ui/aspect-ratio";
 import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
 import { cn } from "#/lib/utils";
+import { CurrentRadarTimestamp } from "./current-radar-timestamp";
 import { MapOverlay } from "./map-overlay";
 
 function getMesonetImageUrl(latitude: number, longitude: number): string {
@@ -73,6 +74,7 @@ export function MesonetPanel({
                 width={600}
               />
               <MapOverlay latitude={latitude} longitude={longitude} />
+              <CurrentRadarTimestamp />
             </>
           ) : (
             <MapIcon aria-hidden="true" className="size-10 text-muted-foreground" />
