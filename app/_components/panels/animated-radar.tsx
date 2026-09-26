@@ -1,19 +1,25 @@
 "use client";
 
 import { type JSX, useEffect, useMemo, useState } from "react";
+import { RadarTimestamp } from "./radar-timestamp";
 
 const FRAME_COUNT = 10;
 const FRAME_INTERVAL_MINUTES = 5;
 const PLAYBACK_MS = 500;
 
-function buildFrameUrls(latitude: number, longitude: number): string[] {
+type Frame = {
+  time: Date;
+  url: string;
+};
+
+function buildFrames(latitude: number, longitude: number): Frame[] {
   const bbox = [longitude - 2, latitude - 2, longitude + 2, latitude + 2];
   const now = Date.now();
   const stepMs = FRAME_INTERVAL_MINUTES * 60 * 1000;
   const latest = Math.floor((now - stepMs) / stepMs) * stepMs;
 
   return Array.from({ length: FRAME_COUNT }, (_, index) => {
-    const timestamp = new Date(latest - (FRAME_COUNT - 1 - index) * stepMs);
+    const time = new Date(latest - (FRAME_COUNT - 1 - index) * stepMs);
     const searchParams = new URLSearchParams({
       BBOX: bbox.join(","),
       FORMAT: "image/png",
@@ -22,13 +28,16 @@ function buildFrameUrls(latitude: number, longitude: number): string[] {
       REQUEST: "GetMap",
       SERVICE: "WMS",
       SRS: "EPSG:4326",
-      TIME: timestamp.toISOString().replace(/\.\d+Z$/, "Z"),
+      TIME: time.toISOString().replace(/\.\d+Z$/, "Z"),
       TRANSPARENT: "true",
       VERSION: "1.1.1",
       WIDTH: "600",
     });
 
-    return `https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q-t.cgi?${searchParams}`;
+    return {
+      time,
+      url: `https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q-t.cgi?${searchParams}`,
+    };
   });
 }
 
@@ -39,7 +48,7 @@ export function AnimatedRadar({
   latitude: number;
   longitude: number;
 }): JSX.Element {
-  const frames = useMemo(() => buildFrameUrls(latitude, longitude), [latitude, longitude]);
+  const frames = useMemo(() => buildFrames(latitude, longitude), [latitude, longitude]);
   const [activeFrame, setActiveFrame] = useState(0);
 
   useEffect(() => {
@@ -56,16 +65,17 @@ export function AnimatedRadar({
 
   return (
     <>
-      {frames.map((src, index) => (
+      {frames.map((frame, index) => (
         <img
           alt=""
           aria-hidden="true"
           className="absolute inset-0 size-full object-cover transition-opacity duration-200"
-          key={src}
-          src={src || "/placeholder.svg"}
+          key={frame.url}
+          src={frame.url || "/placeholder.svg"}
           style={{ opacity: index === activeFrame ? 1 : 0 }}
         />
       ))}
+      <RadarTimestamp time={frames[activeFrame]?.time ?? null} />
     </>
   );
 }
