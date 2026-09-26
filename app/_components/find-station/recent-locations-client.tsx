@@ -1,14 +1,10 @@
 "use client";
 
+import { Button } from "@base-ui/react/button";
+import { Menu } from "@base-ui/react/menu";
 import { ChevronDown } from "lucide-react";
 import { type JSX, useEffect, useState, useTransition } from "react";
-import { Button } from "#/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "#/components/ui/dropdown-menu";
+import { cn } from "#/lib/utils";
 import { findStation } from "./actions";
 
 const STORAGE_KEY = "recentLocations";
@@ -107,48 +103,56 @@ export function RecentLocationsClient({ name }: { name: string | null }): JSX.El
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
+      <Menu.Root>
+        <Menu.Trigger
           render={
             <Button
-              className={
-                recentLocations.length > 0
-                  ? "min-h-12 w-full cursor-pointer text-base"
-                  : "min-h-12 w-full text-base"
-              }
+              className={cn(
+                "inline-flex min-h-12 w-full shrink-0 items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-base font-medium text-primary-foreground whitespace-nowrap transition-colors outline-none hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+                recentLocations.length > 0 && "cursor-pointer",
+              )}
               disabled={recentLocations.length === 0 || isPending}
             />
           }
         >
           Recent Locations
           <ChevronDown aria-hidden="true" />
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          {[...recentLocations]
-            .sort((a, b) => Date.parse(b.lastUsedAt) - Date.parse(a.lastUsedAt))
-            .map((location) => (
-            <DropdownMenuItem
-              key={location.name}
-              className="min-h-12 focus:bg-muted focus:text-foreground focus:**:text-foreground"
-              label={location.name}
-              onClick={() => selectRecentLocation(location.name)}
-            >
-              {location.name}
-              <button
-                type="button"
-                className="ml-auto cursor-pointer rounded px-2 py-1 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                aria-label={`Remove ${location.name} from recent searches`}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  removeRecentLocation(location.name);
-                }}
-              >
-                Delete
-              </button>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </Menu.Trigger>
+        <Menu.Portal>
+          <Menu.Positioner
+            align="start"
+            side="bottom"
+            sideOffset={4}
+            className="z-50 outline-none"
+          >
+            <Menu.Popup className="max-h-(--available-height) w-(--anchor-width) min-w-32 origin-(--transform-origin) overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md outline-none">
+              {[...recentLocations]
+                .sort((a, b) => Date.parse(b.lastUsedAt) - Date.parse(a.lastUsedAt))
+                .map((location) => (
+                <Menu.Item
+                  key={location.name}
+                  className="relative flex min-h-12 cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-none select-none focus:bg-muted focus:text-foreground focus:**:text-foreground data-disabled:pointer-events-none data-disabled:opacity-50"
+                  label={location.name}
+                  onClick={() => selectRecentLocation(location.name)}
+                >
+                  {location.name}
+                  <button
+                    type="button"
+                    className="ml-auto cursor-pointer rounded px-2 py-1 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                    aria-label={`Remove ${location.name} from recent searches`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      removeRecentLocation(location.name);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </Menu.Item>
+              ))}
+            </Menu.Popup>
+          </Menu.Positioner>
+        </Menu.Portal>
+      </Menu.Root>
       <SaveSearch name={name} onSave={setRecentLocations} />
     </>
   );
