@@ -1,12 +1,15 @@
 import type { JSX } from "react";
+import { MesonetAnimatedPanel } from "./mesonet-animated-panel";
 import { MesonetPanel } from "./mesonet-panel";
 
 export async function Panels({
-  searchParams,
-}: Pick<PageProps<"/">, "searchParams">): Promise<JSX.Element> {
-  const { latitude, longitude } = await searchParams;
-  const parsedLatitude = typeof latitude === "string" ? Number(latitude) : Number.NaN;
-  const parsedLongitude = typeof longitude === "string" ? Number(longitude) : Number.NaN;
+  params,
+}: {
+  params?: Promise<{ latitude: string; longitude: string }>;
+}): Promise<JSX.Element> {
+  const resolved = params ? await params : undefined;
+  const parsedLatitude = resolved ? Number(resolved.latitude) : Number.NaN;
+  const parsedLongitude = resolved ? Number(resolved.longitude) : Number.NaN;
   const coordinatesAreValid =
     Number.isFinite(parsedLatitude) &&
     parsedLatitude >= -90 &&
@@ -16,9 +19,15 @@ export async function Panels({
     parsedLongitude <= 180;
 
   return (
-    <MesonetPanel
-      latitude={coordinatesAreValid ? parsedLatitude : undefined}
-      longitude={coordinatesAreValid ? parsedLongitude : undefined}
-    />
+    <>
+      <MesonetPanel
+        latitude={coordinatesAreValid ? parsedLatitude : undefined}
+        longitude={coordinatesAreValid ? parsedLongitude : undefined}
+      />
+      <MesonetAnimatedPanel
+        latitude={coordinatesAreValid ? parsedLatitude : undefined}
+        longitude={coordinatesAreValid ? parsedLongitude : undefined}
+      />
+    </>
   );
 }

@@ -17,12 +17,10 @@ export function ClientLocation(): React.JSX.Element {
 
       startTransition(async () => {
         const location = await getLocation(formData);
-        const searchParams = new URLSearchParams({
-          latitude: String(location.latitude.toPrecision(6)),
-          longitude: String(location.longitude.toPrecision(6)),
-          name: location.name,
-        });
-        router.push(`/?${searchParams.toString()}`);
+        const latitude = location.latitude.toFixed(3);
+        const longitude = location.longitude.toFixed(3);
+        const searchParams = new URLSearchParams({ name: location.name });
+        router.push(`/latitude/${latitude}/longitude/${longitude}?${searchParams.toString()}`);
       });
     });
   }
