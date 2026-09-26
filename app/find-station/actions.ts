@@ -73,6 +73,5 @@ export async function findStation(formData: FormData): Promise<void> {
 
   const latitude = location.latitude.toFixed(3);
   const longitude = location.longitude.toFixed(3);
-  const searchParams = new URLSearchParams({ name: location.name });
-  redirect(`/latitude/${latitude}/longitude/${longitude}?${searchParams.toString()}`);
+  redirect(`/latitude/${latitude}/longitude/${longitude}`);
 }

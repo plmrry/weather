@@ -1,8 +1,7 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { Suspense, type JSX, useEffect, useState, useTransition } from "react";
+import { type JSX, useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,10 +25,13 @@ function getRecentLocations(): string[] {
   }
 }
 
-function SaveSearch({ onSave }: { onSave: (searches: string[]) => void }): null {
-  const searchParams = useSearchParams();
-  const name = searchParams.get("name");
-
+function SaveSearch({
+  name,
+  onSave,
+}: {
+  name: string | null;
+  onSave: (searches: string[]) => void;
+}): null {
   useEffect(() => {
     if (!name) return;
 
@@ -53,7 +55,7 @@ function SaveSearch({ onSave }: { onSave: (searches: string[]) => void }): null 
   return null;
 }
 
-export function RecentLocations(): JSX.Element {
+export function RecentLocations({ name }: { name: string | null }): JSX.Element {
   const [recentLocations, setRecentLocations] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 
@@ -97,9 +99,7 @@ export function RecentLocations(): JSX.Element {
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
-      <Suspense>
-        <SaveSearch onSave={setRecentLocations} />
-      </Suspense>
+      <SaveSearch name={name} onSave={setRecentLocations} />
     </>
   );
 }

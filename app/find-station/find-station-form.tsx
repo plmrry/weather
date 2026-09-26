@@ -1,19 +1,16 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { findStation } from "./actions";
 
-export function FindStationForm(): React.JSX.Element {
-  const name = useSearchParams().get("name") ?? "";
-
-  return <FindStationFormFields key={name} initialQuery={name} />;
-}
-
-function FindStationFormFields({ initialQuery }: { initialQuery: string }): React.JSX.Element {
+export function FindStationFormFields({
+  initialQuery,
+}: {
+  initialQuery: string;
+}): React.JSX.Element {
   const [query, setQuery] = useState(initialQuery);
 
   return (
