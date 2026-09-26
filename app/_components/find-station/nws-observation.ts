@@ -4,6 +4,7 @@ const USER_AGENT = "(weather-cafe.vercel.app, contact@weather-cafe.example)";
 
 type StationObservation = {
   stationName: string;
+  stationId: string;
   timestamp: string;
 };
 
@@ -46,5 +47,5 @@ export async function getStationObservation(
   const timestamp = latest?.properties?.timestamp;
   if (!timestamp) return null;
 
-  return { stationName: station?.name ?? stationId, timestamp };
+  return { stationName: station?.name ?? stationId, stationId, timestamp };
 }

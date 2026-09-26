@@ -36,7 +36,14 @@ export async function CurrentStation({ params }: { params?: Params }): Promise<J
           </div>
           <div className="col-span-full">
             <dt className="text-muted-foreground">Station name</dt>
-            <dd className="font-medium">{observation ? observation.stationName : "—"}</dd>
+            <dd className="font-medium">
+              {observation ? observation.stationName : "—"}
+              {observation ? (
+                <span className="ml-2 font-mono text-xs text-muted-foreground">
+                  {observation.stationId}
+                </span>
+              ) : null}
+            </dd>
           </div>
           <div className="col-span-full">
             <dt className="text-muted-foreground">Last updated</dt>
