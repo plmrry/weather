@@ -12,6 +12,10 @@ export function FindStation({ params }: { params?: Params }): React.JSX.Element 
     <Card aria-label="Coordinate input">
       <CardContent>
         <FieldGroup>
+          <FieldSeparator className="text-xs uppercase tracking-wider **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
+            find a station
+          </FieldSeparator>
+
           <Field>
             <Suspense fallback={<FindStationForm params={undefined} />}>
               <FindStationForm params={params} />
