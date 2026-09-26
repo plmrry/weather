@@ -1,6 +1,7 @@
 import type { JSX } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
 import { getLocationName, parseCoordinates } from "./find-station/geocode";
+import { LastUpdated } from "./last-updated";
 
 type Params = Promise<{ latitude: string; longitude: string }>;
 
@@ -28,6 +29,12 @@ export async function CurrentStation({ params }: { params?: Params }): Promise<J
           <div>
             <dt className="text-muted-foreground">Longitude</dt>
             <dd className="font-medium">{coordinates?.longitude ?? "—"}</dd>
+          </div>
+          <div className="col-span-full">
+            <dt className="text-muted-foreground">Last updated</dt>
+            <dd className="font-medium">
+              <LastUpdated />
+            </dd>
           </div>
         </dl>
       </CardContent>
