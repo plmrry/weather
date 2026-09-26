@@ -1,15 +1,19 @@
 import type { JSX } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
 import { getLocationName, parseCoordinates } from "./find-station/geocode";
+import { getStationObservation } from "./find-station/nws-observation";
 import { LastUpdated } from "./last-updated";
 
 type Params = Promise<{ latitude: string; longitude: string }>;
 
 export async function CurrentStation({ params }: { params?: Params }): Promise<JSX.Element> {
   const coordinates = parseCoordinates(params ? await params : undefined);
-  const name = coordinates
-    ? await getLocationName(coordinates.latitude, coordinates.longitude)
-    : "No station selected";
+  const [name, observation] = coordinates
+    ? await Promise.all([
+        getLocationName(coordinates.latitude, coordinates.longitude),
+        getStationObservation(coordinates.latitude, coordinates.longitude),
+      ])
+    : ["No station selected", null];
 
   return (
     <Card aria-label="Current station">
@@ -33,7 +37,14 @@ export async function CurrentStation({ params }: { params?: Params }): Promise<J
           <div className="col-span-full">
             <dt className="text-muted-foreground">Last updated</dt>
             <dd className="font-medium">
-              <LastUpdated />
+              {observation ? (
+                <>
+                  <LastUpdated timestamp={observation.timestamp} />
+                  <span className="text-muted-foreground"> · {observation.stationName}</span>
+                </>
+              ) : (
+                "—"
+              )}
             </dd>
           </div>
         </dl>
