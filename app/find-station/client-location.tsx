@@ -19,8 +19,7 @@ export function ClientLocation(): React.JSX.Element {
         const location = await getLocation(formData);
         const latitude = location.latitude.toFixed(3);
         const longitude = location.longitude.toFixed(3);
-        const searchParams = new URLSearchParams({ name: location.name });
-        router.push(`/latitude/${latitude}/longitude/${longitude}?${searchParams.toString()}`);
+        router.push(`/latitude/${latitude}/longitude/${longitude}`);
       });
     });
   }

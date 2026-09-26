@@ -17,7 +17,7 @@ export function WeatherPage({
         <h1 className="font-pixel text-5xl leading-none text-primary text-balance">Weather Café</h1>
       </header>
 
-      <FindStation />
+      <FindStation params={params} />
 
       <Suspense
         fallback={
