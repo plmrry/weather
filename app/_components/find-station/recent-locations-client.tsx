@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Trash2 } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { type JSX, useEffect, useState, useTransition } from "react";
 import { Button } from "#/components/ui/button";
 import {
@@ -124,7 +124,9 @@ export function RecentLocationsClient({ name }: { name: string | null }): JSX.El
           <ChevronDown aria-hidden="true" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          {recentLocations.map((location) => (
+          {[...recentLocations]
+            .sort((a, b) => Date.parse(b.lastUsedAt) - Date.parse(a.lastUsedAt))
+            .map((location) => (
             <DropdownMenuItem
               key={location.name}
               className="min-h-12 focus:bg-muted focus:text-foreground focus:**:text-foreground"
@@ -134,14 +136,14 @@ export function RecentLocationsClient({ name }: { name: string | null }): JSX.El
               {location.name}
               <button
                 type="button"
-                className="ml-auto cursor-pointer rounded p-1 text-muted-foreground opacity-100 hover:bg-muted hover:text-foreground hover:opacity-100"
+                className="ml-auto cursor-pointer rounded px-2 py-1 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                 aria-label={`Remove ${location.name} from recent searches`}
                 onClick={(event) => {
                   event.stopPropagation();
                   removeRecentLocation(location.name);
                 }}
               >
-                <Trash2 aria-hidden="true" />
+                Delete
               </button>
             </DropdownMenuItem>
           ))}
