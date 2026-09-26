@@ -40,7 +40,7 @@ export function ClientLocation(): React.JSX.Element {
       aria-busy={isLoading}
       onClick={getCurrentLocation}
     >
-      {isLoading ? "Finding Station…" : "Use my location"}
+      {isLoading ? "Finding Station…" : "Use My Location"}
     </Button>
   );
 }
