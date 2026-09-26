@@ -1,8 +1,8 @@
 import { Radar as RadarIcon } from "lucide-react";
 import type { JSX } from "react";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { AspectRatio } from "#/components/ui/aspect-ratio";
+import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
+import { cn } from "#/lib/utils";
 import { AnimatedRadar } from "./animated-radar";
 import { MapOverlay } from "./map-overlay";
 

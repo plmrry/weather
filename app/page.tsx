@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { WeatherPage } from "./weather-page";
+import { WeatherPage } from "./_components/weather-page";
 
 export default function Page(): JSX.Element {
   return <WeatherPage />;

@@ -2,13 +2,13 @@
 
 import { ChevronDown } from "lucide-react";
 import { type JSX, useEffect, useState, useTransition } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "#/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "#/components/ui/dropdown-menu";
 import { findStation } from "./actions";
 
 const STORAGE_KEY = "recentLocations";
@@ -55,7 +55,7 @@ function SaveSearch({
   return null;
 }
 
-export function RecentLocations({ name }: { name: string | null }): JSX.Element {
+export function RecentLocationsClient({ name }: { name: string | null }): JSX.Element {
   const [recentLocations, setRecentLocations] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
 

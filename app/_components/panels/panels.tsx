@@ -17,14 +17,17 @@ export async function Panels({
     Number.isFinite(parsedLongitude) &&
     parsedLongitude >= -180 &&
     parsedLongitude <= 180;
+  const disabled = params === undefined;
 
   return (
     <>
       <MesonetPanel
+        disabled={disabled}
         latitude={coordinatesAreValid ? parsedLatitude : undefined}
         longitude={coordinatesAreValid ? parsedLongitude : undefined}
       />
       <MesonetAnimatedPanel
+        disabled={disabled}
         latitude={coordinatesAreValid ? parsedLatitude : undefined}
         longitude={coordinatesAreValid ? parsedLongitude : undefined}
       />

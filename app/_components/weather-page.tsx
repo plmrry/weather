@@ -1,7 +1,8 @@
 import { Suspense, type JSX } from "react";
 import { ClearButton } from "./clear-button";
+import { CurrentStation } from "./current-station";
 import { FindStation } from "./find-station";
-import { MesonetAnimatedPanel, MesonetPanel, Panels } from "./panels";
+import { Panels } from "./panels";
 
 export function WeatherPage({
   params,
@@ -19,14 +20,11 @@ export function WeatherPage({
 
       <FindStation params={params} />
 
-      <Suspense
-        fallback={
-          <>
-            <MesonetPanel disabled />
-            <MesonetAnimatedPanel disabled />
-          </>
-        }
-      >
+      <Suspense fallback={<CurrentStation />}>
+        <CurrentStation params={params} />
+      </Suspense>
+
+      <Suspense fallback={<Panels />}>
         <Panels params={params} />
       </Suspense>
 
