@@ -17,7 +17,7 @@ function SubmitButton({ disabled }: { disabled: boolean }): React.JSX.Element {
       disabled={disabled || pending}
       aria-busy={pending}
     >
-      {pending ? "Finding Station…" : "Find Station"}
+      {pending ? "Searching…" : "Search"}
     </Button>
   );
 }
@@ -31,7 +31,7 @@ export function FindStationFormClient({
 
   return (
     <form action={findStation}>
-      <Field className="gap-2 sm:flex-row sm:*:w-auto">
+      <Field className="flex-row items-center gap-2 *:w-auto">
         <FieldLabel className="sr-only" htmlFor="location-query">
           City or place name
         </FieldLabel>
