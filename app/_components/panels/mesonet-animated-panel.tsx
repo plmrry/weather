@@ -3,6 +3,7 @@ import type { JSX } from "react";
 import { AspectRatio } from "#/app/_components/ui/aspect-ratio";
 import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
 import { cn } from "#/lib/utils";
+import { LastUpdated } from "#/app/_components/last-updated";
 import { AnimatedRadar } from "./animated-radar";
 import { MapOverlay } from "./map-overlay";
 
@@ -24,13 +25,20 @@ export function MesonetAnimatedPanel({
       aria-label="Mesonet animated radar"
       className={cn(isDisabled && "pointer-events-none select-none opacity-50")}
     >
-      <CardHeader className="flex flex-row items-center gap-1.5">
-        <RadarIcon aria-hidden="true" className="size-3.5 text-accent" />
-        <CardTitle>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-            Mesonet Animated
-          </h2>
-        </CardTitle>
+      <CardHeader className="flex flex-col gap-1">
+        <div className="flex flex-row items-center gap-1.5">
+          <RadarIcon aria-hidden="true" className="size-3.5 text-accent" />
+          <CardTitle>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              Mesonet Animated
+            </h2>
+          </CardTitle>
+        </div>
+        {hasCoordinates ? (
+          <p className="text-[0.625rem] text-muted-foreground">
+            Updated <LastUpdated />
+          </p>
+        ) : null}
       </CardHeader>
 
       <CardContent>
