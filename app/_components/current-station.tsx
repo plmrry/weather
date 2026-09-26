@@ -23,7 +23,7 @@ export async function CurrentStation({ params }: { params?: Params }): Promise<J
       <CardContent>
         <dl className="grid grid-cols-2 gap-4 text-sm">
           <div className="col-span-full">
-            <dt className="text-muted-foreground">Name</dt>
+            <dt className="text-muted-foreground">Location name</dt>
             <dd className="font-medium">{name}</dd>
           </div>
           <div>
