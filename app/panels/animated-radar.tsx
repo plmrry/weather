@@ -1,6 +1,6 @@
 "use client";
 
-import { type JSX, useEffect, useMemo, useRef, useState } from "react";
+import { type JSX, useEffect, useMemo, useState } from "react";
 
 const FRAME_COUNT = 10;
 const FRAME_INTERVAL_MINUTES = 5;
@@ -18,7 +18,7 @@ function buildFrameUrls(latitude: number, longitude: number): string[] {
       BBOX: bbox.join(","),
       FORMAT: "image/png",
       HEIGHT: "600",
-      LAYERS: "nexrad-n0q",
+      LAYERS: "nexrad-n0q-wmst",
       REQUEST: "GetMap",
       SERVICE: "WMS",
       SRS: "EPSG:4326",
@@ -28,7 +28,7 @@ function buildFrameUrls(latitude: number, longitude: number): string[] {
       WIDTH: "600",
     });
 
-    return `https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q.cgi?${searchParams}`;
+    return `https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0q-t.cgi?${searchParams}`;
   });
 }
 
@@ -41,24 +41,18 @@ export function AnimatedRadar({
 }): JSX.Element {
   const frames = useMemo(() => buildFrameUrls(latitude, longitude), [latitude, longitude]);
   const [activeFrame, setActiveFrame] = useState(0);
-  const loadedRef = useRef<Set<number>>(new Set());
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    loadedRef.current = new Set();
-    setReady(false);
     setActiveFrame(0);
   }, [frames]);
 
   useEffect(() => {
-    if (!ready) return;
-
     const interval = setInterval(() => {
       setActiveFrame((current) => (current + 1) % frames.length);
     }, PLAYBACK_MS);
 
     return () => clearInterval(interval);
-  }, [ready, frames.length]);
+  }, [frames.length]);
 
   return (
     <>
@@ -69,15 +63,7 @@ export function AnimatedRadar({
           className="absolute inset-0 size-full object-cover transition-opacity duration-200"
           key={src}
           src={src || "/placeholder.svg"}
-          style={{ opacity: ready && index === activeFrame ? 1 : 0 }}
-          onLoad={() => {
-            loadedRef.current.add(index);
-            if (loadedRef.current.size === frames.length) setReady(true);
-          }}
-          onError={() => {
-            loadedRef.current.add(index);
-            if (loadedRef.current.size === frames.length) setReady(true);
-          }}
+          style={{ opacity: index === activeFrame ? 1 : 0 }}
         />
       ))}
     </>
