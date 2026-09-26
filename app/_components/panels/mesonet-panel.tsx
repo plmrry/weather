@@ -1,9 +1,10 @@
 import { Map as MapIcon } from "lucide-react";
 import Image from "next/image";
 import type { JSX } from "react";
-import { AspectRatio } from "#/components/ui/aspect-ratio";
-import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
+import { AspectRatio } from "#/app/_components/ui/aspect-ratio";
+import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
 import { cn } from "#/lib/utils";
+import { LastUpdated } from "#/app/_components/last-updated";
 import { CurrentRadarTimestamp } from "./current-radar-timestamp";
 import { MapOverlay } from "./map-overlay";
 
@@ -43,13 +44,20 @@ export function MesonetPanel({
       aria-label="Mesonet radar"
       className={cn(isDisabled && "pointer-events-none select-none opacity-50")}
     >
-      <CardHeader className="flex flex-row items-center gap-1.5">
-        <MapIcon aria-hidden="true" className="size-3.5 text-accent" />
-        <CardTitle>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-            Mesonet
-          </h2>
-        </CardTitle>
+      <CardHeader className="flex flex-col gap-1">
+        <div className="flex flex-row items-center gap-1.5">
+          <MapIcon aria-hidden="true" className="size-3.5 text-accent" />
+          <CardTitle>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+              Mesonet
+            </h2>
+          </CardTitle>
+        </div>
+        {hasCoordinates ? (
+          <p className="text-[0.625rem] text-muted-foreground">
+            Updated <LastUpdated />
+          </p>
+        ) : null}
       </CardHeader>
 
       <CardContent>

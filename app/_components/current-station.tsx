@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
 import { getLocationName, parseCoordinates } from "./find-station/geocode";
 import { getStationObservation } from "./find-station/nws-observation";
 import { LastUpdated } from "./last-updated";
