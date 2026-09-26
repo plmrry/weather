@@ -1,10 +1,10 @@
 "use client";
 
+import { Button } from "@base-ui/react/button";
+import { Input } from "@base-ui/react/input";
 import React, { useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Button } from "#/components/ui/button";
-import { Field, FieldLabel } from "#/components/ui/field";
-import { Input } from "#/components/ui/input";
+import { Field, FieldLabel } from "#/app/_components/ui/field";
 import { findStation } from "./actions";
 
 function SubmitButton({ disabled }: { disabled: boolean }): React.JSX.Element {
@@ -13,7 +13,7 @@ function SubmitButton({ disabled }: { disabled: boolean }): React.JSX.Element {
   return (
     <Button
       type="submit"
-      className="min-h-11 cursor-pointer text-base sm:w-auto"
+      className="inline-flex min-h-11 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full bg-primary px-4 text-base font-medium text-primary-foreground whitespace-nowrap transition-colors outline-none hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 sm:w-auto [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
       disabled={disabled || pending}
       aria-busy={pending}
     >
@@ -39,7 +39,7 @@ export function FindStationFormClient({
           id="location-query"
           name="query"
           placeholder="e.g. Austin, TX"
-          className="h-11 bg-secondary/40 px-3 text-base sm:flex-1 md:text-base dark:bg-secondary/40"
+          className="flex h-11 w-full min-w-0 rounded-md border border-input bg-secondary/40 px-3 text-base shadow-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 md:text-base dark:bg-secondary/40"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           required

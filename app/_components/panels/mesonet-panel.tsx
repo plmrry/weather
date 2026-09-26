@@ -1,8 +1,8 @@
 import { Map as MapIcon } from "lucide-react";
 import Image from "next/image";
 import type { JSX } from "react";
-import { AspectRatio } from "#/components/ui/aspect-ratio";
-import { Card, CardContent, CardHeader, CardTitle } from "#/components/ui/card";
+import { AspectRatio } from "#/app/_components/ui/aspect-ratio";
+import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
 import { cn } from "#/lib/utils";
 import { MapOverlay } from "./map-overlay";
 

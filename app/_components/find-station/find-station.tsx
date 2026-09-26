@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
-import { Card, CardContent } from "#/components/ui/card";
-import { Field, FieldGroup, FieldSeparator } from "#/components/ui/field";
+import { Card, CardContent } from "#/app/_components/ui/card";
+import { Field, FieldGroup, FieldSeparator } from "#/app/_components/ui/field";
 import { ClientLocation } from "./client-location";
 import { FindStationForm } from "./find-station-form";
 import { RecentLocations } from "./recent-locations";
