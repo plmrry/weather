@@ -10,7 +10,7 @@ const PRIMARY_ROADS_URL =
   "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/1/query";
 const STATE_BOUNDARIES_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const SATELLITE_DISTANCE = 16;
-const SATELLITE_SCALE = 4754.3043;
+const SATELLITE_SCALE = 3000;
 type CountriesTopology = Parameters<typeof feature>[0] & {
   objects: { countries: Parameters<typeof feature>[1] };
 };
@@ -156,10 +156,11 @@ export async function MapOverlay({
       preserveAspectRatio="none"
       viewBox="0 0 600 600"
     >
+      <rect width="600" height="600" fill="white" fillOpacity="0.16" />
       {countryPath ? (
         <path
           d={countryPath}
-          fill="none"
+          fill="black"
           stroke="white"
           strokeWidth="2"
           vectorEffect="non-scaling-stroke"
