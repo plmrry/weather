@@ -74,6 +74,12 @@ export async function Panels({
         location="Anchorage, Alaska"
         longitude={-149.9003}
       />
+      <NewMapPanel
+        label="new 4"
+        latitude={55.9533}
+        location="Edinburgh, Scotland"
+        longitude={-3.1883}
+      />
     </>
   );
 }
