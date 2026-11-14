@@ -44,23 +44,23 @@ export function MesonetPanel({
       aria-label="Mesonet radar"
       className={cn(isDisabled && "pointer-events-none select-none opacity-50")}
     >
-      <CardHeader className="flex flex-col gap-1">
-        <div className="flex flex-row items-center gap-1.5">
-          <MapIcon aria-hidden="true" className="size-3.5 text-white" />
-          <CardTitle>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
-              Mesonet
-            </h2>
-          </CardTitle>
-        </div>
-        {hasCoordinates ? (
-          <p className="text-[0.625rem] text-muted-foreground">
-            Updated <LastUpdated />
-          </p>
-        ) : null}
-      </CardHeader>
+      <CardContent className="mx-auto flex w-full max-w-md flex-col gap-4">
+        <CardHeader className="flex flex-col gap-1 px-0">
+          <div className="flex flex-row items-center gap-1.5">
+            <MapIcon aria-hidden="true" className="size-3.5 text-white" />
+            <CardTitle>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                Mesonet
+              </h2>
+            </CardTitle>
+          </div>
+          {hasCoordinates ? (
+            <p className="text-[0.625rem] text-muted-foreground">
+              Updated <LastUpdated />
+            </p>
+          ) : null}
+        </CardHeader>
 
-      <CardContent>
         <AspectRatio
           ratio={1}
           aria-label={
@@ -68,7 +68,7 @@ export function MesonetPanel({
               ? "Mesonet map unavailable until a location is selected"
               : "Current Mesonet radar near the selected location"
           }
-          className="mx-auto flex w-full max-w-md items-center justify-center overflow-hidden rounded-md border border-dashed border-border bg-black"
+          className="flex w-full items-center justify-center overflow-hidden rounded-md border border-dashed border-border bg-black"
           role="img"
         >
           {hasCoordinates ? (
