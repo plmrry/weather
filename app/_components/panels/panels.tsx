@@ -1,6 +1,28 @@
 import type { JSX } from "react";
+import { AspectRatio } from "#/app/_components/ui/aspect-ratio";
+import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
 import { MesonetAnimatedPanel } from "./mesonet-animated-panel";
 import { MesonetPanel } from "./mesonet-panel";
+
+function NewPanel({ label }: { label: string }): JSX.Element {
+  return (
+    <Card aria-label={label}>
+      <CardContent className="mx-auto flex w-full max-w-md flex-col gap-4">
+        <CardHeader className="px-0">
+          <CardTitle>
+            <h2 className="text-xs font-semibold tracking-wider text-foreground">{label}</h2>
+          </CardTitle>
+        </CardHeader>
+        <AspectRatio
+          aria-label={`${label} placeholder`}
+          className="w-full rounded-md border border-border bg-black"
+          ratio={1}
+          role="img"
+        />
+      </CardContent>
+    </Card>
+  );
+}
 
 export async function Panels({
   params,
@@ -31,6 +53,8 @@ export async function Panels({
         latitude={coordinatesAreValid ? parsedLatitude : undefined}
         longitude={coordinatesAreValid ? parsedLongitude : undefined}
       />
+      <NewPanel label="new 1" />
+      <NewPanel label="new 2" />
     </>
   );
 }

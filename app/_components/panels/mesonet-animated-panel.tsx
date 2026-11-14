@@ -1,9 +1,9 @@
 import { Radar as RadarIcon } from "lucide-react";
 import type { JSX } from "react";
+import { LastUpdated } from "#/app/_components/last-updated";
 import { AspectRatio } from "#/app/_components/ui/aspect-ratio";
 import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
 import { cn } from "#/lib/utils";
-import { LastUpdated } from "#/app/_components/last-updated";
 import { AnimatedRadar } from "./animated-radar";
 import { MapOverlay } from "./map-overlay";
 
@@ -49,7 +49,7 @@ export function MesonetAnimatedPanel({
               ? "Mesonet animated radar unavailable until a location is selected"
               : "Animated Mesonet radar loop near the selected location"
           }
-          className="flex w-full items-center justify-center overflow-hidden rounded-md border border-dashed border-border bg-black"
+          className="flex w-full items-center justify-center overflow-hidden rounded-md border border-border bg-black"
           role="img"
         >
           {hasCoordinates ? (

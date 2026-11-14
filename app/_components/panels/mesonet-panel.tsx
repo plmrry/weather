@@ -1,10 +1,10 @@
 import { Map as MapIcon } from "lucide-react";
 import Image from "next/image";
 import type { JSX } from "react";
+import { LastUpdated } from "#/app/_components/last-updated";
 import { AspectRatio } from "#/app/_components/ui/aspect-ratio";
 import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
 import { cn } from "#/lib/utils";
-import { LastUpdated } from "#/app/_components/last-updated";
 import { CurrentRadarTimestamp } from "./current-radar-timestamp";
 import { MapOverlay } from "./map-overlay";
 
@@ -68,7 +68,7 @@ export function MesonetPanel({
               ? "Mesonet map unavailable until a location is selected"
               : "Current Mesonet radar near the selected location"
           }
-          className="flex w-full items-center justify-center overflow-hidden rounded-md border border-dashed border-border bg-black"
+          className="flex w-full items-center justify-center overflow-hidden rounded-md border border-border bg-black"
           role="img"
         >
           {hasCoordinates ? (
