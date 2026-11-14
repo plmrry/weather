@@ -9,7 +9,10 @@ const nextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Strict-Transport-Security", value: "max-age=63072000" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          { key: "Permissions-Policy", value: "geolocation=(self), camera=(), microphone=()" },
+          {
+            key: "Permissions-Policy",
+            value: "geolocation=(self), camera=(), microphone=()",
+          },
         ],
         source: "/:path*",
       },
@@ -25,6 +28,7 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
+  partialPrefetching: true,
   typescript: {
     ignoreBuildErrors: true,
   },

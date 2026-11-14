@@ -18,7 +18,11 @@ function parseTimestamp(timestamp: string | undefined): Date | null {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-export function LastUpdated({ timestamp }: { timestamp?: string }): JSX.Element {
+export function LastUpdated({
+  timestamp,
+}: {
+  timestamp?: string;
+}): JSX.Element {
   const [date, setDate] = useState<Date | null>(null);
 
   useEffect(() => {

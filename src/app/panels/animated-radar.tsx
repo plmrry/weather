@@ -49,7 +49,10 @@ export function AnimatedRadar({
   latitude: number;
   longitude: number;
 }): JSX.Element {
-  const frames = useMemo(() => buildFrames(latitude, longitude), [latitude, longitude]);
+  const frames = useMemo(
+    () => buildFrames(latitude, longitude),
+    [latitude, longitude],
+  );
   const [activeFrame, setActiveFrame] = useState(0);
 
   useEffect(() => {

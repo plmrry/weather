@@ -33,7 +33,10 @@ export function parseCoordinates(
   return isValid ? { latitude, longitude } : null;
 }
 
-export async function getLocationName(latitude: number, longitude: number): Promise<string> {
+export async function getLocationName(
+  latitude: number,
+  longitude: number,
+): Promise<string> {
   "use cache";
   cacheLife("max");
 

@@ -21,7 +21,9 @@ function NewMapPanel({
       <CardContent className="mx-auto flex w-full max-w-md flex-col gap-4">
         <CardHeader className="px-0">
           <CardTitle>
-            <h2 className="text-xs font-semibold tracking-wider text-foreground">{label}</h2>
+            <h2 className="text-xs font-semibold tracking-wider text-foreground">
+              {label}
+            </h2>
           </CardTitle>
         </CardHeader>
         <AspectRatio
@@ -30,7 +32,11 @@ function NewMapPanel({
           ratio={1}
           role="img"
         >
-          <MapOverlay latitude={latitude} longitude={longitude} projection="satellite" />
+          <MapOverlay
+            latitude={latitude}
+            longitude={longitude}
+            projection="satellite"
+          />
         </AspectRatio>
       </CardContent>
     </Card>
@@ -66,8 +72,18 @@ export async function Panels({
         latitude={coordinatesAreValid ? parsedLatitude : undefined}
         longitude={coordinatesAreValid ? parsedLongitude : undefined}
       />
-      <NewMapPanel label="new 1" latitude={30.2672} location="Austin, Texas" longitude={-97.7431} />
-      <NewMapPanel label="new 2" latitude={59.9139} location="Oslo, Norway" longitude={10.7522} />
+      <NewMapPanel
+        label="new 1"
+        latitude={30.2672}
+        location="Austin, Texas"
+        longitude={-97.7431}
+      />
+      <NewMapPanel
+        label="new 2"
+        latitude={59.9139}
+        location="Oslo, Norway"
+        longitude={10.7522}
+      />
       <NewMapPanel
         label="new 3"
         latitude={61.2181}
