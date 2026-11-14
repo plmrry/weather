@@ -5,36 +5,17 @@ import { MapOverlay } from "./map-overlay";
 import { MesonetAnimatedPanel } from "./mesonet-animated-panel";
 import { MesonetPanel } from "./mesonet-panel";
 
-const AUSTIN_LATITUDE = 30.2672;
-const AUSTIN_LONGITUDE = -97.7431;
-
-function AustinPanel(): JSX.Element {
-  return (
-    <Card aria-label="new 1">
-      <CardContent className="mx-auto flex w-full max-w-md flex-col gap-4">
-        <CardHeader className="px-0">
-          <CardTitle>
-            <h2 className="text-xs font-semibold tracking-wider text-foreground">new 1</h2>
-          </CardTitle>
-        </CardHeader>
-        <AspectRatio
-          aria-label="Austin, Texas street map without radar data"
-          className="relative w-full overflow-hidden rounded-md border border-white bg-black"
-          ratio={1}
-          role="img"
-        >
-          <MapOverlay
-            latitude={AUSTIN_LATITUDE}
-            longitude={AUSTIN_LONGITUDE}
-            projection="stereographic"
-          />
-        </AspectRatio>
-      </CardContent>
-    </Card>
-  );
-}
-
-function NewPanel({ label }: { label: string }): JSX.Element {
+function NewMapPanel({
+  label,
+  latitude,
+  location,
+  longitude,
+}: {
+  label: string;
+  latitude: number;
+  location: string;
+  longitude: number;
+}): JSX.Element {
   return (
     <Card aria-label={label}>
       <CardContent className="mx-auto flex w-full max-w-md flex-col gap-4">
@@ -44,11 +25,13 @@ function NewPanel({ label }: { label: string }): JSX.Element {
           </CardTitle>
         </CardHeader>
         <AspectRatio
-          aria-label={`${label} placeholder`}
-          className="w-full rounded-md border border-border bg-black"
+          aria-label={`${location} map without radar data`}
+          className="relative w-full overflow-hidden rounded-md border border-white bg-black"
           ratio={1}
           role="img"
-        />
+        >
+          <MapOverlay latitude={latitude} longitude={longitude} projection="stereographic" />
+        </AspectRatio>
       </CardContent>
     </Card>
   );
@@ -83,8 +66,14 @@ export async function Panels({
         latitude={coordinatesAreValid ? parsedLatitude : undefined}
         longitude={coordinatesAreValid ? parsedLongitude : undefined}
       />
-      <AustinPanel />
-      <NewPanel label="new 2" />
+      <NewMapPanel label="new 1" latitude={30.2672} location="Austin, Texas" longitude={-97.7431} />
+      <NewMapPanel label="new 2" latitude={59.9139} location="Oslo, Norway" longitude={10.7522} />
+      <NewMapPanel
+        label="new 3"
+        latitude={61.2181}
+        location="Anchorage, Alaska"
+        longitude={-149.9003}
+      />
     </>
   );
 }

@@ -4,31 +4,48 @@ import type { JSX } from "react";
 import { feature } from "topojson-client";
 import { getMapBounds, type MapBounds } from "./map-bounds";
 
-const STATE_BOUNDARIES_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+const COUNTRY_BOUNDARIES_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-10m.json";
 const PRIMARY_ROADS_URL =
   "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/1/query";
+const STATE_BOUNDARIES_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+type CountriesTopology = Parameters<typeof feature>[0] & {
+  objects: { countries: Parameters<typeof feature>[1] };
+};
 type StatesTopology = Parameters<typeof feature>[0] & {
   objects: { states: Parameters<typeof feature>[1] };
 };
 
-function intersects(featureToCheck: Feature, [west, south, east, north]: MapBounds): boolean {
-  const [[featureWest, featureSouth], [featureEast, featureNorth]] = geoBounds(featureToCheck);
-
-  return (
-    featureWest <= east && featureEast >= west && featureSouth <= north && featureNorth >= south
-  );
+function getLongitudeRanges(west: number, east: number): [west: number, east: number][] {
+  return west <= east
+    ? [[west, east]]
+    : [
+        [west, 180],
+        [-180, east],
+      ];
 }
 
-async function getStateBoundaries(bounds: MapBounds): Promise<FeatureCollection> {
+function intersects(featureToCheck: Feature, [west, south, east, north]: MapBounds): boolean {
+  const [[featureWest, featureSouth], [featureEast, featureNorth]] = geoBounds(featureToCheck);
+  const longitudeIntersects = getLongitudeRanges(featureWest, featureEast).some(
+    ([featureRangeWest, featureRangeEast]) =>
+      getLongitudeRanges(west, east).some(
+        ([rangeWest, rangeEast]) => featureRangeWest <= rangeEast && featureRangeEast >= rangeWest,
+      ),
+  );
+
+  return longitudeIntersects && featureSouth <= north && featureNorth >= south;
+}
+
+async function getCountryBoundaries(bounds: MapBounds): Promise<FeatureCollection> {
   try {
-    const response = await fetch(STATE_BOUNDARIES_URL);
+    const response = await fetch(COUNTRY_BOUNDARIES_URL);
     if (!response.ok) return { features: [], type: "FeatureCollection" };
 
-    const topology = (await response.json()) as StatesTopology;
-    const states = feature(topology, topology.objects.states) as FeatureCollection;
+    const topology = (await response.json()) as CountriesTopology;
+    const countries = feature(topology, topology.objects.countries) as FeatureCollection;
 
     return {
-      features: states.features.filter((state) => intersects(state, bounds)),
+      features: countries.features.filter((country) => intersects(country, bounds)),
       type: "FeatureCollection",
     };
   } catch {
@@ -62,6 +79,23 @@ async function getPrimaryRoads(bounds: MapBounds): Promise<FeatureCollection> {
   }
 }
 
+async function getStateBoundaries(bounds: MapBounds): Promise<FeatureCollection> {
+  try {
+    const response = await fetch(STATE_BOUNDARIES_URL);
+    if (!response.ok) return { features: [], type: "FeatureCollection" };
+
+    const topology = (await response.json()) as StatesTopology;
+    const states = feature(topology, topology.objects.states) as FeatureCollection;
+
+    return {
+      features: states.features.filter((state) => intersects(state, bounds)),
+      type: "FeatureCollection",
+    };
+  } catch {
+    return { features: [], type: "FeatureCollection" };
+  }
+}
+
 export async function MapOverlay({
   latitude,
   longitude,
@@ -71,13 +105,16 @@ export async function MapOverlay({
   longitude: number;
   projection?: "identity" | "stereographic";
 }): Promise<JSX.Element> {
-  const center: [longitude: number, latitude: number] = [longitude, latitude];
   const mapProjection =
     projection === "stereographic"
-      ? geoStereographic().center(center)
+      ? geoStereographic().rotate([-longitude, -latitude])
       : geoIdentity().reflectY(true);
   const bounds = getMapBounds(latitude, longitude);
-  const [states, roads] = await Promise.all([getStateBoundaries(bounds), getPrimaryRoads(bounds)]);
+  const [countries, roads, states] = await Promise.all([
+    getCountryBoundaries(bounds),
+    getPrimaryRoads(bounds),
+    getStateBoundaries(bounds),
+  ]);
   const boundsGeometry: Feature<Geometry> = {
     geometry: {
       coordinates: [
@@ -100,8 +137,9 @@ export async function MapOverlay({
   ];
   mapProjection.fitExtent(fitExtent, boundsGeometry);
   const path = geoPath(mapProjection);
-  const statePath = path(states);
+  const countryPath = path(countries);
   const roadPath = path(roads);
+  const statePath = path(states);
 
   return (
     <svg
@@ -110,6 +148,15 @@ export async function MapOverlay({
       preserveAspectRatio="none"
       viewBox="0 0 600 600"
     >
+      {countryPath ? (
+        <path
+          d={countryPath}
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+        />
+      ) : null}
       {roadPath ? (
         <path d={roadPath} fill="none" stroke="white" strokeOpacity="0.7" strokeWidth="1" />
       ) : null}
