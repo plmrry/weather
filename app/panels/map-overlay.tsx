@@ -2,17 +2,16 @@ import { geoBounds, geoIdentity, geoPath, geoStereographic } from "d3-geo";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { JSX } from "react";
 import { feature } from "topojson-client";
+import { getMapBounds, type MapBounds } from "./map-bounds";
 
 const STATE_BOUNDARIES_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const PRIMARY_ROADS_URL =
   "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/1/query";
-
-type Bounds = [west: number, south: number, east: number, north: number];
 type StatesTopology = Parameters<typeof feature>[0] & {
   objects: { states: Parameters<typeof feature>[1] };
 };
 
-function intersects(featureToCheck: Feature, [west, south, east, north]: Bounds): boolean {
+function intersects(featureToCheck: Feature, [west, south, east, north]: MapBounds): boolean {
   const [[featureWest, featureSouth], [featureEast, featureNorth]] = geoBounds(featureToCheck);
 
   return (
@@ -20,7 +19,7 @@ function intersects(featureToCheck: Feature, [west, south, east, north]: Bounds)
   );
 }
 
-async function getStateBoundaries(bounds: Bounds): Promise<FeatureCollection> {
+async function getStateBoundaries(bounds: MapBounds): Promise<FeatureCollection> {
   try {
     const response = await fetch(STATE_BOUNDARIES_URL);
     if (!response.ok) return { features: [], type: "FeatureCollection" };
@@ -37,7 +36,7 @@ async function getStateBoundaries(bounds: Bounds): Promise<FeatureCollection> {
   }
 }
 
-async function getPrimaryRoads(bounds: Bounds): Promise<FeatureCollection> {
+async function getPrimaryRoads(bounds: MapBounds): Promise<FeatureCollection> {
   const searchParams = new URLSearchParams({
     f: "geojson",
     geometry: bounds.join(","),
@@ -72,7 +71,12 @@ export async function MapOverlay({
   longitude: number;
   projection?: "identity" | "stereographic";
 }): Promise<JSX.Element> {
-  const bounds: Bounds = [longitude - 2, latitude - 2, longitude + 2, latitude + 2];
+  const center: [longitude: number, latitude: number] = [longitude, latitude];
+  const mapProjection =
+    projection === "stereographic"
+      ? geoStereographic().center(center)
+      : geoIdentity().reflectY(true);
+  const bounds = getMapBounds(latitude, longitude);
   const [states, roads] = await Promise.all([getStateBoundaries(bounds), getPrimaryRoads(bounds)]);
   const boundsGeometry: Feature<Geometry> = {
     geometry: {
@@ -94,10 +98,7 @@ export async function MapOverlay({
     [0, 0],
     [600, 600],
   ];
-  const mapProjection =
-    projection === "stereographic"
-      ? geoStereographic().center([longitude, latitude]).fitExtent(fitExtent, boundsGeometry)
-      : geoIdentity().reflectY(true).fitExtent(fitExtent, boundsGeometry);
+  mapProjection.fitExtent(fitExtent, boundsGeometry);
   const path = geoPath(mapProjection);
   const statePath = path(states);
   const roadPath = path(roads);

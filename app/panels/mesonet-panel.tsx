@@ -1,15 +1,16 @@
 import { Map as MapIcon } from "lucide-react";
 import Image from "next/image";
 import type { JSX } from "react";
-import { LastUpdated } from "#/app/_components/last-updated";
-import { AspectRatio } from "#/app/_components/ui/aspect-ratio";
-import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
+import { LastUpdated } from "#/app/last-updated";
+import { AspectRatio } from "#/app/ui/aspect-ratio";
+import { Card, CardContent, CardHeader, CardTitle } from "#/app/ui/card";
 import { cn } from "#/lib/utils";
 import { CurrentRadarTimestamp } from "./current-radar-timestamp";
+import { getMapBounds } from "./map-bounds";
 import { MapOverlay } from "./map-overlay";
 
 function getMesonetImageUrl(latitude: number, longitude: number): string {
-  const bbox = [longitude - 2, latitude - 2, longitude + 2, latitude + 2];
+  const bbox = getMapBounds(latitude, longitude);
   const searchParams = new URLSearchParams({
     BBOX: bbox.join(","),
     FORMAT: "image/png",

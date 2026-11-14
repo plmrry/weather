@@ -1,6 +1,6 @@
 import type { JSX } from "react";
-import { AspectRatio } from "#/app/_components/ui/aspect-ratio";
-import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
+import { AspectRatio } from "#/app/ui/aspect-ratio";
+import { Card, CardContent, CardHeader, CardTitle } from "#/app/ui/card";
 import { MapOverlay } from "./map-overlay";
 import { MesonetAnimatedPanel } from "./mesonet-animated-panel";
 import { MesonetPanel } from "./mesonet-panel";

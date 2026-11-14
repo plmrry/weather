@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { WeatherPage } from "#/app/_components/weather-page";
+import { WeatherPage } from "#/app/weather-page";
 
 export default function Page({
   params,
