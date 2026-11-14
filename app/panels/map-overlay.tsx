@@ -115,6 +115,10 @@ export async function MapOverlay({
           .scale(SATELLITE_SCALE)
           .translate([300, 300])
           .rotate([-longitude, -latitude])
+          .clipExtent([
+            [0, 0],
+            [600, 600],
+          ])
           .precision(0.1)
       : geoIdentity().reflectY(true);
   const bounds = getMapBounds(latitude, longitude);
