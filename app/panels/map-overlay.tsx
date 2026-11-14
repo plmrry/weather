@@ -1,4 +1,5 @@
-import { geoBounds, geoIdentity, geoPath, geoStereographic } from "d3-geo";
+import { geoBounds, geoIdentity, geoPath } from "d3-geo";
+import { geoSatellite } from "d3-geo-projection";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { JSX } from "react";
 import { feature } from "topojson-client";
@@ -8,6 +9,8 @@ const COUNTRY_BOUNDARIES_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/count
 const PRIMARY_ROADS_URL =
   "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/1/query";
 const STATE_BOUNDARIES_URL = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+const SATELLITE_DISTANCE = 16;
+const SATELLITE_SCALE = 4754.3043;
 type CountriesTopology = Parameters<typeof feature>[0] & {
   objects: { countries: Parameters<typeof feature>[1] };
 };
@@ -103,11 +106,16 @@ export async function MapOverlay({
 }: {
   latitude: number;
   longitude: number;
-  projection?: "identity" | "stereographic";
+  projection?: "identity" | "satellite";
 }): Promise<JSX.Element> {
   const mapProjection =
-    projection === "stereographic"
-      ? geoStereographic().rotate([-longitude, -latitude])
+    projection === "satellite"
+      ? geoSatellite()
+          .distance(SATELLITE_DISTANCE)
+          .scale(SATELLITE_SCALE)
+          .translate([300, 300])
+          .rotate([-longitude, -latitude])
+          .precision(0.1)
       : geoIdentity().reflectY(true);
   const bounds = getMapBounds(latitude, longitude);
   const [countries, roads, states] = await Promise.all([
@@ -135,7 +143,7 @@ export async function MapOverlay({
     [0, 0],
     [600, 600],
   ];
-  mapProjection.fitExtent(fitExtent, boundsGeometry);
+  if (projection === "identity") mapProjection.fitExtent(fitExtent, boundsGeometry);
   const path = geoPath(mapProjection);
   const countryPath = path(countries);
   const roadPath = path(roads);

@@ -30,7 +30,7 @@ function NewMapPanel({
           ratio={1}
           role="img"
         >
-          <MapOverlay latitude={latitude} longitude={longitude} projection="stereographic" />
+          <MapOverlay latitude={latitude} longitude={longitude} projection="satellite" />
         </AspectRatio>
       </CardContent>
     </Card>
