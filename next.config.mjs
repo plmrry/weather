@@ -25,6 +25,7 @@ const nextConfig = {
     ],
     unoptimized: true,
   },
+  partialPrefetching: true,
   typescript: {
     ignoreBuildErrors: true,
   },

@@ -4,7 +4,7 @@ import { Button } from "@base-ui/react/button";
 import { Input } from "@base-ui/react/input";
 import React, { useState } from "react";
 import { useFormStatus } from "react-dom";
-import { Field, FieldLabel } from "#/app/_components/ui/field";
+import { Field, FieldLabel } from "#/app/ui/field";
 import { findStation } from "./actions";
 
 function SubmitButton({ disabled }: { disabled: boolean }): React.JSX.Element {
