@@ -1,9 +1,10 @@
-import type { JSX } from "react";
+import React from "react";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
-import { geoBounds, geoIdentity, geoPath } from "d3-geo";
-import { geoSatellite } from "d3-geo-projection";
+import { geoIdentity, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
-import { getMapBounds, type MapBounds } from "./map-bounds";
+import type { MapBounds } from "./map-bounds";
+import { getMapBounds } from "./map-bounds";
+import { getSatelliteProjection, MAP_DIMENSION } from "./map-projection";
 
 const COUNTRY_BOUNDARIES_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-10m.json";
@@ -11,47 +12,32 @@ const PRIMARY_ROADS_URL =
   "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/1/query";
 const STATE_BOUNDARIES_URL =
   "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
-const SATELLITE_DISTANCE = 16;
-const SATELLITE_SCALE = 3000;
-type CountriesTopology = Parameters<typeof feature>[0] & {
+type CountriesTopology = {
   objects: { countries: Parameters<typeof feature>[1] };
-};
-type StatesTopology = Parameters<typeof feature>[0] & {
+} & Parameters<typeof feature>[0];
+type StatesTopology = {
   objects: { states: Parameters<typeof feature>[1] };
-};
+} & Parameters<typeof feature>[0];
 
-function getLongitudeRanges(
-  west: number,
-  east: number,
-): [west: number, east: number][] {
-  return west <= east
-    ? [[west, east]]
-    : [
-        [west, 180],
-        [-180, east],
-      ];
+function getVisibleFeatures(
+  features: FeatureCollection,
+  path: ReturnType<typeof geoPath>,
+): FeatureCollection {
+  return {
+    features: features.features.filter((featureToCheck) => {
+      const [[left, top], [right, bottom]] = path.bounds(featureToCheck);
+      return (
+        left <= MAP_DIMENSION &&
+        top <= MAP_DIMENSION &&
+        right >= 0 &&
+        bottom >= 0
+      );
+    }),
+    type: "FeatureCollection",
+  };
 }
 
-function intersects(
-  featureToCheck: Feature,
-  [west, south, east, north]: MapBounds,
-): boolean {
-  const [[featureWest, featureSouth], [featureEast, featureNorth]] =
-    geoBounds(featureToCheck);
-  const longitudeIntersects = getLongitudeRanges(featureWest, featureEast).some(
-    ([featureRangeWest, featureRangeEast]) =>
-      getLongitudeRanges(west, east).some(
-        ([rangeWest, rangeEast]) =>
-          featureRangeWest <= rangeEast && featureRangeEast >= rangeWest,
-      ),
-  );
-
-  return longitudeIntersects && featureSouth <= north && featureNorth >= south;
-}
-
-async function getCountryBoundaries(
-  bounds: MapBounds,
-): Promise<FeatureCollection> {
+async function getCountryBoundaries(): Promise<FeatureCollection> {
   try {
     const response = await fetch(COUNTRY_BOUNDARIES_URL);
     if (!response.ok) return { features: [], type: "FeatureCollection" };
@@ -62,12 +48,7 @@ async function getCountryBoundaries(
       topology.objects.countries,
     ) as FeatureCollection;
 
-    return {
-      features: countries.features.filter((country) =>
-        intersects(country, bounds),
-      ),
-      type: "FeatureCollection",
-    };
+    return countries;
   } catch {
     return { features: [], type: "FeatureCollection" };
   }
@@ -101,9 +82,7 @@ async function getPrimaryRoads(bounds: MapBounds): Promise<FeatureCollection> {
   }
 }
 
-async function getStateBoundaries(
-  bounds: MapBounds,
-): Promise<FeatureCollection> {
+async function getStateBoundaries(): Promise<FeatureCollection> {
   try {
     const response = await fetch(STATE_BOUNDARIES_URL);
     if (!response.ok) return { features: [], type: "FeatureCollection" };
@@ -114,10 +93,7 @@ async function getStateBoundaries(
       topology.objects.states,
     ) as FeatureCollection;
 
-    return {
-      features: states.features.filter((state) => intersects(state, bounds)),
-      type: "FeatureCollection",
-    };
+    return states;
   } catch {
     return { features: [], type: "FeatureCollection" };
   }
@@ -127,29 +103,22 @@ export async function MapOverlay({
   latitude,
   longitude,
   projection = "identity",
+  radarLayer,
 }: {
   latitude: number;
   longitude: number;
   projection?: "identity" | "satellite";
-}): Promise<JSX.Element> {
+  radarLayer?: React.ReactNode;
+}): Promise<React.JSX.Element> {
   const mapProjection =
     projection === "satellite"
-      ? geoSatellite()
-          .distance(SATELLITE_DISTANCE)
-          .scale(SATELLITE_SCALE)
-          .translate([300, 300])
-          .rotate([-longitude, -latitude])
-          .clipExtent([
-            [0, 0],
-            [600, 600],
-          ])
-          .precision(0.1)
+      ? getSatelliteProjection(latitude, longitude)
       : geoIdentity().reflectY(true);
   const bounds = getMapBounds(latitude, longitude);
   const [countries, roads, states] = await Promise.all([
-    getCountryBoundaries(bounds),
+    getCountryBoundaries(),
     getPrimaryRoads(bounds),
-    getStateBoundaries(bounds),
+    getStateBoundaries(),
   ]);
   const boundsGeometry: Feature<Geometry> = {
     geometry: {
@@ -169,23 +138,23 @@ export async function MapOverlay({
   };
   const fitExtent: [[number, number], [number, number]] = [
     [0, 0],
-    [600, 600],
+    [MAP_DIMENSION, MAP_DIMENSION],
   ];
   if (projection === "identity")
     mapProjection.fitExtent(fitExtent, boundsGeometry);
   const path = geoPath(mapProjection);
-  const countryPath = path(countries);
+  const countryPath = path(getVisibleFeatures(countries, path));
   const roadPath = path(roads);
-  const statePath = path(states);
+  const statePath = path(getVisibleFeatures(states, path));
 
   return (
     <svg
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 size-full"
       preserveAspectRatio="none"
-      viewBox="0 0 600 600"
+      viewBox={`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`}
     >
-      <rect width="600" height="600" fill="black" />
+      <rect fill="black" height={MAP_DIMENSION} width={MAP_DIMENSION} />
       {countryPath ? (
         <path
           d={countryPath}
@@ -197,6 +166,7 @@ export async function MapOverlay({
           vectorEffect="non-scaling-stroke"
         />
       ) : null}
+      {radarLayer}
       {roadPath ? (
         <path
           d={roadPath}

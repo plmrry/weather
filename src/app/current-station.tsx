@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "#/app/ui/card";
 import { getLocationName, parseCoordinates } from "./find-station/geocode";
 import { getStationObservation } from "./find-station/nws-observation";
@@ -10,7 +10,7 @@ export async function CurrentStation({
   params,
 }: {
   params?: Params;
-}): Promise<JSX.Element> {
+}): Promise<React.JSX.Element> {
   const coordinates = parseCoordinates(params ? await params : undefined);
   const [name, observation] = coordinates
     ? await Promise.all([
@@ -21,10 +21,10 @@ export async function CurrentStation({
 
   return (
     <Card aria-label="Current station">
-      <CardHeader>
-        <CardTitle>Current station</CardTitle>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="mx-auto w-full max-w-md">
+        <CardHeader className="px-0">
+          <CardTitle>Current station</CardTitle>
+        </CardHeader>
         <dl className="grid grid-cols-2 gap-4 text-sm">
           <div className="col-span-full">
             <dt className="text-muted-foreground">Location name</dt>

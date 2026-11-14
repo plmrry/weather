@@ -3,6 +3,29 @@ import { cacheLife } from "next/cache";
 
 const MODEL = "openai/gpt-4.1-nano";
 
+const coordinatesSchema = jsonSchema<{
+  latitude: number;
+  longitude: number;
+}>({
+  additionalProperties: false,
+  properties: {
+    latitude: {
+      description: "Latitude in decimal degrees (WGS84).",
+      maximum: 90,
+      minimum: -90,
+      type: "number",
+    },
+    longitude: {
+      description: "Longitude in decimal degrees (WGS84).",
+      maximum: 180,
+      minimum: -180,
+      type: "number",
+    },
+  },
+  required: ["latitude", "longitude"],
+  type: "object",
+});
+
 const schema = jsonSchema<{ name: string }>({
   additionalProperties: false,
   properties: {
@@ -14,6 +37,24 @@ const schema = jsonSchema<{ name: string }>({
   required: ["name"],
   type: "object",
 });
+
+export async function getCoordinates(location: string): Promise<{
+  latitude: number;
+  longitude: number;
+}> {
+  "use cache";
+  cacheLife("max");
+
+  const { output } = await generateText({
+    model: MODEL,
+    output: Output.object({ schema: coordinatesSchema }),
+    prompt: `Geocode this place name: ${JSON.stringify(location)}`,
+    system: `You are a worldwide geocoding service. Given a place name, return the approximate center latitude and longitude in decimal degrees using WGS84 coordinates.`,
+    temperature: 0.2,
+  });
+
+  return output;
+}
 
 export function parseCoordinates(
   resolved: { latitude: string; longitude: string } | undefined,
