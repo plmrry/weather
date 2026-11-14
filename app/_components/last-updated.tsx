@@ -2,8 +2,8 @@
 
 import { type JSX, useEffect, useState } from "react";
 
-function formatTimestamp(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
+function formatTimestamp(date: Date): string {
+  return date.toLocaleString(undefined, {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
@@ -12,12 +12,22 @@ function formatTimestamp(iso: string): string {
   });
 }
 
-export function LastUpdated({ timestamp }: { timestamp: string }): JSX.Element {
-  const [formatted, setFormatted] = useState(timestamp);
+function parseTimestamp(timestamp: string | undefined): Date | null {
+  const date = timestamp ? new Date(timestamp) : new Date();
+
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function LastUpdated({ timestamp }: { timestamp?: string }): JSX.Element {
+  const [date, setDate] = useState<Date | null>(null);
 
   useEffect(() => {
-    setFormatted(formatTimestamp(timestamp));
+    setDate(parseTimestamp(timestamp));
   }, [timestamp]);
 
-  return <time dateTime={timestamp}>{formatted}</time>;
+  if (!date) {
+    return <span>—</span>;
+  }
+
+  return <time dateTime={date.toISOString()}>{formatTimestamp(date)}</time>;
 }

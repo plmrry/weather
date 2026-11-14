@@ -27,7 +27,7 @@ export function MesonetAnimatedPanel({
     >
       <CardHeader className="flex flex-col gap-1">
         <div className="flex flex-row items-center gap-1.5">
-          <RadarIcon aria-hidden="true" className="size-3.5 text-accent" />
+          <RadarIcon aria-hidden="true" className="size-3.5 text-white" />
           <CardTitle>
             <h2 className="text-xs font-semibold uppercase tracking-wider text-foreground">
               Mesonet Animated
