@@ -68,7 +68,7 @@ export function MesonetPanel({
               ? "Mesonet map unavailable until a location is selected"
               : "Current Mesonet radar near the selected location"
           }
-          className="flex w-full items-center justify-center overflow-hidden rounded-md border border-border bg-black"
+          className="flex w-full items-center justify-center overflow-hidden rounded-md border border-white bg-black"
           role="img"
         >
           {hasCoordinates ? (

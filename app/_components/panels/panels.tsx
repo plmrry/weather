@@ -1,8 +1,38 @@
 import type { JSX } from "react";
 import { AspectRatio } from "#/app/_components/ui/aspect-ratio";
 import { Card, CardContent, CardHeader, CardTitle } from "#/app/_components/ui/card";
+import { MapOverlay } from "./map-overlay";
 import { MesonetAnimatedPanel } from "./mesonet-animated-panel";
 import { MesonetPanel } from "./mesonet-panel";
+
+const AUSTIN_LATITUDE = 30.2672;
+const AUSTIN_LONGITUDE = -97.7431;
+
+function AustinPanel(): JSX.Element {
+  return (
+    <Card aria-label="new 1">
+      <CardContent className="mx-auto flex w-full max-w-md flex-col gap-4">
+        <CardHeader className="px-0">
+          <CardTitle>
+            <h2 className="text-xs font-semibold tracking-wider text-foreground">new 1</h2>
+          </CardTitle>
+        </CardHeader>
+        <AspectRatio
+          aria-label="Austin, Texas street map without radar data"
+          className="relative w-full overflow-hidden rounded-md border border-white bg-black"
+          ratio={1}
+          role="img"
+        >
+          <MapOverlay
+            latitude={AUSTIN_LATITUDE}
+            longitude={AUSTIN_LONGITUDE}
+            projection="stereographic"
+          />
+        </AspectRatio>
+      </CardContent>
+    </Card>
+  );
+}
 
 function NewPanel({ label }: { label: string }): JSX.Element {
   return (
@@ -53,7 +83,7 @@ export async function Panels({
         latitude={coordinatesAreValid ? parsedLatitude : undefined}
         longitude={coordinatesAreValid ? parsedLongitude : undefined}
       />
-      <NewPanel label="new 1" />
+      <AustinPanel />
       <NewPanel label="new 2" />
     </>
   );

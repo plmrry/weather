@@ -1,4 +1,4 @@
-import { geoBounds, geoIdentity, geoPath } from "d3-geo";
+import { geoBounds, geoIdentity, geoPath, geoStereographic } from "d3-geo";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import type { JSX } from "react";
 import { feature } from "topojson-client";
@@ -66,9 +66,11 @@ async function getPrimaryRoads(bounds: Bounds): Promise<FeatureCollection> {
 export async function MapOverlay({
   latitude,
   longitude,
+  projection = "identity",
 }: {
   latitude: number;
   longitude: number;
+  projection?: "identity" | "stereographic";
 }): Promise<JSX.Element> {
   const bounds: Bounds = [longitude - 2, latitude - 2, longitude + 2, latitude + 2];
   const [states, roads] = await Promise.all([getStateBoundaries(bounds), getPrimaryRoads(bounds)]);
@@ -77,9 +79,9 @@ export async function MapOverlay({
       coordinates: [
         [
           [bounds[0], bounds[1]],
-          [bounds[2], bounds[1]],
-          [bounds[2], bounds[3]],
           [bounds[0], bounds[3]],
+          [bounds[2], bounds[3]],
+          [bounds[2], bounds[1]],
           [bounds[0], bounds[1]],
         ],
       ],
@@ -88,16 +90,15 @@ export async function MapOverlay({
     properties: {},
     type: "Feature",
   };
-  const projection = geoIdentity()
-    .reflectY(true)
-    .fitExtent(
-      [
-        [0, 0],
-        [600, 600],
-      ],
-      boundsGeometry,
-    );
-  const path = geoPath(projection);
+  const fitExtent: [[number, number], [number, number]] = [
+    [0, 0],
+    [600, 600],
+  ];
+  const mapProjection =
+    projection === "stereographic"
+      ? geoStereographic().center([longitude, latitude]).fitExtent(fitExtent, boundsGeometry)
+      : geoIdentity().reflectY(true).fitExtent(fitExtent, boundsGeometry);
+  const path = geoPath(mapProjection);
   const statePath = path(states);
   const roadPath = path(roads);
 
