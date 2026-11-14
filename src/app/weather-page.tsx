@@ -15,7 +15,9 @@ export function WeatherPage({
         <span className="text-9xl leading-none" role="img" aria-label="Coffee">
           ☕
         </span>
-        <h1 className="font-pixel text-5xl leading-none text-primary text-balance">Weather Café</h1>
+        <h1 className="font-pixel text-5xl leading-none text-balance text-primary">
+          Weather Café
+        </h1>
       </header>
 
       <FindStation params={params} />

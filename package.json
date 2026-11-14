@@ -31,6 +31,7 @@
     "clsx": "^2.1.1",
     "d3": "^7.9.2",
     "d3-geo": "^3.1.1",
+    "d3-geo-projection": "^4.0.0",
     "geist": "^1.7.2",
     "lucide-react": "^1.48.0",
     "next": "16.5.0-canary.50",
@@ -66,5 +67,5 @@
     "node": "26.x",
     "pnpm": "12.x"
   },
-  "packageManager": "pnpm@12.15.0"
+  "packageManager": "pnpm@12.21.0"
 }

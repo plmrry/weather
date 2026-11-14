@@ -39,8 +39,10 @@ export async function getLocation(formData: FormData): Promise<LocationResult> {
   const query = formData.get("query");
   const latitudeValue = formData.get("latitude");
   const longitudeValue = formData.get("longitude");
-  const latitude = typeof latitudeValue === "string" ? Number(latitudeValue) : Number.NaN;
-  const longitude = typeof longitudeValue === "string" ? Number(longitudeValue) : Number.NaN;
+  const latitude =
+    typeof latitudeValue === "string" ? Number(latitudeValue) : Number.NaN;
+  const longitude =
+    typeof longitudeValue === "string" ? Number(longitudeValue) : Number.NaN;
   const hasCoordinates =
     Number.isFinite(latitude) &&
     latitude >= -90 &&
@@ -55,7 +57,9 @@ export async function getLocation(formData: FormData): Promise<LocationResult> {
   } else if (hasCoordinates) {
     prompt = `Reverse geocode latitude ${latitude} and longitude ${longitude}. Return those exact coordinates with the location name.`;
   } else {
-    throw new TypeError("A location query or valid latitude and longitude are required.");
+    throw new TypeError(
+      "A location query or valid latitude and longitude are required.",
+    );
   }
 
   const { output } = await generateText({

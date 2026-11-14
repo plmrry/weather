@@ -11,7 +11,11 @@ function formatTimestamp(date: Date): string {
   });
 }
 
-export function RadarTimestamp({ time }: { time: Date | null }): JSX.Element | null {
+export function RadarTimestamp({
+  time,
+}: {
+  time: Date | null;
+}): JSX.Element | null {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -23,7 +27,7 @@ export function RadarTimestamp({ time }: { time: Date | null }): JSX.Element | n
   }
 
   return (
-    <span className="absolute bottom-1.5 right-1.5 rounded bg-black/70 px-1.5 py-0.5 font-mono text-[10px] tabular-nums text-white/90">
+    <span className="absolute right-1.5 bottom-1.5 rounded bg-black/70 px-1.5 py-0.5 font-mono text-[10px] text-white/90 tabular-nums">
       {formatTimestamp(time)}
     </span>
   );

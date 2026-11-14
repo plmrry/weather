@@ -6,7 +6,11 @@ import { LastUpdated } from "./last-updated";
 
 type Params = Promise<{ latitude: string; longitude: string }>;
 
-export async function CurrentStation({ params }: { params?: Params }): Promise<JSX.Element> {
+export async function CurrentStation({
+  params,
+}: {
+  params?: Params;
+}): Promise<JSX.Element> {
   const coordinates = parseCoordinates(params ? await params : undefined);
   const [name, observation] = coordinates
     ? await Promise.all([
@@ -48,7 +52,11 @@ export async function CurrentStation({ params }: { params?: Params }): Promise<J
           <div className="col-span-full">
             <dt className="text-muted-foreground">Last updated</dt>
             <dd className="font-medium">
-              {observation ? <LastUpdated timestamp={observation.timestamp} /> : "—"}
+              {observation ? (
+                <LastUpdated timestamp={observation.timestamp} />
+              ) : (
+                "—"
+              )}
             </dd>
           </div>
         </dl>

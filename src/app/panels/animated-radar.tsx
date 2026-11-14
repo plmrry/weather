@@ -1,6 +1,7 @@
 "use client";
 
 import { type JSX, useEffect, useMemo, useState } from "react";
+import { getMapBounds } from "./map-bounds";
 import { RadarTimestamp } from "./radar-timestamp";
 
 const FRAME_COUNT = 10;
@@ -13,7 +14,7 @@ type Frame = {
 };
 
 function buildFrames(latitude: number, longitude: number): Frame[] {
-  const bbox = [longitude - 2, latitude - 2, longitude + 2, latitude + 2];
+  const bbox = getMapBounds(latitude, longitude);
   const now = Date.now();
   const stepMs = FRAME_INTERVAL_MINUTES * 60 * 1000;
   const latest = Math.floor((now - stepMs) / stepMs) * stepMs;
@@ -48,7 +49,10 @@ export function AnimatedRadar({
   latitude: number;
   longitude: number;
 }): JSX.Element {
-  const frames = useMemo(() => buildFrames(latitude, longitude), [latitude, longitude]);
+  const frames = useMemo(
+    () => buildFrames(latitude, longitude),
+    [latitude, longitude],
+  );
   const [activeFrame, setActiveFrame] = useState(0);
 
   useEffect(() => {

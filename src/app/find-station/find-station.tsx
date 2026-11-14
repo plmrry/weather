@@ -7,12 +7,16 @@ import { RecentLocations } from "./recent-locations";
 
 type Params = Promise<{ latitude: string; longitude: string }>;
 
-export function FindStation({ params }: { params?: Params }): React.JSX.Element {
+export function FindStation({
+  params,
+}: {
+  params?: Params;
+}): React.JSX.Element {
   return (
     <Card aria-label="Coordinate input">
       <CardContent>
         <FieldGroup>
-          <FieldSeparator className="text-xs uppercase tracking-wider **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
+          <FieldSeparator className="text-xs tracking-wider uppercase **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
             find a station
           </FieldSeparator>
 
@@ -22,7 +26,7 @@ export function FindStation({ params }: { params?: Params }): React.JSX.Element 
             </Suspense>
           </Field>
 
-          <FieldSeparator className="text-xs uppercase tracking-wider **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
+          <FieldSeparator className="text-xs tracking-wider uppercase **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
             or use your current location
           </FieldSeparator>
 
@@ -30,7 +34,7 @@ export function FindStation({ params }: { params?: Params }): React.JSX.Element 
             <ClientLocation />
           </Field>
 
-          <FieldSeparator className="text-xs uppercase tracking-wider **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
+          <FieldSeparator className="text-xs tracking-wider uppercase **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
             or use recent locations
           </FieldSeparator>
 
