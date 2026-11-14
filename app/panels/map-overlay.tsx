@@ -160,11 +160,13 @@ export async function MapOverlay({
       preserveAspectRatio="none"
       viewBox="0 0 600 600"
     >
-      <rect width="600" height="600" fill="white" fillOpacity="0.16" />
+      <rect width="600" height="600" fill="black" />
       {countryPath ? (
         <path
           d={countryPath}
-          fill="black"
+          fill="white"
+          fillOpacity="0.3"
+          fillRule="evenodd"
           stroke="white"
           strokeWidth="2"
           vectorEffect="non-scaling-stroke"
