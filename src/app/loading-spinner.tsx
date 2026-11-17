@@ -4,7 +4,7 @@ export function LoadingSpinner(): React.JSX.Element {
   return (
     <div
       aria-label="Loading"
-      className="absolute inset-0 flex items-center justify-center bg-black"
+      className="absolute inset-0 flex items-center justify-center bg-transparent"
       role="status"
     >
       <span
