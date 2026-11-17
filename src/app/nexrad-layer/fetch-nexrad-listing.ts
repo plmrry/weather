@@ -1,21 +1,27 @@
 "use server";
 
 import { XMLParser } from "fast-xml-parser";
-import { io } from "next/cache";
+import { cacheLife, cacheTag, io } from "next/cache";
 import { getStationData } from "#/app/get-station-data";
 
-export async function fetchNexradListing(
+export async function fetchStationData(
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
-): Promise<null | string[]> {
+) {
   if (!params) return null;
 
   const { latitude, longitude } = await params;
-  const station = await getStationData({
+  return getStationData({
     latitude: Number(latitude),
     longitude: Number(longitude),
   });
-  const stationId = station?.gridData?.properties?.radarStation;
-  if (!stationId) return null;
+}
+
+export async function fetchNexradListing(
+  stationId?: string,
+): Promise<null | string[]> {
+  "use cache: remote";
+  cacheLife("minutes");
+  cacheTag("nexrad-listing");
 
   await io();
 

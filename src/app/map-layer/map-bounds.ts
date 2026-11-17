@@ -1,4 +1,4 @@
-import { geoRotation } from "d3-geo";
+import { geoRotation } from "d3";
 
 const EARTH_RADIUS_KILOMETERS = 6371.0088;
 const MAP_RADIUS_KILOMETERS = 250;

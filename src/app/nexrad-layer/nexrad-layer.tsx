@@ -1,27 +1,29 @@
 import React from "react";
 import { LoadingSpinner } from "#/app/loading-spinner";
-import { fetchNexradData } from "./fetch-nexrad";
+import { fetchNexradDataLatest } from "./fetch-nexrad";
 
 export function NexradLayer({
   params,
 }: {
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
-  const data = params ? fetchNexradData(params) : null;
+  const data = params ? fetchNexradDataLatest(params) : null;
 
   if (!data) return null;
 
   return (
-    <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
-      <NexradLayerRendered data={data} />
-    </React.Suspense>
+    <React.ViewTransition>
+      <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
+        <NexradLayerRendered data={data} />
+      </React.Suspense>
+    </React.ViewTransition>
   );
 }
 
-export function NexradLayerRendered({
+function NexradLayerRendered({
   data: dataPromise,
 }: {
-  data?: ReturnType<fetchNexradData>;
+  data?: ReturnType<fetchNexradDataLatest>;
 }): null | React.JSX.Element {
   const data = dataPromise ? React.use(dataPromise) : null;
   if (!data) return null;

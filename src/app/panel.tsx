@@ -2,19 +2,17 @@ import React from "react";
 import Card from "#/app/ui/card";
 
 export function Panel({
-  "aria-label": ariaLabel,
   children,
   description,
   icon,
   title,
 }: {
-  "aria-label"?: string;
   description?: React.ReactNode;
   icon?: React.ReactNode;
-  title: React.ReactNode;
+  title: string;
 } & Omit<React.ComponentProps<"div">, "title">): React.JSX.Element {
   return (
-    <Card.Root aria-label={ariaLabel}>
+    <Card.Root aria-label={title}>
       <Card.Header>
         <div className="flex flex-row items-center gap-1.5">
           {icon}

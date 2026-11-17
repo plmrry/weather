@@ -1,3 +1,4 @@
+import * as d3 from "d3";
 import { cacheLife, cacheTag } from "next/cache";
 
 const USER_AGENT = "(weather-cafe.vercel.app, paul@paulmurray.lol)";
@@ -12,6 +13,26 @@ async function fetchJson<T>(url: string): Promise<null | T> {
   return (await response.json()) as T;
 }
 
+type RadarStation = {
+  geometry: { coordinates: [number, number]; type: "Point" };
+  properties: {
+    id: string;
+    latency?: { levelTwoLastReceivedTime?: string };
+    name: string;
+    stationType: string;
+  };
+};
+
+async function getRadarStations() {
+  // "use cache: remote";
+  // cacheLife("minutes");
+  // cacheTag("station-data");
+
+  return fetchJson<{ features: RadarStation[] }>(
+    "https://api.weather.gov/radar/stations?stationType=WSR-88D",
+  );
+}
+
 export async function getStationData({
   latitude,
   longitude,
@@ -19,40 +40,28 @@ export async function getStationData({
   latitude: number;
   longitude: number;
 }) {
-  "use cache: remote";
-  cacheLife("minutes");
-  cacheTag("station-data");
+  // "use cache: remote";
+  // cacheLife("minutes");
+  // cacheTag("station-data");
 
-  const gridData = await fetchJson<{
-    properties?: { observationStations?: string; radarStation?: string };
-  }>(
-    `https://api.weather.gov/points/${latitude.toFixed(4)},${longitude.toFixed(4)}`,
+  const stations = await getRadarStations();
+
+  const station = d3.least(
+    stations?.features.filter(
+      (station) =>
+        station.properties.stationType === "WSR-88D" &&
+        station.geometry?.type === "Point" &&
+        station.geometry.coordinates.every(Number.isFinite),
+    ) ?? [],
+    (station) =>
+      d3.geoDistance([longitude, latitude], station.geometry.coordinates),
   );
-
-  const stationsUrl = gridData?.properties?.observationStations;
-  if (!stationsUrl) return null;
-
-  const stations = await fetchJson<{
-    features?: { properties?: { name?: string; stationIdentifier?: string } }[];
-  }>(stationsUrl);
-
-  const station = stations?.features?.[0]?.properties;
-  const stationId = station?.stationIdentifier;
-  if (!stationId) return null;
-
-  const latestObservation = await fetchJson<{
-    properties?: { timestamp?: string };
-  }>(`https://api.weather.gov/stations/${stationId}/observations/latest`);
-
-  const timestamp = latestObservation?.properties?.timestamp;
-  if (!timestamp) return null;
+  if (!station) return null;
 
   return {
-    gridData,
-    latestObservation,
-    stationId,
-    stationName: station?.name ?? stationId,
-    stations,
-    timestamp,
+    stationCoordinates: station.geometry?.coordinates,
+    stationId: station.properties.id,
+    stationName: station.properties.name,
+    timestamp: station.properties.latency?.levelTwoLastReceivedTime,
   };
 }

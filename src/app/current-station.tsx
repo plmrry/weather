@@ -12,7 +12,7 @@ export async function CurrentStation({
   params?: Params;
 }): Promise<React.JSX.Element> {
   const coordinates = parseCoordinates(params ? await params : undefined);
-  const [name, observation] = coordinates
+  const [name, station] = coordinates
     ? await Promise.all([
         getLocationName(coordinates.latitude, coordinates.longitude),
         getStationData(coordinates),
@@ -46,22 +46,20 @@ export async function CurrentStation({
             <div className="col-span-full">
               <dt className="text-muted-foreground">Station name</dt>
               <dd className="font-medium text-foreground">
-                {observation ? observation.stationName : "—"}
-                {observation ? (
+                {station ? station.stationName : "—"}
+                {station ? (
                   <span className="ml-2 font-mono text-xs text-muted-foreground">
-                    {observation.stationId}
+                    {station.stationId}
                   </span>
                 ) : null}
               </dd>
             </div>
             <div className="col-span-full">
-              <dt className="text-muted-foreground">Last updated</dt>
+              <dt className="text-muted-foreground">
+                Radar data last received
+              </dt>
               <dd className="font-medium text-foreground">
-                {observation ? (
-                  <LastUpdated timestamp={observation.timestamp} />
-                ) : (
-                  "—"
-                )}
+                {station ? <LastUpdated timestamp={station.timestamp} /> : "—"}
               </dd>
             </div>
           </dl>

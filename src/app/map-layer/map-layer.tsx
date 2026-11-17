@@ -1,9 +1,10 @@
 import React from "react";
 import type { FeatureCollection } from "geojson";
-import { geoPath } from "d3-geo";
+import { geoPath } from "d3";
 import { cacheLife, cacheTag } from "next/cache";
 import { feature } from "topojson-client";
 import type { MapBounds } from "#/app/map-layer/map-bounds";
+import { LoadingSpinner } from "#/app/loading-spinner";
 import { getMapBounds } from "#/app/map-layer/map-bounds";
 import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
 
@@ -19,6 +20,88 @@ type CountriesTopology = {
 type StatesTopology = {
   objects: { states: Parameters<typeof feature>[1] };
 } & Parameters<typeof feature>[0];
+
+export function MapLayer({
+  params,
+}: {
+  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
+}) {
+  return (
+    <React.ViewTransition>
+      <React.Suspense fallback={<LoadingSpinner />} name="MapLayer">
+        <MapLayerCached params={params} />
+      </React.Suspense>
+    </React.ViewTransition>
+  );
+}
+
+async function MapLayerCached({
+  params: paramsPromise,
+}: {
+  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
+}): Promise<React.JSX.Element | null> {
+  "use cache: remote";
+  cacheLife("max");
+  cacheTag("map-layer");
+
+  const params = await paramsPromise;
+  if (!params) return null;
+
+  const latitude = Number(params.latitude);
+  const longitude = Number(params.longitude);
+
+  const mapProjection = getSatelliteProjection(latitude, longitude);
+  const bounds = getMapBounds(latitude, longitude);
+  const [countries, roads, states] = await Promise.all([
+    getCountryBoundaries(),
+    getPrimaryRoads(bounds),
+    getStateBoundaries(),
+  ]);
+  const path = geoPath(mapProjection);
+  const countryPath = path(getVisibleFeatures(countries, path));
+  const roadPath = path(roads);
+  const statePath = path(getVisibleFeatures(states, path));
+
+  return (
+    <svg
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 size-full"
+      preserveAspectRatio="none"
+      viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
+    >
+      <rect fill="black" height={MAP_SIZE} width={MAP_SIZE} />
+      {countryPath ? (
+        <path
+          d={countryPath}
+          fill="white"
+          fillOpacity="0.3"
+          fillRule="evenodd"
+          stroke="white"
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+        />
+      ) : null}
+      {roadPath ? (
+        <path
+          d={roadPath}
+          fill="none"
+          stroke="white"
+          strokeOpacity="0.7"
+          strokeWidth="1"
+        />
+      ) : null}
+      {statePath ? (
+        <path
+          d={statePath}
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+        />
+      ) : null}
+    </svg>
+  );
+}
 
 function getVisibleFeatures(
   features: FeatureCollection,
@@ -93,84 +176,4 @@ async function getStateBoundaries(): Promise<FeatureCollection> {
   } catch {
     return { features: [], type: "FeatureCollection" };
   }
-}
-
-export async function MapLayerCached({
-  latitude,
-  longitude,
-}: {
-  latitude: number;
-  longitude: number;
-}): Promise<React.JSX.Element> {
-  "use cache: remote";
-  cacheLife("max");
-  cacheTag("map-layer");
-
-  const mapProjection = getSatelliteProjection(latitude, longitude);
-  const bounds = getMapBounds(latitude, longitude);
-  const [countries, roads, states] = await Promise.all([
-    getCountryBoundaries(),
-    getPrimaryRoads(bounds),
-    getStateBoundaries(),
-  ]);
-  const path = geoPath(mapProjection);
-  const countryPath = path(getVisibleFeatures(countries, path));
-  const roadPath = path(roads);
-  const statePath = path(getVisibleFeatures(states, path));
-
-  return (
-    <svg
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 size-full"
-      preserveAspectRatio="none"
-      viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
-    >
-      <rect fill="black" height={MAP_SIZE} width={MAP_SIZE} />
-      {countryPath ? (
-        <path
-          d={countryPath}
-          fill="white"
-          fillOpacity="0.3"
-          fillRule="evenodd"
-          stroke="white"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-        />
-      ) : null}
-      {roadPath ? (
-        <path
-          d={roadPath}
-          fill="none"
-          stroke="white"
-          strokeOpacity="0.7"
-          strokeWidth="1"
-        />
-      ) : null}
-      {statePath ? (
-        <path
-          d={statePath}
-          fill="none"
-          stroke="white"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-        />
-      ) : null}
-    </svg>
-  );
-}
-
-export function MapLayer({
-  params: paramsPromise,
-}: {
-  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
-}) {
-  const params = paramsPromise ? React.use(paramsPromise) : null;
-
-  if (!params) return null;
-
-  const { latitude, longitude } = params ?? {};
-
-  return (
-    <MapLayerCached latitude={Number(latitude)} longitude={Number(longitude)} />
-  );
 }

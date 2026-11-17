@@ -42,6 +42,6 @@ export default defineConfig({
     "perfectionist/sort-switch-case": "warn",
     "perfectionist/sort-union-types": "warn",
     "perfectionist/sort-variable-declarations": "warn",
-    "sort-keys": "error",
+    "sort-keys": "warn",
   },
 });

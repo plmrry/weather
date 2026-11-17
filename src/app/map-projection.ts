@@ -1,42 +1,34 @@
-import type { Feature, Geometry } from "geojson";
+import type { MultiPoint } from "geojson";
 import { geoSatellite } from "d3-geo-projection";
-import { getMapBounds } from "#/app/map-layer/map-bounds";
 
 export const MAP_SIZE = 600;
+const HALF_SIZE = MAP_SIZE / 2;
+const EDGE_POINTS: [number, number][] = [
+  [HALF_SIZE, 0],
+  [HALF_SIZE, MAP_SIZE],
+  [MAP_SIZE, HALF_SIZE],
+  [0, HALF_SIZE],
+];
 const SATELLITE_DISTANCE = 16;
-const SATELLITE_SCALE = 3000;
+const SATELLITE_SCALE = 7000;
 
 export function getSatelliteProjection(latitude: number, longitude: number) {
   const projection = geoSatellite()
     .distance(SATELLITE_DISTANCE)
     .scale(SATELLITE_SCALE)
-    .translate([MAP_SIZE / 2, MAP_SIZE / 2])
+    .translate([HALF_SIZE, HALF_SIZE])
     .rotate([-longitude, -latitude])
     .clipExtent([
       [0, 0],
       [MAP_SIZE, MAP_SIZE],
     ])
     .precision(0.1);
-  const bounds = getMapBounds(latitude, longitude);
-  const boundsGeometry: Feature<Geometry> = {
-    geometry: {
-      coordinates: [
-        [
-          [bounds[0], bounds[1]],
-          [bounds[0], bounds[3]],
-          [bounds[2], bounds[3]],
-          [bounds[2], bounds[1]],
-          [bounds[0], bounds[1]],
-        ],
-      ],
-      type: "Polygon",
-    },
-    properties: {},
-    type: "Feature",
+  const geometry: MultiPoint = {
+    coordinates: EDGE_POINTS.flatMap((point) => {
+      const coordinate = projection.invert?.(point);
+      return coordinate ? [coordinate] : [];
+    }),
+    type: "MultiPoint",
   };
-  const fitExtent: [[number, number], [number, number]] = [
-    [0, 0],
-    [MAP_SIZE, MAP_SIZE],
-  ];
-  return projection.fitExtent(fitExtent, boundsGeometry);
+  return projection.fitSize([MAP_SIZE, MAP_SIZE], geometry);
 }

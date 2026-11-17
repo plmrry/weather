@@ -22,13 +22,17 @@ export function WeatherPage({
 
       <FindStation params={params} />
 
-      <React.Suspense fallback={<CurrentStation />} name="CurrentStation">
-        <CurrentStation params={params} />
-      </React.Suspense>
+      <React.ViewTransition>
+        <React.Suspense fallback={<CurrentStation />} name="CurrentStation">
+          <CurrentStation params={params} />
+        </React.Suspense>
+      </React.ViewTransition>
 
-      <React.Suspense fallback={<Panels />} name="Panels">
-        <Panels params={params} />
-      </React.Suspense>
+      <React.ViewTransition>
+        <React.Suspense fallback={<Panels />} name="Panels">
+          <Panels params={params} />
+        </React.Suspense>
+      </React.ViewTransition>
 
       <ClearButton />
     </main>
