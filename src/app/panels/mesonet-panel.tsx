@@ -2,12 +2,11 @@ import type { JSX } from "react";
 import { Map as MapIcon } from "lucide-react";
 import Image from "next/image";
 import { LastUpdated } from "#/app/last-updated";
-import { AspectRatio } from "#/app/ui/aspect-ratio";
-import { Card, CardContent, CardHeader, CardTitle } from "#/app/ui/card";
 import { cn } from "#/lib/utils";
 import { CurrentRadarTimestamp } from "./current-radar-timestamp";
 import { getMapBounds } from "./map-bounds";
 import { MapOverlay } from "./map-overlay";
+import { Panel } from "./panel";
 
 function getMesonetImageUrl(latitude: number, longitude: number): string {
   const bbox = getMapBounds(latitude, longitude);
@@ -40,59 +39,36 @@ export function MesonetPanel({
   const isDisabled = disabled || !hasCoordinates;
 
   return (
-    <Card
+    <Panel
       aria-disabled={isDisabled}
       aria-label="Mesonet radar"
       className={cn(isDisabled && "pointer-events-none select-none opacity-50")}
+      description={
+        hasCoordinates ? (
+          <p className="text-[0.625rem] text-muted-foreground">
+            Updated <LastUpdated />
+          </p>
+        ) : null
+      }
+      icon={<MapIcon aria-hidden="true" className="size-3.5 text-white" />}
+      title="Mesonet"
     >
-      <CardContent className="mx-auto flex w-full max-w-md flex-col gap-4">
-        <CardHeader className="flex flex-col gap-1 px-0">
-          <div className="flex flex-row items-center gap-1.5">
-            <MapIcon aria-hidden="true" className="size-3.5 text-white" />
-            <CardTitle>
-              <h2 className="text-xs font-semibold tracking-wider text-foreground uppercase">
-                Mesonet
-              </h2>
-            </CardTitle>
-          </div>
-          {hasCoordinates ? (
-            <p className="text-[0.625rem] text-muted-foreground">
-              Updated <LastUpdated />
-            </p>
-          ) : null}
-        </CardHeader>
-
-        <AspectRatio
-          ratio={1}
-          aria-label={
-            isDisabled
-              ? "Mesonet map unavailable until a location is selected"
-              : "Current Mesonet radar near the selected location"
-          }
-          className="flex w-full items-center justify-center overflow-hidden rounded-md border border-white bg-black"
-          role="img"
-        >
-          {hasCoordinates ? (
-            <>
-              <Image
-                alt="Current Mesonet base-reflectivity radar near the selected location"
-                className="size-full object-cover"
-                height={600}
-                sizes="(max-width: 512px) calc(100vw - 4rem), 448px"
-                src={getMesonetImageUrl(latitude, longitude)}
-                width={600}
-              />
-              <MapOverlay latitude={latitude} longitude={longitude} />
-              <CurrentRadarTimestamp />
-            </>
-          ) : (
-            <MapIcon
-              aria-hidden="true"
-              className="size-10 text-muted-foreground"
-            />
-          )}
-        </AspectRatio>
-      </CardContent>
-    </Card>
+      {hasCoordinates ? (
+        <>
+          <Image
+            alt="Current Mesonet base-reflectivity radar near the selected location"
+            className="size-full object-cover"
+            height={600}
+            sizes="(max-width: 512px) calc(100vw - 4rem), 448px"
+            src={getMesonetImageUrl(latitude, longitude)}
+            width={600}
+          />
+          <MapOverlay latitude={latitude} longitude={longitude} />
+          <CurrentRadarTimestamp />
+        </>
+      ) : (
+        <MapIcon aria-hidden="true" className="size-10 text-muted-foreground" />
+      )}
+    </Panel>
   );
 }

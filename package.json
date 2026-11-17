@@ -32,6 +32,7 @@
     "d3": "latest",
     "d3-geo": "latest",
     "d3-geo-projection": "latest",
+    "fast-xml-parser": "latest",
     "geist": "latest",
     "geotiff": "latest",
     "lucide-react": "latest",

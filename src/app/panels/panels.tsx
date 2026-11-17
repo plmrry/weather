@@ -2,11 +2,11 @@ import React from "react";
 import { Map as MapIcon } from "lucide-react";
 import { getCoordinates, getLocationName } from "#/app/find-station/geocode";
 import { LastUpdated } from "#/app/last-updated";
-import { AspectRatio } from "#/app/ui/aspect-ratio";
-import { Card, CardContent, CardHeader, CardTitle } from "#/app/ui/card";
 import { MapOverlay } from "./map-overlay";
 import { MesonetPanel } from "./mesonet-panel";
-import { NexradData } from "./nexrad-data";
+import { NexradListingPanel } from "./nexrad-panel/nexrad-listing-panel";
+import { NexradDataPanel } from "./nexrad-panel/nexrad-data-panel";
+import { Panel } from "./panel";
 import {
   RadarDataSummary,
   RadarPanelsClient,
@@ -46,39 +46,26 @@ function NewMapPanel({
   renderRadarData?: boolean;
 }): React.JSX.Element {
   return (
-    <Card aria-label={label}>
-      <CardContent className="mx-auto flex w-full max-w-md flex-col gap-4">
-        <CardHeader className="flex flex-col gap-1 px-0">
-          <div className="flex flex-row items-center gap-1.5">
-            <MapIcon aria-hidden="true" className="size-3.5 text-white" />
-            <CardTitle>
-              <h2 className="text-xs font-semibold tracking-wider text-foreground uppercase">
-                {label}
-              </h2>
-            </CardTitle>
-          </div>
-          <p className="text-[0.625rem] text-muted-foreground">
-            Updated <LastUpdated />
-          </p>
-        </CardHeader>
-        {renderRadarData ? <RadarDataSummary id={id} /> : null}
-        <AspectRatio
-          aria-label={`${location} map${renderRadarData ? " with radar data" : " without radar data"}`}
-          className="relative w-full overflow-hidden rounded-md border border-white bg-black"
-          ratio={1}
-          role="img"
-        >
-          <React.Suspense fallback={<MapLoadingSpinner location={location} />}>
-            <MapOverlay
-              latitude={latitude}
-              longitude={longitude}
-              projection="satellite"
-              radarLayer={renderRadarData ? <RadarSvgLayer id={id} /> : null}
-            />
-          </React.Suspense>
-        </AspectRatio>
-      </CardContent>
-    </Card>
+    <Panel
+      aria-label={label}
+      description={
+        <p className="text-[0.625rem] text-muted-foreground">
+          Updated <LastUpdated />
+        </p>
+      }
+      icon={<MapIcon aria-hidden="true" className="size-3.5 text-white" />}
+      title={label}
+    >
+      {renderRadarData ? <RadarDataSummary id={id} /> : null}
+      <React.Suspense fallback={<MapLoadingSpinner location={location} />}>
+        <MapOverlay
+          latitude={latitude}
+          longitude={longitude}
+          projection="satellite"
+          radarLayer={renderRadarData ? <RadarSvgLayer id={id} /> : null}
+        />
+      </React.Suspense>
+    </Panel>
   );
 }
 
@@ -170,7 +157,8 @@ export async function Panels({
           renderRadarData={RADAR_DATA_ENABLED}
         />
       ))}
-      <NexradData />
+      <NexradListingPanel />
+      <NexradDataPanel />
     </>
   );
 
