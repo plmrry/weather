@@ -4,7 +4,12 @@ import { destination } from "@turf/destination";
 import * as d3 from "d3";
 import Level2Radar from "nexrad-level-2-data";
 import { cacheLife, cacheTag, io } from "next/cache";
-import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
+import {
+  getSatelliteProjection,
+  MAP_SIZE,
+  reflectivityDomain,
+  reflectivityQuantizeScale,
+} from "#/app/map-projection";
 import { fetchNexradListing, fetchStationData } from "./fetch-nexrad-listing";
 
 export async function fetchNexradDataLatest(
@@ -16,7 +21,6 @@ export async function fetchNexradDataLatest(
 
   const station = await fetchStationData(params);
   const stationId = station?.stationId;
-  // const stationId = `KOKX`;
   const listing = await fetchNexradListing(stationId);
   const key = listing?.at(-1);
 
@@ -135,7 +139,14 @@ function parseRadarData({
   const minDistance = first?.first_gate ?? 0;
   const maxDistance = minDistance + gateCount * gateSize;
 
-  if (maxDistance <= 0) return { mapSize: MAP_SIZE, paths: [] };
+  if (maxDistance <= 0) {
+    throw new Error("Radar data contains no valid gates");
+  }
+
+  const distanceQuantizeScale = d3
+    .scaleQuantize<string>()
+    .domain([minDistance, maxDistance])
+    .range(d3.range(minDistance, maxDistance).map(String));
 
   const visited = new Set();
   const pointsByReflectivity = new Map();
@@ -145,14 +156,19 @@ function parseRadarData({
     const azimuthRaw = data?.azimuths[radialIndex];
     if (!azimuthRaw) continue;
     const bearing = Math.round(azimuthRaw);
-    const reflectivity = radial[1];
-    const moments = reflectivity?.moment_data ?? [];
+    const reflectivityData = radial[1];
+    const moments = reflectivityData?.moment_data ?? [];
     for (const moment of Object.entries(moments)) {
-      const reflectivity = moment[1];
-      if (!reflectivity) continue;
+      const reflectivityRaw = moment[1];
+      if (!reflectivityRaw) continue;
+      if (reflectivityRaw < reflectivityDomain[0]) continue;
+
       const momentIndex = Number(moment[0]);
+
       const distanceRaw = minDistance + momentIndex * gateSize;
-      const distance = Number(distanceRaw.toFixed(1));
+
+      const distance = Number(distanceQuantizeScale(distanceRaw));
+
       const key = `${bearing}-${distance}`;
       if (visited.has(key)) continue;
       visited.add(key);
@@ -167,6 +183,8 @@ function parseRadarData({
         { units: "kilometers" },
       ).geometry.coordinates;
 
+      const reflectivity = Number(reflectivityQuantizeScale(reflectivityRaw));
+
       const points = pointsByReflectivity.get(reflectivity) ?? [];
       points.push(gateCoordinates);
       pointsByReflectivity.set(reflectivity, points);
@@ -178,18 +196,24 @@ function parseRadarData({
     Number(longitude),
   );
 
-  const path = d3.geoPath(projection).digits(2).pointRadius(0.5);
+  const path = d3.geoPath(projection).digits(0).pointRadius(0.5);
 
-  const reflectivities = [...pointsByReflectivity.keys()];
+  const collator = new Intl.Collator(undefined, { numeric: true });
+  const reflectivities = [...pointsByReflectivity.keys()].toSorted((a, b) =>
+    collator.compare(String(a), String(b)),
+  );
 
   const paths = reflectivities.map((reflectivity) => {
     const points = pointsByReflectivity.get(reflectivity) as [number, number][];
+    const sorted = points
+      ?.toSorted((a, b) => collator.compare(String(a[0]), String(b[0])))
+      .toSorted((a, b) => collator.compare(String(a[1]), String(b[1])));
     const multiPoint = {
-      coordinates: points ?? [],
+      coordinates: sorted ?? [],
       type: "MultiPoint",
     };
     const pathData = path(multiPoint as any);
-    return { d: pathData, reflectivity };
+    return { count: points.length, d: pathData, reflectivity };
   });
 
   return { mapSize: MAP_SIZE, paths };

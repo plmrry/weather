@@ -46,15 +46,21 @@ function NexradLayerRendered({
       viewBox={`0 0 ${data.mapSize} ${data.mapSize}`}
     >
       <title>NEXRAD reflectivity projected around the selected location.</title>
-      {paths.map(({ d, reflectivity }) => {
-        if (!d) return null;
-        const fill = reflectivityColorScale(reflectivity);
-        return (
-          <g data-reflectivity={reflectivity} key={reflectivity}>
-            <path d={d} fill={fill} />
-          </g>
-        );
-      })}
+      <g data-layers={paths.length}>
+        {paths.map(({ count, d, reflectivity }) => {
+          if (!d) return null;
+          const fill = reflectivityColorScale(reflectivity);
+          return (
+            <g
+              data-count={count}
+              data-reflectivity={reflectivity}
+              key={reflectivity}
+            >
+              <path d={d} fill={fill} />
+            </g>
+          );
+        })}
+      </g>
     </svg>
   );
 }

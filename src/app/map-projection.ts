@@ -15,10 +15,17 @@ const SATELLITE_SCALE = 7000;
 
 export const reflectivityDomain = [-5, 50];
 
+export const reflectivityRange = d3.range(5, 55, 5);
+
 export const reflectivityColorScale = d3
   .scaleSequential(d3.interpolateTurbo)
   .domain(reflectivityDomain)
   .clamp(true);
+
+export const bearingQuantizeScale = d3
+  .scaleQuantize<string>()
+  .domain([0, 360])
+  .range(d3.range(0, 360).map(String));
 
 export const reflectivityQuantizeScale = d3
   .scaleQuantize<string>()
