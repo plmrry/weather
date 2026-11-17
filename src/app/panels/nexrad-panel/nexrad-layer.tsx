@@ -11,7 +11,7 @@ export function NexradLayer({
   const data = fetchNexradData(params);
 
   return (
-    <React.Suspense fallback={<LoadingSpinner />}>
+    <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
       <NexradLayerRendered data={data} />
     </React.Suspense>
   );

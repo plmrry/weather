@@ -25,7 +25,7 @@ export function MapPanel({
       icon={<MapIcon aria-hidden="true" className="size-3.5 text-white" />}
       title={title}
     >
-      <React.Suspense fallback={<LoadingSpinner />}>
+      <React.Suspense fallback={<LoadingSpinner />} name="MapLayer">
         <MapLayer params={params} />
       </React.Suspense>
       {children}

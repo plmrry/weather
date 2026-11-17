@@ -22,11 +22,11 @@ export function WeatherPage({
 
       <FindStation params={params} />
 
-      <React.Suspense fallback={<CurrentStation />}>
+      <React.Suspense fallback={<CurrentStation />} name="CurrentStation">
         <CurrentStation params={params} />
       </React.Suspense>
 
-      <React.Suspense fallback={<Panels />}>
+      <React.Suspense fallback={<Panels />} name="Panels">
         <Panels params={params} />
       </React.Suspense>
 

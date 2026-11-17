@@ -21,7 +21,10 @@ export function FindStation({
           </FieldSeparator>
 
           <Field>
-            <React.Suspense fallback={<FindStationForm />}>
+            <React.Suspense
+              fallback={<FindStationForm />}
+              name="FindStationForm"
+            >
               <FindStationForm params={params} />
             </React.Suspense>
           </Field>
@@ -39,7 +42,10 @@ export function FindStation({
           </FieldSeparator>
 
           <Field>
-            <React.Suspense fallback={<RecentLocations />}>
+            <React.Suspense
+              fallback={<RecentLocations />}
+              name="RecentLocations"
+            >
               <RecentLocations params={params} />
             </React.Suspense>
           </Field>
