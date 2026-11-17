@@ -16,7 +16,7 @@ export async function fetchStationData(
   });
 }
 
-export async function fetchNexradListing(
+export async function fetchNexradList(
   stationId?: string,
 ): Promise<null | string[]> {
   "use cache: remote";
@@ -28,6 +28,7 @@ export async function fetchNexradListing(
   const datePrefix = new Date().toISOString().slice(0, 10).replaceAll("-", "/");
   const url = new URL("https://unidata-nexrad-level2.s3.amazonaws.com/");
   url.search = new URLSearchParams({
+    delimiter: "/",
     "list-type": "2",
     prefix: `${datePrefix}/${stationId}/`,
   }).toString();

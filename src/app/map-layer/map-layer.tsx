@@ -4,6 +4,7 @@ import { geoPath } from "d3";
 import { cacheLife, cacheTag } from "next/cache";
 import { feature } from "topojson-client";
 import type { MapBounds } from "#/app/map-layer/map-bounds";
+import { ErrorBoundary } from "#/app/error-boundary";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { getMapBounds } from "#/app/map-layer/map-bounds";
 import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
@@ -28,7 +29,9 @@ export function MapLayer({
 }) {
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="MapLayer">
-      <MapLayerCached params={params} />
+      <ErrorBoundary>
+        <MapLayerCached params={params} />
+      </ErrorBoundary>
     </React.Suspense>
   );
 }
@@ -50,15 +53,21 @@ async function MapLayerCached({
 
   const mapProjection = getSatelliteProjection(latitude, longitude);
   const bounds = getMapBounds(latitude, longitude);
-  const [countries, roads, states] = await Promise.all([
+  const [countries, roads, states] = await Promise.allSettled([
     getCountryBoundaries(),
     getPrimaryRoads(bounds),
     getStateBoundaries(),
   ]);
   const path = geoPath(mapProjection);
-  const countryPath = path(getVisibleFeatures(countries, path));
-  const roadPath = path(roads);
-  const statePath = path(getVisibleFeatures(states, path));
+  const countryPath =
+    countries.status === "fulfilled"
+      ? path(getVisibleFeatures(countries.value, path))
+      : null;
+  const roadPath = roads.status === "fulfilled" ? path(roads.value) : null;
+  const statePath =
+    states.status === "fulfilled"
+      ? path(getVisibleFeatures(states.value, path))
+      : null;
 
   return (
     <svg

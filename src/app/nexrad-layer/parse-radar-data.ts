@@ -2,12 +2,20 @@ import type Level2Radar from "nexrad-level-2-data";
 import type { HighResData } from "nexrad-level-2-data";
 import { destination } from "@turf/destination";
 import * as d3 from "d3";
-import {
-  getSatelliteProjection,
-  MAP_SIZE,
-  reflectivityDomain,
-  reflectivityQuantizeScale,
-} from "#/app/map-projection";
+import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
+
+const GRID_SIZE = 100;
+const CELL_COUNT = GRID_SIZE * GRID_SIZE;
+const reflectivityBands = d3.range(5, 55, 5);
+const reflectivityScale = d3
+  .scaleQuantize<number>()
+  .domain([0, 50])
+  .range(reflectivityBands);
+const gateCenterX = d3
+  .scaleQuantize<number>()
+  .domain([0, MAP_SIZE])
+  .range(d3.range(GRID_SIZE));
+const gateCenterY = gateCenterX.copy();
 
 export function parseRadarData({
   data,
@@ -18,56 +26,28 @@ export function parseRadarData({
   latitude: number;
   longitude: number;
 }) {
-  if (data?.azimuths.length === 0) {
+  if (data.azimuths.length === 0) {
     throw new Error("Radar data contains no azimuths");
   }
 
-  const points = radarDataToCoordinates({ radarData: data });
+  if (data.azimuths.length !== data.reflectivity.length) {
+    throw new Error("Radar azimuths and reflectivity radials do not align");
+  }
 
-  const projection = getSatelliteProjection(
-    Number(latitude),
-    Number(longitude),
-  );
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    throw new Error("Map coordinates must be finite");
+  }
 
-  // const path = d3.geoPath(projection).digits(0).pointRadius(0.5);
-
-  // const collator = new Intl.Collator(undefined, { numeric: true });
-
-  // const reflectivities = [...pointsByReflectivity.keys()].toSorted((a, b) =>
-  //   collator.compare(String(a), String(b)),
-  // );
-
-  // const paths = reflectivities.map((reflectivity) => {
-  //   const points = (
-  //     pointsByReflectivity.get(reflectivity) as [number, number][]
-  //   )
-  //     ?.toSorted((a, b) => collator.compare(String(a[0]), String(b[0])))
-  //     .toSorted((a, b) => collator.compare(String(a[1]), String(b[1])));
-  //   const multiPoint = {
-  //     coordinates: points ?? [],
-  //     type: "MultiPoint",
-  //   };
-  //   const pathData = path(multiPoint as any);
-  //   return { count: points.length, d: pathData, reflectivity };
-  // });
-
-  return { mapSize: MAP_SIZE, paths: [] };
-}
-
-export function radarDataToCoordinates({
-  radarData,
-}: {
-  radarData: {
-    azimuths: number[];
-    radar: Level2Radar;
-    reflectivity: HighResData[];
-  };
-}) {
-  const header = radarData?.radar?.getHeader(0);
+  const header = data.radar.getHeader(0);
   const stationLatitude = header?.volume?.latitude;
   const stationLongitude = header?.volume?.longitude;
 
-  if (!stationLatitude || !stationLongitude) {
+  if (
+    stationLatitude === undefined ||
+    stationLongitude === undefined ||
+    !Number.isFinite(stationLatitude) ||
+    !Number.isFinite(stationLongitude)
+  ) {
     throw new Error("Radar volume is missing station coordinates");
   }
 
@@ -76,45 +56,119 @@ export function radarDataToCoordinates({
     stationLatitude,
   ];
 
-  const first = radarData?.reflectivity[0];
+  const projection = getSatelliteProjection(latitude, longitude);
+  const bandValues = new Float32Array(
+    reflectivityBands.length * CELL_COUNT,
+  ).fill(-Infinity);
+  const counts = new Uint32Array(reflectivityBands.length);
+  const azimuths = data.azimuths;
+  const firstRadial = data.reflectivity.find(
+    (radial) => radial?.moment_data?.length,
+  );
+  const lastGateIndex = (firstRadial?.moment_data.length ?? 1) - 1;
 
-  const gateSize = first?.gate_size ?? 0;
-  const minDistance = first?.first_gate ?? 0;
+  const gateSize = firstRadial?.gate_size ?? 0;
+  const minDistance = firstRadial?.first_gate ?? 0;
+  const maxDistance = minDistance + lastGateIndex * gateSize;
 
-  const points = [];
+  const gateDistance = d3
+    .scaleLinear()
+    .domain([0, lastGateIndex])
+    .range(firstRadial ? [minDistance, maxDistance] : [0, 0]);
 
-  for (const radial of Object.entries(radarData.reflectivity ?? [])) {
-    const radialIndex = Number(radial[0]);
-    const azimuthRaw = radarData.azimuths[radialIndex];
-    if (!azimuthRaw) continue;
-    const bearing = Math.round(azimuthRaw);
-    const reflectivityData = radial[1];
-    const moments = reflectivityData.moment_data ?? [];
-    for (const moment of Object.entries(moments)) {
-      const reflectivity = moment[1];
-      if (!reflectivity) continue;
+  for (const azimuthIndex of Object.keys(azimuths)) {
+    const radialIndex = Number(azimuthIndex);
+    const radial = data.reflectivity[radialIndex];
+    const azimuth = azimuths[radialIndex];
 
-      const momentIndex = Number(moment[0]);
+    if (!radial || !Number.isFinite(azimuth)) continue;
 
-      const distanceRaw = minDistance + momentIndex * gateSize;
+    const moments = radial.moment_data;
 
-      const gateCoordinates = destination(
-        {
-          coordinates: stationCoordinates,
-          type: "Point",
-        },
-        distanceRaw,
-        bearing,
+    if (
+      !moments?.length ||
+      !Number.isFinite(radial.first_gate) ||
+      radial.first_gate < 0 ||
+      !Number.isFinite(radial.gate_size) ||
+      radial.gate_size <= 0
+    ) {
+      continue;
+    }
+
+    for (const [gateIndex, reflectivity] of moments.entries()) {
+      if (
+        reflectivity === null ||
+        !Number.isFinite(reflectivity) ||
+        reflectivity < 0
+      ) {
+        continue;
+      }
+
+      const [gateLongitude, gateLatitude] = destination(
+        stationCoordinates,
+        gateDistance(gateIndex),
+        azimuth,
         { units: "kilometers" },
       ).geometry.coordinates;
 
-      points.push({
-        latitude: gateCoordinates[1],
-        longitude: gateCoordinates[0],
-        reflectivity,
-      });
+      const point = projection([gateLongitude, gateLatitude]);
+
+      if (!point) continue;
+
+      const [x, y] = point;
+
+      if (
+        !Number.isFinite(x) ||
+        !Number.isFinite(y) ||
+        x < 0 ||
+        x >= MAP_SIZE ||
+        y < 0 ||
+        y >= MAP_SIZE
+      ) {
+        continue;
+      }
+
+      const bandIndex = reflectivityScale(reflectivity) / 5 - 1;
+      const cellIndex = gateCenterY(y) * GRID_SIZE + gateCenterX(x);
+      const valueIndex = bandIndex * CELL_COUNT + cellIndex;
+
+      if (reflectivity > bandValues[valueIndex]) {
+        if (bandValues[valueIndex] === -Infinity) counts[bandIndex]++;
+        bandValues[valueIndex] = reflectivity;
+      }
     }
   }
 
-  return points;
+  const mask = new Uint8Array(CELL_COUNT);
+
+  const generateContour = d3
+    .contours()
+    .size([GRID_SIZE, GRID_SIZE])
+    .smooth(false).contour;
+
+  const path = d3
+    .geoPath(d3.geoIdentity().scale(MAP_SIZE / GRID_SIZE))
+    .digits(1);
+
+  const paths = reflectivityBands.map((reflectivity, bandIndex) => {
+    const offset = bandIndex * CELL_COUNT;
+
+    for (const cellIndex of mask.keys()) {
+      const index = offset + cellIndex;
+      const bandValue = bandValues[index];
+      mask[cellIndex] = Number.isFinite(bandValue) ? 1 : 0;
+    }
+
+    const contour = generateContour(mask as any, 0.5);
+
+    const pathData = path(contour) ?? "M0,0";
+
+    return {
+      count: counts[bandIndex],
+      d: pathData,
+      reflectivity,
+    };
+  });
+
+  return { mapSize: MAP_SIZE, paths };
 }

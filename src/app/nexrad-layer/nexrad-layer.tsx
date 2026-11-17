@@ -1,5 +1,6 @@
 import React from "react";
 import * as d3 from "d3";
+import { ErrorBoundary } from "#/app/error-boundary";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { reflectivityColorScale } from "#/app/map-projection";
 import { fetchNexradDataLatest } from "./fetch-nexrad";
@@ -15,7 +16,9 @@ export function NexradLayer({
 
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
-      <NexradLayerRendered data={data} />
+      <ErrorBoundary>
+        <NexradLayerRendered data={data} />
+      </ErrorBoundary>
     </React.Suspense>
   );
 }

@@ -1,8 +1,9 @@
 "use server";
 
 import Level2Radar from "nexrad-level-2-data";
-import { cacheLife, cacheTag, io } from "next/cache";
-import { fetchNexradListing, fetchStationData } from "./fetch-nexrad-listing";
+import { io } from "next/cache";
+import { fetchNexradFile } from "./fetch-nexrad-file";
+import { fetchNexradList, fetchStationData } from "./fetch-nexrad-listing";
 import { parseRadarData } from "./parse-radar-data";
 
 export async function fetchNexradDataLatest(
@@ -12,9 +13,11 @@ export async function fetchNexradDataLatest(
   // cacheLife("minutes");
   // cacheTag("nexrad-data");
 
+  await io();
+
   const station = await fetchStationData(params);
   const stationId = station?.stationId;
-  const listing = await fetchNexradListing(stationId);
+  const listing = await fetchNexradList(stationId);
   const key = listing?.at(-1);
 
   if (!key) return null;
@@ -30,13 +33,13 @@ export async function fetchNexradDataOneHour(
   // cacheLife("minutes");
   // cacheTag("nexrad-data");
 
+  await io();
+
   const station = await fetchStationData(params);
   const stationId = station?.stationId;
-  const listing = await fetchNexradListing(stationId);
+  const listing = await fetchNexradList(stationId);
 
   if (!listing?.length) return [];
-
-  // await io();
 
   const now = Date.now();
   const startTime = now - 60 * 60 * 1000;
@@ -73,7 +76,7 @@ async function fetchAndParseNexradData(
 ) {
   const { latitude, longitude } = await params;
 
-  const bytes = await fetchNexradData(key);
+  const bytes = await fetchNexradFile(key);
 
   const data = await getRadarData(bytes);
 
@@ -86,21 +89,8 @@ async function fetchAndParseNexradData(
   return { ...parsed, key };
 }
 
-async function fetchNexradData(key: string) {
-  "use cache: remote";
-  cacheLife("minutes");
-  cacheTag("nexrad-data");
-
-  const url = new URL(key, "https://unidata-nexrad-level2.s3.amazonaws.com/");
-  const response = await fetch(url, { cache: "no-store" });
-  if (!response.ok) throw new Error(`S3 returned ${response.status}`);
-
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  return bytes;
-}
-
 async function getRadarData(bytes: Uint8Array) {
-  const radar = new Level2Radar(bytes);
+  const radar = new Level2Radar(new Uint8Array(bytes));
 
   radar.setElevation(1);
 
