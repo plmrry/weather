@@ -12,8 +12,8 @@ function formatTimestamp(date: Date): string {
   });
 }
 
-function parseTimestamp(timestamp: string | undefined): Date | null {
-  const date = timestamp ? new Date(timestamp) : new Date();
+function parseTimestamp(timestamp: string): Date | null {
+  const date = new Date(timestamp);
 
   return Number.isNaN(date.getTime()) ? null : date;
 }
@@ -26,6 +26,7 @@ export function LastUpdated({
   const [date, setDate] = React.useState<Date | null>(null);
 
   React.useEffect(() => {
+    if (!timestamp) return;
     setDate(parseTimestamp(timestamp));
   }, [timestamp]);
 

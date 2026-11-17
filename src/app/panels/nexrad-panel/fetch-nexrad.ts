@@ -1,7 +1,7 @@
 "use server";
 
 import { geoDistance } from "d3-geo";
-import { getSatelliteProjection, MAP_DIMENSION } from "../map-projection";
+import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
 import { fetchNexradListing } from "./fetch-nexrad-listing";
 
 const EARTH_RADIUS_KILOMETERS = 6371.0088;
@@ -20,7 +20,7 @@ function reflectivityColor(value: number): [number, number, number] {
 export async function fetchNexradData(
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
 ): Promise<{
-  gridSize: number;
+  mapSize: number;
   paths: { d: string; fill: string }[];
 } | null> {
   if (!params) return null;
@@ -46,14 +46,14 @@ export async function fetchNexradData(
   const reflectivity = radar.getHighresReflectivity();
   const azimuths = radar.getAzimuth();
 
-  if (azimuths.length === 0) return { gridSize: MAP_DIMENSION, paths: [] };
+  if (azimuths.length === 0) return { mapSize: MAP_SIZE, paths: [] };
 
   const maxRange = Math.max(
     ...reflectivity.map((radial) =>
       radial ? radial.first_gate + radial.gate_count * radial.gate_size : 0,
     ),
   );
-  if (maxRange <= 0) return { gridSize: MAP_DIMENSION, paths: [] };
+  if (maxRange <= 0) return { mapSize: MAP_SIZE, paths: [] };
 
   const radialLookup = Array.from({ length: 3600 }, (_, angleIndex) => {
     const angle = angleIndex / 10;
@@ -83,8 +83,8 @@ export async function fetchNexradData(
   const stationLatitude = (volume.latitude * Math.PI) / 180;
   const pathsByColor = new Map<string, string[]>();
 
-  for (let y = 0; y < MAP_DIMENSION; y++) {
-    for (let x = 0; x < MAP_DIMENSION; x++) {
+  for (let y = 0; y < MAP_SIZE; y++) {
+    for (let x = 0; x < MAP_SIZE; x++) {
       const point = projection.invert?.([x + 0.5, y + 0.5]);
       if (!point || !point.every(Number.isFinite)) continue;
       const range = geoDistance(station, point) * EARTH_RADIUS_KILOMETERS;
@@ -120,5 +120,5 @@ export async function fetchNexradData(
     fill,
   }));
 
-  return { gridSize: MAP_DIMENSION, paths };
+  return { mapSize: MAP_SIZE, paths };
 }

@@ -1,80 +1,67 @@
 import React from "react";
 
 function Root({
-  className,
+  "aria-label": ariaLabel,
+  children,
   size = "default",
-  ...props
-}: { size?: "default" | "sm" } & React.ComponentProps<"div">) {
+}: {
+  "aria-label"?: string;
+  children?: React.ReactNode;
+  size?: "default" | "sm";
+}) {
   return (
     <div
-      className={`group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl ${className ?? ""}`}
+      aria-label={ariaLabel}
+      className="group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card p-[calc(var(--card-spacing)*2)] text-sm text-card-foreground ring-4 ring-foreground/10"
       data-size={size}
       data-slot="card"
-      {...props}
-    />
+    >
+      {children}
+    </div>
   );
 }
 
-function Header({ className, ...props }: React.ComponentProps<"div">) {
+function Header({ children }: { children?: React.ReactNode }) {
   return (
     <div
-      className={`group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-(--card-spacing) has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-(--card-spacing) ${className ?? ""}`}
+      className="group/card-header @container/card-header grid auto-rows-min items-start gap-1"
       data-slot="card-header"
-      {...props}
-    />
+    >
+      {children}
+    </div>
   );
 }
 
-function Title({ className, ...props }: React.ComponentProps<"div">) {
+function Title({ children }: { children?: React.ReactNode }) {
   return (
     <div
-      className={`text-base leading-snug font-medium group-data-[size=sm]/card:text-sm ${className ?? ""}`}
+      className="text-base leading-snug font-medium group-data-[size=sm]/card:text-sm"
       data-slot="card-title"
-      {...props}
-    />
+    >
+      {children}
+    </div>
   );
 }
 
-function Description({ className, ...props }: React.ComponentProps<"div">) {
+function Description({ children }: { children?: React.ReactNode }) {
   return (
-    <div
-      className={`text-sm text-muted-foreground ${className ?? ""}`}
-      data-slot="card-description"
-      {...props}
-    />
+    <div className="text-sm text-muted-foreground" data-slot="card-description">
+      {children}
+    </div>
   );
 }
 
-function Action({ className, ...props }: React.ComponentProps<"div">) {
+function Footer({ children }: { children?: React.ReactNode }) {
   return (
     <div
-      className={`col-start-2 row-span-2 row-start-1 self-start justify-self-end ${className ?? ""}`}
-      data-slot="card-action"
-      {...props}
-    />
-  );
-}
-
-function Content({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      className={`px-(--card-spacing) ${className ?? ""}`}
-      data-slot="card-content"
-      {...props}
-    />
-  );
-}
-
-function Footer({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      className={`flex items-center rounded-b-xl border-t bg-muted/50 p-(--card-spacing) ${className ?? ""}`}
+      className="flex items-center border-t bg-muted/50 p-(--card-spacing)"
       data-slot="card-footer"
-      {...props}
-    />
+    >
+      {children}
+    </div>
   );
 }
 
-export { Action, Content, Description, Footer, Header, Root, Title };
+export { Description, Footer, Header, Root, Title };
 
-export default { Action, Content, Description, Footer, Header, Root, Title };
+export default { Description, Footer, Header, Root, Title };

@@ -4,10 +4,10 @@ import { fromArrayBuffer } from "geotiff";
 import { PNG } from "pngjs";
 import sharp from "sharp";
 import type { RadarStationFeature } from "#/app/get-all-radar-stations";
+import type { MapBounds } from "#/app/map-bounds";
 import { getAllRadarStations } from "#/app/get-all-radar-stations";
-import type { MapBounds } from "./map-bounds";
-import { getBoundsForRadius } from "./map-bounds";
-import { getSatelliteProjection, MAP_DIMENSION } from "./map-projection";
+import { getBoundsForRadius } from "#/app/map-bounds";
+import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
 
 const EARTH_RADIUS_KILOMETERS = 6371.0088;
 const RADAR_TIMESTAMP_INTERVAL_MILLISECONDS = 10 * 60 * 1000;
@@ -141,8 +141,8 @@ async function readRadarSource(
     imageHeight,
     Math.ceil(((imageNorth - south) / (imageNorth - imageSouth)) * imageHeight),
   );
-  const width = Math.max(1, Math.min(MAP_DIMENSION, xMaximum - xMinimum));
-  const height = Math.max(1, Math.min(MAP_DIMENSION, yMaximum - yMinimum));
+  const width = Math.max(1, Math.min(MAP_SIZE, xMaximum - xMinimum));
+  const height = Math.max(1, Math.min(MAP_SIZE, yMaximum - yMinimum));
   const { data: pixels, info } = await sharp(tiffBuffer)
     .extract({
       height: yMaximum - yMinimum,
@@ -248,17 +248,17 @@ function getProjectionCoordinates(
   longitude: number,
 ): { latitudes: Float32Array; longitudes: Float32Array } {
   const projection = getSatelliteProjection(latitude, longitude);
-  const latitudes = new Float32Array(MAP_DIMENSION * MAP_DIMENSION);
-  const longitudes = new Float32Array(MAP_DIMENSION * MAP_DIMENSION);
+  const latitudes = new Float32Array(MAP_SIZE * MAP_SIZE);
+  const longitudes = new Float32Array(MAP_SIZE * MAP_SIZE);
   latitudes.fill(Number.NaN);
   longitudes.fill(Number.NaN);
 
-  for (let y = 0; y < MAP_DIMENSION; y += 1) {
-    for (let x = 0; x < MAP_DIMENSION; x += 1) {
+  for (let y = 0; y < MAP_SIZE; y += 1) {
+    for (let x = 0; x < MAP_SIZE; x += 1) {
       const coordinate = projection.invert?.([x + 0.5, y + 0.5]);
       if (!coordinate) continue;
 
-      const coordinateIndex = y * MAP_DIMENSION + x;
+      const coordinateIndex = y * MAP_SIZE + x;
       longitudes[coordinateIndex] = coordinate[0];
       latitudes[coordinateIndex] = coordinate[1];
     }
@@ -424,7 +424,7 @@ export async function renderRadarBatchStep(
     stationIds: stations.map((station) => station.properties.id),
   });
 
-  const png = new PNG({ height: MAP_DIMENSION, width: MAP_DIMENSION });
+  const png = new PNG({ height: MAP_SIZE, width: MAP_SIZE });
   const { latitudes, longitudes } = getProjectionCoordinates(
     latitude,
     longitude,
@@ -466,7 +466,7 @@ export async function compositeRadarBatchesStep(
     stationCount,
   });
 
-  const png = new PNG({ height: MAP_DIMENSION, width: MAP_DIMENSION });
+  const png = new PNG({ height: MAP_SIZE, width: MAP_SIZE });
   let bytes = 0;
   let downloadedStationCount = 0;
   let renderedStationCount = 0;

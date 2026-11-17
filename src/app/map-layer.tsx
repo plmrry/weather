@@ -1,10 +1,11 @@
 import React from "react";
 import type { FeatureCollection } from "geojson";
 import { geoPath } from "d3-geo";
+import { cacheLife, cacheTag } from "next/cache";
 import { feature } from "topojson-client";
-import type { MapBounds } from "./map-bounds";
-import { getMapBounds } from "./map-bounds";
-import { getSatelliteProjection, MAP_DIMENSION } from "./map-projection";
+import type { MapBounds } from "#/app/map-bounds";
+import { getMapBounds } from "#/app/map-bounds";
+import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
 
 const COUNTRY_BOUNDARIES_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-10m.json";
@@ -26,12 +27,7 @@ function getVisibleFeatures(
   return {
     features: features.features.filter((featureToCheck) => {
       const [[left, top], [right, bottom]] = path.bounds(featureToCheck);
-      return (
-        left <= MAP_DIMENSION &&
-        top <= MAP_DIMENSION &&
-        right >= 0 &&
-        bottom >= 0
-      );
+      return left <= MAP_SIZE && top <= MAP_SIZE && right >= 0 && bottom >= 0;
     }),
     type: "FeatureCollection",
   };
@@ -99,15 +95,17 @@ async function getStateBoundaries(): Promise<FeatureCollection> {
   }
 }
 
-export async function MapOverlay({
+export async function MapLayerCached({
   latitude,
   longitude,
-  radarLayer,
 }: {
   latitude: number;
   longitude: number;
-  radarLayer?: React.ReactNode;
 }): Promise<React.JSX.Element> {
+  "use cache: remote";
+  cacheLife("max");
+  cacheTag("map-layer");
+
   const mapProjection = getSatelliteProjection(latitude, longitude);
   const bounds = getMapBounds(latitude, longitude);
   const [countries, roads, states] = await Promise.all([
@@ -125,9 +123,9 @@ export async function MapOverlay({
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 size-full"
       preserveAspectRatio="none"
-      viewBox={`0 0 ${MAP_DIMENSION} ${MAP_DIMENSION}`}
+      viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
     >
-      <rect fill="black" height={MAP_DIMENSION} width={MAP_DIMENSION} />
+      <rect fill="black" height={MAP_SIZE} width={MAP_SIZE} />
       {countryPath ? (
         <path
           d={countryPath}
@@ -139,7 +137,6 @@ export async function MapOverlay({
           vectorEffect="non-scaling-stroke"
         />
       ) : null}
-      {radarLayer}
       {roadPath ? (
         <path
           d={roadPath}
@@ -163,19 +160,17 @@ export async function MapOverlay({
 }
 
 export function MapLayer({
-  params,
-  radarLayer,
+  params: paramsPromise,
 }: {
-  params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
-  radarLayer?: React.ReactNode;
-}): React.JSX.Element {
-  const { latitude, longitude } = React.use(params);
+  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
+}) {
+  const params = paramsPromise ? React.use(paramsPromise) : null;
+
+  if (!params) return null;
+
+  const { latitude, longitude } = params ?? {};
 
   return (
-    <MapOverlay
-      latitude={Number(latitude)}
-      longitude={Number(longitude)}
-      radarLayer={radarLayer}
-    />
+    <MapLayerCached latitude={Number(latitude)} longitude={Number(longitude)} />
   );
 }

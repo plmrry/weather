@@ -20,12 +20,12 @@ export async function CurrentStation({
     : ["No station selected", null];
 
   return (
-    <Card.Root aria-label="Current station">
-      <Card.Content className="mx-auto w-full max-w-md">
-        <Card.Header className="px-0 py-4">
+    <section aria-label="Current station">
+      <Card.Root>
+        <Card.Header>
           <Card.Title>Current station</Card.Title>
         </Card.Header>
-        <Card.Description className="px-0">
+        <Card.Description>
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <div className="col-span-full">
               <dt className="text-muted-foreground">Location name</dt>
@@ -66,7 +66,7 @@ export async function CurrentStation({
             </div>
           </dl>
         </Card.Description>
-      </Card.Content>
-    </Card.Root>
+      </Card.Root>
+    </section>
   );
 }

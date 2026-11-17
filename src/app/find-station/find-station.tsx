@@ -1,5 +1,5 @@
 import React from "react";
-import { Content, Root } from "#/app/ui/card";
+import Card from "#/app/ui/card";
 import { Field, FieldGroup, FieldSeparator } from "#/app/ui/field";
 import { ClientLocation } from "./client-location";
 import { FindStationForm } from "./find-station-form";
@@ -13,15 +13,15 @@ export function FindStation({
   params?: Params;
 }): React.JSX.Element {
   return (
-    <Root aria-label="Coordinate input">
-      <Content>
+    <section aria-label="Coordinate input">
+      <Card.Root>
         <FieldGroup>
           <FieldSeparator className="text-xs tracking-wider uppercase **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
             find a station
           </FieldSeparator>
 
           <Field>
-            <React.Suspense fallback={<FindStationForm params={undefined} />}>
+            <React.Suspense fallback={<FindStationForm />}>
               <FindStationForm params={params} />
             </React.Suspense>
           </Field>
@@ -39,12 +39,12 @@ export function FindStation({
           </FieldSeparator>
 
           <Field>
-            <React.Suspense fallback={<RecentLocations params={undefined} />}>
+            <React.Suspense fallback={<RecentLocations />}>
               <RecentLocations params={params} />
             </React.Suspense>
           </Field>
         </FieldGroup>
-      </Content>
-    </Root>
+      </Card.Root>
+    </section>
   );
 }
