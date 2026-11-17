@@ -1,4 +1,5 @@
 import React from "react";
+import { ErrorBoundary } from "#/app/error-boundary";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { reflectivityColorScale } from "#/app/map-projection";
 import { fetchNexradDataOneHour } from "./fetch-nexrad";
@@ -14,7 +15,9 @@ export function NexradLayerAnimated({
 
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="NexradLayerAnimated">
-      <NexradLayerAnimatedRendered data={data} />
+      <ErrorBoundary>
+        <NexradLayerAnimatedRendered data={data} />
+      </ErrorBoundary>
     </React.Suspense>
   );
 }
@@ -25,50 +28,46 @@ function NexradLayerAnimatedRendered({
   data?: ReturnType<fetchNexradDataOneHour>;
 }): null | React.JSX.Element {
   const frames = dataPromise ? React.use(dataPromise) : null;
-  const latest = frames?.at(-1);
-  if (!frames || !latest) return null;
+  const first = frames?.at(0);
+  if (!frames || !first) return null;
 
   const keyTimes = Array.from(
     { length: frames.length + 1 },
     (_, index) => index / frames.length,
   ).join(";");
 
-  const data = frames.at(-1);
-
-  const paths = data?.paths ?? [];
-
   return (
     <svg
       className="absolute inset-0 size-full"
+      data-frames={frames.length}
       role="img"
       shapeRendering="crispEdges"
-      viewBox={`0 0 ${latest.mapSize} ${latest.mapSize}`}
+      viewBox={`0 0 ${first.mapSize} ${first.mapSize}`}
     >
       <title>
         NEXRAD reflectivity over the past hour around the selected location.
       </title>
-      {paths.map(({ d, reflectivity }) => {
-        if (!d) return null;
-        const fill = reflectivityColorScale(reflectivity);
-        return <path d={d} fill={fill} key={reflectivity} />;
-      })}
-      {/* {frames.map((frame, frameIndex) => (
-        <g key={frameIndex} visibility="hidden">
-          <animate
-            attributeName="visibility"
-            calcMode="linear"
-            dur={`${frames.length * 0.5}s`}
-            keyTimes={keyTimes}
-            repeatCount="indefinite"
-            values={Array.from({ length: frames.length + 1 }, (_, index) =>
-              index % frames.length === frameIndex ? "visible" : "hidden",
-            ).join(";")}
-          />
-          {frame.paths.map(({ d, fill }) => (
-            <path d={d} fill={fill} key={fill} />
-          ))}
-        </g>
-      ))} */}
+      {first.paths.map(({ d, reflectivity }, pathIndex) => (
+        <path
+          d={d}
+          fill={reflectivityColorScale(reflectivity)}
+          key={reflectivity}
+        >
+          {frames.length > 1 ? (
+            <animate
+              attributeName="d"
+              calcMode="discrete"
+              dur={`${frames.length * 0.5}s`}
+              keyTimes={keyTimes}
+              repeatCount="indefinite"
+              values={[
+                ...frames.map((frame) => frame.paths[pathIndex]?.d ?? "M0,0"),
+                d,
+              ].join(";")}
+            />
+          ) : null}
+        </path>
+      ))}
     </svg>
   );
 }
