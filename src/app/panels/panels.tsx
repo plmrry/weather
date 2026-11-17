@@ -12,6 +12,8 @@ import {
   RadarSvgLayer,
 } from "./radar-panel-client";
 
+const RADAR_DATA_ENABLED = false;
+
 const newMapDefinitions = [
   { id: "new-1", label: "Austin, Texas", location: "Austin, Texas" },
   {
@@ -142,8 +144,8 @@ export async function Panels({
     })),
   ];
 
-  return (
-    <RadarPanelsClient coordinates={radarCoordinates}>
+  const mapPanels = (
+    <>
       {coordinatesAreValid && currentLocationName ? (
         <NewMapPanel
           id="mesonet"
@@ -151,7 +153,7 @@ export async function Panels({
           latitude={parsedLatitude}
           location={currentLocationName}
           longitude={parsedLongitude}
-          renderRadarData
+          renderRadarData={RADAR_DATA_ENABLED}
         />
       ) : (
         <MesonetPanel disabled={disabled} />
@@ -164,9 +166,17 @@ export async function Panels({
           latitude={latitude}
           location={location}
           longitude={longitude}
-          renderRadarData
+          renderRadarData={RADAR_DATA_ENABLED}
         />
       ))}
+    </>
+  );
+
+  return RADAR_DATA_ENABLED ? (
+    <RadarPanelsClient coordinates={radarCoordinates}>
+      {mapPanels}
     </RadarPanelsClient>
+  ) : (
+    mapPanels
   );
 }

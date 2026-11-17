@@ -10,10 +10,14 @@ export type RadarPanelCoordinates = {
   longitude: number;
 };
 
+export type RadarPanelOverlay = {
+  imageUrl: string;
+} & Omit<RadarOverlay, "dataUrl">;
+
 export type RadarPanelResult = {
   error: null | string;
   id: string;
-  radarOverlay: null | RadarOverlay;
+  radarOverlay: null | RadarPanelOverlay;
 };
 
 export type RadarPanelsActionState = {
@@ -37,12 +41,24 @@ export async function loadRadarOverlays(
         return { error: "Invalid map coordinates", id, radarOverlay: null };
 
       try {
+        const latitudeKey = truncateRadarCoordinate(latitude);
+        const longitudeKey = truncateRadarCoordinate(longitude);
         const radarOverlay = await getCachedRadarOverlay(
-          truncateRadarCoordinate(latitude),
-          truncateRadarCoordinate(longitude),
+          latitudeKey,
+          longitudeKey,
         );
         return radarOverlay
-          ? { error: null, id, radarOverlay }
+          ? {
+              error: null,
+              id,
+              radarOverlay: {
+                bytes: radarOverlay.bytes,
+                downloadedStationCount: radarOverlay.downloadedStationCount,
+                imageUrl: `/api/radar-overlay?latitude=${latitudeKey}&longitude=${longitudeKey}`,
+                renderedStationCount: radarOverlay.renderedStationCount,
+                stationCount: radarOverlay.stationCount,
+              },
+            }
           : { error: "No radar station data available", id, radarOverlay };
       } catch {
         return { error: "Unable to load radar data", id, radarOverlay: null };

@@ -130,7 +130,7 @@ export function RadarSvgLayer({
   return (
     <image
       height={MAP_DIMENSION}
-      href={result.radarOverlay.dataUrl}
+      href={result.radarOverlay.imageUrl}
       preserveAspectRatio="none"
       width={MAP_DIMENSION}
     />
