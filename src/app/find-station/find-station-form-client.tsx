@@ -30,10 +30,10 @@ export function FindStationFormClient({
 
   return (
     <form action={findStation} className="w-full">
-      <Field className="w-full flex-row items-center gap-2">
-        <FieldLabel className="sr-only" htmlFor="location-query">
-          City or place name
-        </FieldLabel>
+      <Field orientation="horizontal">
+        <span className="sr-only">
+          <FieldLabel htmlFor="location-query">City or place name</FieldLabel>
+        </span>
         <Input
           className="flex h-11 min-w-0 flex-1 rounded-xl border border-input bg-secondary/40 px-3 text-base shadow-xs transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 md:text-base dark:bg-secondary/40"
           id="location-query"

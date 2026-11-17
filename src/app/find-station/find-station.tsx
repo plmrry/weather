@@ -16,9 +16,7 @@ export function FindStation({
     <section aria-label="Coordinate input">
       <Card.Root>
         <FieldGroup>
-          <FieldSeparator className="text-xs tracking-wider uppercase **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
-            find a station
-          </FieldSeparator>
+          <FieldSeparator>find a station</FieldSeparator>
 
           <Field>
             <React.Suspense
@@ -29,17 +27,13 @@ export function FindStation({
             </React.Suspense>
           </Field>
 
-          <FieldSeparator className="text-xs tracking-wider uppercase **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
-            or use your current location
-          </FieldSeparator>
+          <FieldSeparator>or use your current location</FieldSeparator>
 
           <Field>
             <ClientLocation autoLocate={params === undefined} />
           </Field>
 
-          <FieldSeparator className="text-xs tracking-wider uppercase **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">
-            or use recent locations
-          </FieldSeparator>
+          <FieldSeparator>or use recent locations</FieldSeparator>
 
           <Field>
             <React.Suspense
