@@ -3,12 +3,12 @@ import { cacheLife } from "next/cache";
 const USER_AGENT = "(weather-cafe.vercel.app, contact@weather-cafe.example)";
 
 type StationObservation = {
-  stationName: string;
   stationId: string;
+  stationName: string;
   timestamp: string;
 };
 
-async function fetchJson<T>(url: string): Promise<T | null> {
+async function fetchJson<T>(url: string): Promise<null | T> {
   const response = await fetch(url, {
     headers: { Accept: "application/geo+json", "User-Agent": USER_AGENT },
   });
@@ -21,7 +21,7 @@ async function fetchJson<T>(url: string): Promise<T | null> {
 export async function getStationObservation(
   latitude: number,
   longitude: number,
-): Promise<StationObservation | null> {
+): Promise<null | StationObservation> {
   "use cache";
   cacheLife("minutes");
 
@@ -47,5 +47,5 @@ export async function getStationObservation(
   const timestamp = latest?.properties?.timestamp;
   if (!timestamp) return null;
 
-  return { stationName: station?.name ?? stationId, stationId, timestamp };
+  return { stationId, stationName: station?.name ?? stationId, timestamp };
 }

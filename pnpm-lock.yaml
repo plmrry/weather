@@ -241,6 +241,9 @@ importers:
       lucide-static:
         specifier: latest
         version: 1.74.0
+      nexrad-level-2-data:
+        specifier: latest
+        version: 3.0.2
       next:
         specifier: canary
         version: 16.5.0-canary.53(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -664,6 +667,9 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
+
+  '@foxglove/wasm-bz2@0.3.0':
+    resolution: {integrity: sha512-MP18X3TbeoGT3Kfke7KrYin+5zESfcPnsdD2gaVviN1xzteoDDfVTZbVmbdfGrIV/qAAhBhBVbRcrN25rWSNOQ==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -2935,6 +2941,10 @@ packages:
     resolution: {integrity: sha512-kKHJhxwpR/Okycz4HhQKKlhWe4ASEfPgkSWNmKFHd7+ezuQlxkA5cM3+XkBPvm1gmHen3w53qsYAv+8GwRrBlg==}
     engines: {node: '>=18'}
 
+  nexrad-level-2-data@3.0.2:
+    resolution: {integrity: sha512-VEfPl0NsOEFZAb+X6/yojdfq0g+QGNQQrzXBuP9HZIKwUhFY7Ro/POTFqZ/vRVfb7B1Bce/lzQqORbGim+MHMw==}
+    engines: {node: '>=24.0.0'}
+
   next@16.5.0-canary.53:
     resolution: {integrity: sha512-DDTx418sy3NrNcNYMnsf6i0kqFkyQEWlPcXrVToRuETuAjyphEEF5uahkgGy6gug4MCyqGX0kta/n+83qclFVg==}
     engines: {node: '>=20.9.0'}
@@ -3795,6 +3805,10 @@ snapshots:
       react-dom: 19.3.1(react@19.3.1)
 
   '@floating-ui/utils@0.2.12': {}
+
+  '@foxglove/wasm-bz2@0.3.0':
+    dependencies:
+      tslib: 2.9.1
 
   '@humanfs/core@0.19.2':
     dependencies:
@@ -5873,6 +5887,10 @@ snapshots:
   natural-compare@1.4.0: {}
 
   natural-orderby@5.0.0: {}
+
+  nexrad-level-2-data@3.0.2:
+    dependencies:
+      '@foxglove/wasm-bz2': 0.3.0
 
   next@16.5.0-canary.53(@types/node@26.6.6)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:

@@ -1,6 +1,6 @@
 "use client";
 
-import { type JSX, useEffect, useState } from "react";
+import React from "react";
 
 function formatTimestamp(date: Date): string {
   return date.toLocaleString(undefined, {
@@ -22,10 +22,10 @@ export function LastUpdated({
   timestamp,
 }: {
   timestamp?: string;
-}): JSX.Element {
-  const [date, setDate] = useState<Date | null>(null);
+}): React.JSX.Element {
+  const [date, setDate] = React.useState<Date | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setDate(parseTimestamp(timestamp));
   }, [timestamp]);
 

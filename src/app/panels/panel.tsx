@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "#/app/ui/card";
+import { Content, Header, Root, Title } from "#/app/ui/card";
 
 export function Panel({
   children,
@@ -7,23 +7,23 @@ export function Panel({
   icon,
   title,
   ...props
-}: Omit<React.ComponentProps<typeof Card>, "title"> & {
+}: {
   description?: React.ReactNode;
   icon?: React.ReactNode;
   title: React.ReactNode;
-}): React.JSX.Element {
+} & Omit<React.ComponentProps<typeof Root>, "title">): React.JSX.Element {
   const heading = (
-    <CardTitle>
+    <Title>
       <h2 className="text-xs font-semibold tracking-wider text-foreground uppercase">
         {title}
       </h2>
-    </CardTitle>
+    </Title>
   );
 
   return (
-    <Card {...props}>
-      <CardContent className="mx-auto flex w-full max-w-md flex-col gap-4">
-        <CardHeader className="flex flex-col gap-1 px-0">
+    <Root {...props}>
+      <Content className="mx-auto flex w-full max-w-md flex-col gap-4">
+        <Header className="flex flex-col gap-1 px-0">
           {icon ? (
             <div className="flex flex-row items-center gap-1.5">
               {icon}
@@ -33,11 +33,11 @@ export function Panel({
             heading
           )}
           {description}
-        </CardHeader>
+        </Header>
         <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-white bg-black">
           {children}
         </div>
-      </CardContent>
-    </Card>
+      </Content>
+    </Root>
   );
 }

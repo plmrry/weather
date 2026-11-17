@@ -1,9 +1,8 @@
 "use client";
-
-import type { JSX } from "react";
+import React from "react";
 import { Button } from "@base-ui/react/button";
 
-export function ClearButton(): JSX.Element {
+export function ClearButton(): React.JSX.Element {
   function clearLocalStorage(): void {
     try {
       localStorage.clear();

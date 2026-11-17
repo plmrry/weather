@@ -3,15 +3,11 @@ import type { Sandbox } from "@vercel/sandbox";
 import { fromArrayBuffer } from "geotiff";
 import { PNG } from "pngjs";
 import sharp from "sharp";
+import type { RadarStationFeature } from "./get-radar-stations";
 import type { MapBounds } from "./map-bounds";
-import type { RadarOverlay, RadarStationFeature } from "./radar-data";
+import { getRadarStations } from "./get-radar-stations";
 import { getBoundsForRadius } from "./map-bounds";
 import { getSatelliteProjection, MAP_DIMENSION } from "./map-projection";
-import {
-  getLatestRadarFileUrl,
-  getRadarFile,
-  getRadarStations,
-} from "./radar-data";
 
 const EARTH_RADIUS_KILOMETERS = 6371.0088;
 const RADAR_TIMESTAMP_INTERVAL_MILLISECONDS = 10 * 60 * 1000;
@@ -183,7 +179,10 @@ async function fetchStationRadar(
   const product = getRadarProduct(station.properties.stationType);
   if (!product) return null;
 
-  const fileUrl = await getLatestRadarFileUrl(station.properties.id, product);
+  const fileUrl = await getLatestRidge2RadarFileUrl(
+    station.properties.id,
+    product,
+  );
   if (!fileUrl) return null;
 
   const compressed = await getRadarFile(fileUrl);
@@ -501,4 +500,43 @@ export async function compositeRadarBatchesStep(
     stationCount,
   });
   return result;
+}
+
+const RIDGEII_URL = "https://mrms.ncep.noaa.gov/RIDGEII/L3";
+
+export type RadarOverlay = {
+  bytes: number;
+  dataUrl: string;
+  downloadedStationCount: number;
+  renderedStationCount: number;
+  stationCount: number;
+};
+
+export async function getLatestRidge2RadarFileUrl(
+  stationId: string,
+  product: string,
+): Promise<null | string> {
+  const productUrl = `${RIDGEII_URL}/${stationId}/${product}/`;
+  const response = await fetch(productUrl);
+  if (response.status === 429 || response.status >= 500)
+    throw new Error(`Unable to fetch radar directory: ${response.status}`);
+  if (!response.ok) return null;
+
+  const html = await response.text();
+  const filenames = [...html.matchAll(/href="([^"]+\.tif\.gz)"/g)]
+    .map((match) => match[1])
+    .sort();
+  const filename = filenames.at(-1);
+  return filename ? `${productUrl}${filename}` : null;
+}
+
+export async function getRadarFile(
+  fileUrl: string,
+): Promise<null | Uint8Array> {
+  const response = await fetch(fileUrl);
+  if (response.status === 429 || response.status >= 500)
+    throw new Error(`Unable to fetch radar file: ${response.status}`);
+  if (!response.ok) return null;
+
+  return new Uint8Array(await response.arrayBuffer());
 }

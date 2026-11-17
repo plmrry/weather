@@ -1,6 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { start } from "workflow/api";
-import type { RadarOverlay } from "./radar-data";
+import type { RadarOverlay } from "./radar-workflow-steps";
 import { radarOverlayWorkflow } from "./radar-workflow";
 
 export async function getCachedRadarOverlay(

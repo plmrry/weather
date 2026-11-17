@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import React from "react";
 import { getLocationName, parseCoordinates } from "./geocode";
 import { RecentLocationsClient } from "./recent-locations-client";
 
@@ -8,7 +8,7 @@ export async function RecentLocations({
   params,
 }: {
   params?: Params;
-}): Promise<JSX.Element> {
+}): Promise<React.JSX.Element> {
   const coordinates = parseCoordinates(params ? await params : undefined);
   const name = coordinates
     ? await getLocationName(coordinates.latitude, coordinates.longitude)

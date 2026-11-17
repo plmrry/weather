@@ -31,6 +31,7 @@ const nextConfig = {
     unoptimized: true,
   },
   partialPrefetching: true,
+  serverExternalPackages: ["nexrad-level-2-data"],
   typescript: {
     ignoreBuildErrors: true,
   },

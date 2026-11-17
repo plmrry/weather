@@ -10,16 +10,16 @@ const _geistMono = V0_Font_Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Weather",
   description: "Created with v0",
   generator: "v0.app",
+  title: "Weather",
 };
 
 export const viewport: Viewport = {
   colorScheme: "light dark",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
+    { color: "white", media: "(prefers-color-scheme: light)" },
+    { color: "black", media: "(prefers-color-scheme: dark)" },
   ],
 };
 

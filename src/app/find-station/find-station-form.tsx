@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import React from "react";
 import { FindStationFormClient } from "./find-station-form-client";
 import { getLocationName, parseCoordinates } from "./geocode";
 
@@ -8,7 +8,7 @@ export async function FindStationForm({
   params,
 }: {
   params?: Params;
-}): Promise<JSX.Element> {
+}): Promise<React.JSX.Element> {
   const coordinates = parseCoordinates(params ? await params : undefined);
   const initialQuery = coordinates
     ? await getLocationName(coordinates.latitude, coordinates.longitude)

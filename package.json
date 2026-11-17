@@ -9,9 +9,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "format": "oxfmt --write .",
-    "format:check": "oxfmt --check .",
-    "lint": "oxlint",
+    "format": "oxfmt --write . && oxlint --fix-dangerously .",
     "start": "next start"
   },
   "dependencies": {
@@ -37,6 +35,7 @@
     "geotiff": "latest",
     "lucide-react": "latest",
     "lucide-static": "latest",
+    "nexrad-level-2-data": "latest",
     "next": "canary",
     "pngjs": "latest",
     "react": "19",

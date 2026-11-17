@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import React from "react";
 import { Map as MapIcon } from "lucide-react";
 import Image from "next/image";
 import { LastUpdated } from "#/app/last-updated";
@@ -34,7 +34,7 @@ export function MesonetPanel({
   disabled?: boolean;
   latitude?: number;
   longitude?: number;
-}): JSX.Element {
+}): React.JSX.Element {
   const hasCoordinates = latitude !== undefined && longitude !== undefined;
   const isDisabled = disabled || !hasCoordinates;
 

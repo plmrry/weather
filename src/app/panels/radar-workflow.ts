@@ -1,5 +1,5 @@
 import { Drive, Sandbox } from "@vercel/sandbox";
-import type { RadarOverlay } from "./radar-data";
+import type { RadarOverlay } from "./radar-workflow-steps";
 import type { RadarBatchResult } from "./radar-workflow-steps";
 import {
   compositeRadarBatchesStep,

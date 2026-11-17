@@ -1,6 +1,5 @@
 "use client";
-
-import { type JSX, useEffect, useState, useTransition } from "react";
+import React from "react";
 import { Button } from "@base-ui/react/button";
 import { Menu } from "@base-ui/react/menu";
 import { ChevronDown } from "lucide-react";
@@ -10,8 +9,8 @@ import { findStation } from "./actions";
 const STORAGE_KEY = "recentLocations";
 
 type RecentLocation = {
-  name: string;
   lastUsedAt: string;
+  name: string;
 };
 
 function getRecentLocations(): RecentLocation[] {
@@ -51,10 +50,10 @@ function SaveSearch({
   name,
   onSave,
 }: {
-  name: string | null;
+  name: null | string;
   onSave: (searches: RecentLocation[]) => void;
 }): null {
-  useEffect(() => {
+  React.useEffect(() => {
     if (!name) return;
 
     const searches = getRecentLocations();
@@ -77,12 +76,14 @@ function SaveSearch({
 export function RecentLocationsClient({
   name,
 }: {
-  name: string | null;
-}): JSX.Element {
-  const [recentLocations, setRecentLocations] = useState<RecentLocation[]>([]);
-  const [isPending, startTransition] = useTransition();
+  name: null | string;
+}): React.JSX.Element {
+  const [recentLocations, setRecentLocations] = React.useState<
+    RecentLocation[]
+  >([]);
+  const [isPending, startTransition] = React.useTransition();
 
-  useEffect(() => {
+  React.useEffect(() => {
     setRecentLocations(getRecentLocations());
   }, []);
 
@@ -127,9 +128,9 @@ export function RecentLocationsClient({
         <Menu.Portal>
           <Menu.Positioner
             align="start"
+            className="z-50 outline-none"
             side="bottom"
             sideOffset={4}
-            className="z-50 outline-none"
           >
             <Menu.Popup className="max-h-(--available-height) w-(--anchor-width) min-w-32 origin-(--transform-origin) overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md outline-none">
               {[...recentLocations]
@@ -138,20 +139,20 @@ export function RecentLocationsClient({
                 )
                 .map((location) => (
                   <Menu.Item
-                    key={location.name}
                     className="relative flex min-h-12 cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-none select-none focus:bg-muted focus:text-foreground focus:**:text-foreground data-disabled:pointer-events-none data-disabled:opacity-50"
+                    key={location.name}
                     label={location.name}
                     onClick={() => selectRecentLocation(location.name)}
                   >
                     {location.name}
                     <button
-                      type="button"
-                      className="ml-auto cursor-pointer rounded px-2 py-1 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                       aria-label={`Remove ${location.name} from recent searches`}
+                      className="ml-auto cursor-pointer rounded px-2 py-1 text-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                       onClick={(event) => {
                         event.stopPropagation();
                         removeRecentLocation(location.name);
                       }}
+                      type="button"
                     >
                       Delete
                     </button>

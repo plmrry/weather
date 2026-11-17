@@ -4,8 +4,8 @@ import { getCoordinates, getLocationName } from "#/app/find-station/geocode";
 import { LastUpdated } from "#/app/last-updated";
 import { MapOverlay } from "./map-overlay";
 import { MesonetPanel } from "./mesonet-panel";
-import { NexradListingPanel } from "./nexrad-panel/nexrad-listing-panel";
 import { NexradDataPanel } from "./nexrad-panel/nexrad-data-panel";
+import { NexradListingPanel } from "./nexrad-panel/nexrad-listing-panel";
 import { Panel } from "./panel";
 import {
   RadarDataSummary,

@@ -1,6 +1,6 @@
 "use server";
 
-import type { RadarOverlay } from "./radar-data";
+import type { RadarOverlay } from "./radar-workflow-steps";
 import { getCachedRadarOverlay } from "./radar-cache";
 import { truncateRadarCoordinate } from "./radar-location";
 

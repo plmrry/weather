@@ -1,6 +1,6 @@
 "use client";
 
-import { type JSX, useEffect, useState } from "react";
+import React from "react";
 
 function formatTimestamp(date: Date): string {
   return date.toLocaleString(undefined, {
@@ -15,10 +15,10 @@ export function RadarTimestamp({
   time,
 }: {
   time: Date | null;
-}): JSX.Element | null {
-  const [mounted, setMounted] = useState(false);
+}): null | React.JSX.Element {
+  const [mounted, setMounted] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     setMounted(true);
   }, []);
 

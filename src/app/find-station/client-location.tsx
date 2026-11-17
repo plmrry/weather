@@ -2,13 +2,35 @@
 
 import React from "react";
 import { Button } from "@base-ui/react/button";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { getLocation } from "./actions";
 
 export function ClientLocation(): React.JSX.Element {
   const router = useRouter();
+  const pathname = usePathname();
   const [isPending, startTransition] = React.useTransition();
   const [isLocating, setIsLocating] = React.useState(false);
+
+  React.useEffect(() => {
+    if (pathname !== "/" || !navigator.geolocation) return;
+
+    let active = true;
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        if (!active) return;
+
+        const latitude = coords.latitude.toFixed(3);
+        const longitude = coords.longitude.toFixed(3);
+        router.replace(`/latitude/${latitude}/longitude/${longitude}`);
+      },
+      () => {},
+      { timeout: 10000 },
+    );
+
+    return () => {
+      active = false;
+    };
+  }, [pathname, router]);
 
   function getCurrentLocation(): void {
     setIsLocating(true);
@@ -34,11 +56,11 @@ export function ClientLocation(): React.JSX.Element {
 
   return (
     <Button
-      type="button"
+      aria-busy={isLoading}
       className="inline-flex min-h-12 w-full shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-xl bg-primary px-4 text-base font-medium whitespace-nowrap text-primary-foreground transition-colors outline-none hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0"
       disabled={isLoading}
-      aria-busy={isLoading}
       onClick={getCurrentLocation}
+      type="button"
     >
       {isLoading ? "Finding Station…" : "Use My Location"}
     </Button>
