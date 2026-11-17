@@ -1,6 +1,7 @@
 "use server";
 
 import { geoDistance } from "d3-geo";
+import { cacheLife, cacheTag } from "next/cache";
 import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
 import { fetchNexradListing } from "./fetch-nexrad-listing";
 
@@ -18,12 +19,14 @@ function reflectivityColor(value: number): [number, number, number] {
 }
 
 export async function fetchNexradData(
-  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
+  params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
 ): Promise<{
   mapSize: number;
   paths: { d: string; fill: string }[];
 } | null> {
-  if (!params) return null;
+  "use cache: remote";
+  cacheLife("minutes");
+  cacheTag("nexrad-data");
 
   const { latitude, longitude } = await params;
   const projection = getSatelliteProjection(

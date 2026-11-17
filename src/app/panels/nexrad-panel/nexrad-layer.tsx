@@ -7,8 +7,10 @@ export function NexradLayer({
   params,
 }: {
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
-}): React.JSX.Element {
-  const data = fetchNexradData(params);
+}) {
+  const data = params ? fetchNexradData(params) : null;
+
+  if (!data) return null;
 
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
