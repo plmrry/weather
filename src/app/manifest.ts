@@ -6,13 +6,6 @@ export default function manifest(): MetadataRoute.Manifest {
     description:
       "Live NOAA / NWS Level II radar data by latitude and longitude.",
     display: "standalone",
-    icons: [
-      {
-        sizes: "any",
-        src: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
     name: "NEXRAD Radar Explorer",
     short_name: "NEXRAD",
     start_url: "/",

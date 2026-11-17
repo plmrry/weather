@@ -6,6 +6,7 @@ import { AspectRatio } from "#/app/ui/aspect-ratio";
 import { Card, CardContent, CardHeader, CardTitle } from "#/app/ui/card";
 import { MapOverlay } from "./map-overlay";
 import { MesonetPanel } from "./mesonet-panel";
+import { NexradData } from "./nexrad-data";
 import {
   RadarDataSummary,
   RadarPanelsClient,
@@ -169,6 +170,7 @@ export async function Panels({
           renderRadarData={RADAR_DATA_ENABLED}
         />
       ))}
+      <NexradData />
     </>
   );
 
