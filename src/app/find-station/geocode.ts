@@ -1,5 +1,5 @@
 import { generateText, jsonSchema, Output } from "ai";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 const MODEL = "google/gemini-3.5-flash-lite";
 
@@ -42,8 +42,9 @@ export async function getCoordinates(location: string): Promise<{
   latitude: number;
   longitude: number;
 }> {
-  "use cache";
+  "use cache: remote";
   cacheLife("max");
+  cacheTag("coordinates");
 
   const { output } = await generateText({
     model: MODEL,
