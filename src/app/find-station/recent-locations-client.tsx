@@ -135,7 +135,7 @@ export function RecentLocationsClient({
                 )
                 .map((location) => (
                   <Menu.Item
-                    className="relative flex min-h-12 cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-none select-none focus:bg-muted focus:text-foreground focus:**:text-foreground data-disabled:pointer-events-none data-disabled:opacity-50"
+                    className="relative flex min-h-12 cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-none select-none focus:bg-muted focus:text-foreground focus:**:text-foreground data-disabled:pointer-events-none data-disabled:opacity-50"
                     key={location.name}
                     label={location.name}
                     onClick={() => selectRecentLocation(location.name)}

@@ -27,11 +27,9 @@ export function MapLayer({
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
   return (
-    <React.ViewTransition>
-      <React.Suspense fallback={<LoadingSpinner />} name="MapLayer">
-        <MapLayerCached params={params} />
-      </React.Suspense>
-    </React.ViewTransition>
+    <React.Suspense fallback={<LoadingSpinner />} name="MapLayer">
+      <MapLayerCached params={params} />
+    </React.Suspense>
   );
 }
 

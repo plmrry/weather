@@ -19,14 +19,12 @@ export function FindStation({
           <FieldSeparator>find a station</FieldSeparator>
 
           <Field>
-            <React.ViewTransition>
-              <React.Suspense
-                fallback={<FindStationForm />}
-                name="FindStationForm"
-              >
-                <FindStationForm params={params} />
-              </React.Suspense>
-            </React.ViewTransition>
+            <React.Suspense
+              fallback={<FindStationForm />}
+              name="FindStationForm"
+            >
+              <FindStationForm params={params} />
+            </React.Suspense>
           </Field>
 
           <FieldSeparator>or use your current location</FieldSeparator>
@@ -38,14 +36,12 @@ export function FindStation({
           <FieldSeparator>or use recent locations</FieldSeparator>
 
           <Field>
-            <React.ViewTransition>
-              <React.Suspense
-                fallback={<RecentLocations />}
-                name="RecentLocations"
-              >
-                <RecentLocations params={params} />
-              </React.Suspense>
-            </React.ViewTransition>
+            <React.Suspense
+              fallback={<RecentLocations />}
+              name="RecentLocations"
+            >
+              <RecentLocations params={params} />
+            </React.Suspense>
           </Field>
         </FieldGroup>
       </Card.Root>

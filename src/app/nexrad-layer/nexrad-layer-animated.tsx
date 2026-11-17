@@ -1,4 +1,5 @@
 import React from "react";
+import * as d3 from "d3";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { fetchNexradDataOneHour } from "./fetch-nexrad";
 
@@ -12,13 +13,16 @@ export function NexradLayerAnimated({
   if (!data) return null;
 
   return (
-    <React.ViewTransition>
-      <React.Suspense fallback={<LoadingSpinner />} name="NexradLayerAnimated">
-        <NexradLayerAnimatedRendered data={data} />
-      </React.Suspense>
-    </React.ViewTransition>
+    <React.Suspense fallback={<LoadingSpinner />} name="NexradLayerAnimated">
+      <NexradLayerAnimatedRendered data={data} />
+    </React.Suspense>
   );
 }
+
+const reflectivityColorScale = d3
+  .scaleSequential(d3.interpolateTurbo)
+  .domain([5, 50])
+  .clamp(true);
 
 function NexradLayerAnimatedRendered({
   data: dataPromise,
@@ -34,6 +38,10 @@ function NexradLayerAnimatedRendered({
     (_, index) => index / frames.length,
   ).join(";");
 
+  const data = frames.at(-1);
+
+  const paths = data?.paths ?? [];
+
   return (
     <svg
       className="absolute inset-0 size-full"
@@ -44,7 +52,12 @@ function NexradLayerAnimatedRendered({
       <title>
         NEXRAD reflectivity over the past hour around the selected location.
       </title>
-      {frames.map((frame, frameIndex) => (
+      {paths.map(({ d, reflectivity }) => {
+        if (!d) return null;
+        const fill = reflectivityColorScale(reflectivity);
+        return <path d={d} fill={fill} key={reflectivity} />;
+      })}
+      {/* {frames.map((frame, frameIndex) => (
         <g key={frameIndex} visibility="hidden">
           <animate
             attributeName="visibility"
@@ -60,7 +73,7 @@ function NexradLayerAnimatedRendered({
             <path d={d} fill={fill} key={fill} />
           ))}
         </g>
-      ))}
+      ))} */}
     </svg>
   );
 }

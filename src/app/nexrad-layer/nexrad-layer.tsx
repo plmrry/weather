@@ -1,4 +1,5 @@
 import React from "react";
+import * as d3 from "d3";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { fetchNexradDataLatest } from "./fetch-nexrad";
 
@@ -12,33 +13,48 @@ export function NexradLayer({
   if (!data) return null;
 
   return (
-    <React.ViewTransition>
-      <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
-        <NexradLayerRendered data={data} />
-      </React.Suspense>
-    </React.ViewTransition>
+    <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
+      <NexradLayerRendered data={data} />
+    </React.Suspense>
   );
 }
+
+const reflectivityColorScale = d3
+  .scaleSequential(d3.interpolateTurbo)
+  .domain([5, 50])
+  .clamp(true);
 
 function NexradLayerRendered({
   data: dataPromise,
 }: {
   data?: ReturnType<fetchNexradDataLatest>;
-}): null | React.JSX.Element {
+}) {
   const data = dataPromise ? React.use(dataPromise) : null;
   if (!data) return null;
+
+  const paths = data.paths ?? [];
+
+  if (paths.length === 0) return null;
+
+  const reflectivityExtent = d3.extent(
+    paths,
+    ({ reflectivity }) => reflectivity,
+  );
 
   return (
     <svg
       className="absolute inset-0 size-full"
+      data-extent={reflectivityExtent}
       role="img"
       shapeRendering="crispEdges"
       viewBox={`0 0 ${data.mapSize} ${data.mapSize}`}
     >
       <title>NEXRAD reflectivity projected around the selected location.</title>
-      {data.paths.map(({ d, fill }) => (
-        <path d={d} fill={fill} key={fill} />
-      ))}
+      {paths.map(({ d, reflectivity }) => {
+        if (!d) return null;
+        const fill = reflectivityColorScale(reflectivity);
+        return <path d={d} fill={fill} key={reflectivity} />;
+      })}
     </svg>
   );
 }
