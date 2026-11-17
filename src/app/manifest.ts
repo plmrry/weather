@@ -3,11 +3,10 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     background_color: "#0b1220",
-    description:
-      "Live NOAA / NWS Level II radar data by latitude and longitude.",
+    description: "Live weather data.",
     display: "standalone",
-    name: "NEXRAD Radar Explorer",
-    short_name: "NEXRAD",
+    name: "Weather Café",
+    short_name: "Weather Café",
     start_url: "/",
     theme_color: "#0b1220",
   };

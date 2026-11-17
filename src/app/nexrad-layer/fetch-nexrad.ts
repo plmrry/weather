@@ -125,3 +125,4 @@ export async function fetchNexradData(
 
   return { mapSize: MAP_SIZE, paths };
 }
+export type fetchNexradData = typeof fetchNexradData;

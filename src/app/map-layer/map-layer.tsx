@@ -3,8 +3,8 @@ import type { FeatureCollection } from "geojson";
 import { geoPath } from "d3-geo";
 import { cacheLife, cacheTag } from "next/cache";
 import { feature } from "topojson-client";
-import type { MapBounds } from "#/app/map-bounds";
-import { getMapBounds } from "#/app/map-bounds";
+import type { MapBounds } from "#/app/map-layer/map-bounds";
+import { getMapBounds } from "#/app/map-layer/map-bounds";
 import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
 
 const COUNTRY_BOUNDARIES_URL =

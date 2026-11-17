@@ -1,6 +1,6 @@
 import type { Feature, Geometry } from "geojson";
 import { geoSatellite } from "d3-geo-projection";
-import { getMapBounds } from "#/app/map-bounds";
+import { getMapBounds } from "#/app/map-layer/map-bounds";
 
 export const MAP_SIZE = 600;
 const SATELLITE_DISTANCE = 16;

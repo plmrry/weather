@@ -2,9 +2,9 @@ import React from "react";
 import { Map as MapIcon } from "lucide-react";
 import { getCoordinates } from "#/app/find-station/geocode";
 import { LoadingSpinner } from "#/app/loading-spinner";
-import { MapLayer } from "#/app/map-layer";
+import { MapLayer } from "#/app/map-layer/map-layer";
 import { Panel } from "#/app/panel";
-import { NexradLayer } from "./nexrad-panel/nexrad-layer";
+import { NexradLayer } from "./nexrad-layer/nexrad-layer";
 
 const otherLocations = [
   "Austin, Texas",
