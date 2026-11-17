@@ -10,7 +10,7 @@ const _geistMono = V0_Font_Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "v0 App",
+  title: "Weather",
   description: "Created with v0",
   generator: "v0.app",
   icons: {

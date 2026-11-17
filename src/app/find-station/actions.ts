@@ -1,9 +1,9 @@
 "use server";
 
-import { generateText, Output, jsonSchema } from "ai";
+import { generateText, jsonSchema, Output } from "ai";
 import { redirect } from "next/navigation";
 
-const MODEL = "openai/gpt-4.1-nano";
+const MODEL = "google/gemini-3.5-flash-lite";
 
 export type LocationResult = {
   latitude: number;
