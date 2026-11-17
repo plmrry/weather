@@ -1,6 +1,7 @@
 "use server";
 
 import { XMLParser } from "fast-xml-parser";
+import { io } from "next/cache";
 import { getStationData } from "#/app/get-station-data";
 
 export async function fetchNexradListing(
@@ -15,6 +16,8 @@ export async function fetchNexradListing(
   });
   const stationId = station?.gridData?.properties?.radarStation;
   if (!stationId) return null;
+
+  await io();
 
   const datePrefix = new Date().toISOString().slice(0, 10).replaceAll("-", "/");
   const url = new URL("https://unidata-nexrad-level2.s3.amazonaws.com/");

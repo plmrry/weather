@@ -3,7 +3,7 @@ import { getCoordinates } from "#/app/find-station/geocode";
 import { MapPanel } from "#/app/map-panel";
 import { NexradLayer } from "./nexrad-panel/nexrad-layer";
 
-const newMapDefinitions = [
+const otherLocations = [
   "Austin, Texas",
   "Spokane, Washington",
   "Anchorage, Alaska",
@@ -16,7 +16,7 @@ export async function Panels({
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }): Promise<React.JSX.Element> {
   const newMaps = await Promise.all(
-    newMapDefinitions.map(async (location) => {
+    otherLocations.map(async (location) => {
       const coordinates = await getCoordinates(location);
       return {
         latitude: coordinates.latitude,
@@ -30,6 +30,7 @@ export async function Panels({
       <MapPanel params={params} title="NEXRAD Data">
         <NexradLayer params={params} />
       </MapPanel>
+      <h1 className="text-2xl font-bold text-center w-full">Other Locations</h1>
       {newMaps.map(({ latitude, location, longitude }) => {
         const params = Promise.resolve({
           latitude: String(latitude),
