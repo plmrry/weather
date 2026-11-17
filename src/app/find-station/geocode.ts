@@ -1,7 +1,7 @@
 import { generateText, jsonSchema, Output } from "ai";
 import { cacheLife } from "next/cache";
 
-const MODEL = "openai/gpt-4.1-nano";
+const MODEL = "google/gemini-3.5-flash-lite";
 
 const coordinatesSchema = jsonSchema<{
   latitude: number;
