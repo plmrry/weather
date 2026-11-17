@@ -1,5 +1,7 @@
 import React from "react";
 import { getCoordinates } from "#/app/find-station/geocode";
+import { LoadingSpinner } from "#/app/loading-spinner";
+import { MapLayer } from "#/app/map-layer";
 import { MapPanel } from "#/app/map-panel";
 import { NexradLayer } from "./nexrad-panel/nexrad-layer";
 
@@ -28,9 +30,12 @@ export async function Panels({
   return (
     <>
       <MapPanel params={params} title="NEXRAD Data">
+        <React.Suspense fallback={<LoadingSpinner />} name="MapLayer">
+          <MapLayer params={params} />
+        </React.Suspense>
         <NexradLayer params={params} />
       </MapPanel>
-      <h1 className="text-2xl font-bold text-center w-full">Other Locations</h1>
+      <h1 className="w-full text-center text-2xl font-bold">Other Locations</h1>
       {newMaps.map(({ latitude, location, longitude }) => {
         const params = Promise.resolve({
           latitude: String(latitude),
@@ -38,6 +43,9 @@ export async function Panels({
         });
         return (
           <MapPanel key={location} params={params} title={location}>
+            <React.Suspense fallback={<LoadingSpinner />} name="MapLayer">
+              <MapLayer params={params} />
+            </React.Suspense>
             <NexradLayer params={params} />
           </MapPanel>
         );
