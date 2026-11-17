@@ -1,4 +1,4 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 
 const USER_AGENT = "(weather-cafe.vercel.app, paul@paulmurray.lol)";
 
@@ -19,8 +19,9 @@ export async function getStationData({
   latitude: number;
   longitude: number;
 }) {
-  "use cache";
+  "use cache: remote";
   cacheLife("minutes");
+  cacheTag("station-data");
 
   const gridData = await fetchJson<{
     properties?: { observationStations?: string; radarStation?: string };

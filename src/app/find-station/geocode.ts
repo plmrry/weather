@@ -82,8 +82,9 @@ export async function getLocationName(
   latitude: number,
   longitude: number,
 ): Promise<string> {
-  "use cache";
+  "use cache: remote";
   cacheLife("max");
+  cacheTag("location-name");
 
   const { output } = await generateText({
     model: MODEL,
