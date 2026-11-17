@@ -4,8 +4,8 @@ import { cacheLife, cacheTag } from "next/cache";
 const MODEL = "google/gemini-3.5-flash-lite";
 
 const coordinatesSchema = jsonSchema<{
-  latitude: number;
-  longitude: number;
+  latitude: string;
+  longitude: string;
 }>({
   additionalProperties: false,
   properties: {
@@ -39,8 +39,8 @@ const schema = jsonSchema<{ name: string }>({
 });
 
 export async function getCoordinates(location: string): Promise<{
-  latitude: number;
-  longitude: number;
+  latitude: string;
+  longitude: string;
 }> {
   "use cache: remote";
   cacheLife("max");
@@ -54,7 +54,10 @@ export async function getCoordinates(location: string): Promise<{
     temperature: 0.2,
   });
 
-  return output;
+  return {
+    latitude: output.latitude?.toString(),
+    longitude: output.longitude?.toString(),
+  };
 }
 
 export function parseCoordinates(
