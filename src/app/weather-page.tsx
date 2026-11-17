@@ -2,6 +2,7 @@ import { Suspense, type JSX } from "react";
 import { ClearButton } from "./clear-button";
 import { CurrentStation } from "./current-station";
 import { FindStation } from "./find-station";
+import { NexradData } from "./nexrad-data";
 import { Panels } from "./panels";
 
 export function WeatherPage({
@@ -30,6 +31,7 @@ export function WeatherPage({
         <Panels params={params} />
       </Suspense>
 
+      <NexradData />
       <ClearButton />
     </main>
   );
