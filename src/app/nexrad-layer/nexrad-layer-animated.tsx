@@ -1,6 +1,6 @@
 import React from "react";
-import * as d3 from "d3";
 import { LoadingSpinner } from "#/app/loading-spinner";
+import { reflectivityColorScale } from "#/app/map-projection";
 import { fetchNexradDataOneHour } from "./fetch-nexrad";
 
 export function NexradLayerAnimated({
@@ -18,11 +18,6 @@ export function NexradLayerAnimated({
     </React.Suspense>
   );
 }
-
-const reflectivityColorScale = d3
-  .scaleSequential(d3.interpolateTurbo)
-  .domain([5, 50])
-  .clamp(true);
 
 function NexradLayerAnimatedRendered({
   data: dataPromise,

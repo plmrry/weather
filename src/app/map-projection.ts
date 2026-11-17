@@ -1,4 +1,5 @@
 import type { MultiPoint } from "geojson";
+import * as d3 from "d3";
 import { geoSatellite } from "d3-geo-projection";
 
 export const MAP_SIZE = 600;
@@ -11,6 +12,18 @@ const EDGE_POINTS: [number, number][] = [
 ];
 const SATELLITE_DISTANCE = 16;
 const SATELLITE_SCALE = 7000;
+
+export const reflectivityDomain = [-5, 50];
+
+export const reflectivityColorScale = d3
+  .scaleSequential(d3.interpolateTurbo)
+  .domain(reflectivityDomain)
+  .clamp(true);
+
+export const reflectivityQuantizeScale = d3
+  .scaleQuantize<string>()
+  .domain(reflectivityDomain)
+  .range(d3.range(5, 55, 5).map(String));
 
 export function getSatelliteProjection(latitude: number, longitude: number) {
   const projection = geoSatellite()

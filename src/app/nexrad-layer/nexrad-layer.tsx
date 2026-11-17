@@ -1,6 +1,7 @@
 import React from "react";
 import * as d3 from "d3";
 import { LoadingSpinner } from "#/app/loading-spinner";
+import { reflectivityColorScale } from "#/app/map-projection";
 import { fetchNexradDataLatest } from "./fetch-nexrad";
 
 export function NexradLayer({
@@ -18,11 +19,6 @@ export function NexradLayer({
     </React.Suspense>
   );
 }
-
-const reflectivityColorScale = d3
-  .scaleSequential(d3.interpolateTurbo)
-  .domain([5, 50])
-  .clamp(true);
 
 function NexradLayerRendered({
   data: dataPromise,
@@ -53,7 +49,11 @@ function NexradLayerRendered({
       {paths.map(({ d, reflectivity }) => {
         if (!d) return null;
         const fill = reflectivityColorScale(reflectivity);
-        return <path d={d} fill={fill} key={reflectivity} />;
+        return (
+          <g data-reflectivity={reflectivity} key={reflectivity}>
+            <path d={d} fill={fill} />
+          </g>
+        );
       })}
     </svg>
   );
