@@ -1,11 +1,9 @@
 import React from "react";
 import { Map as MapIcon } from "lucide-react";
-import Image from "next/image";
 import { LastUpdated } from "#/app/last-updated";
 import { cn } from "#/lib/utils";
 import { CurrentRadarTimestamp } from "./current-radar-timestamp";
 import { getMapBounds } from "./map-bounds";
-import { MapOverlay } from "./map-overlay";
 import { Panel } from "./panel";
 
 function getMesonetImageUrl(latitude: number, longitude: number): string {
@@ -55,15 +53,6 @@ export function MesonetPanel({
     >
       {hasCoordinates ? (
         <>
-          <Image
-            alt="Current Mesonet base-reflectivity radar near the selected location"
-            className="size-full object-cover"
-            height={600}
-            sizes="(max-width: 512px) calc(100vw - 4rem), 448px"
-            src={getMesonetImageUrl(latitude, longitude)}
-            width={600}
-          />
-          <MapOverlay latitude={latitude} longitude={longitude} />
           <CurrentRadarTimestamp />
         </>
       ) : (

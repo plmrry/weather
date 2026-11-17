@@ -31,7 +31,7 @@ export function FindStation({
           </FieldSeparator>
 
           <Field>
-            <ClientLocation />
+            <ClientLocation autoLocate={params === undefined} />
           </Field>
 
           <FieldSeparator className="text-xs tracking-wider uppercase **:data-[slot=field-separator-content]:mx-0! **:data-[slot=field-separator-content]:bg-card">

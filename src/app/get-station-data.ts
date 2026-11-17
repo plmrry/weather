@@ -1,12 +1,6 @@
 import { cacheLife } from "next/cache";
 
-const USER_AGENT = "(weather-cafe.vercel.app, contact@weather-cafe.example)";
-
-type StationObservation = {
-  stationId: string;
-  stationName: string;
-  timestamp: string;
-};
+const USER_AGENT = "(weather-cafe.vercel.app, paul@paulmurray.lol)";
 
 async function fetchJson<T>(url: string): Promise<null | T> {
   const response = await fetch(url, {
@@ -18,18 +12,23 @@ async function fetchJson<T>(url: string): Promise<null | T> {
   return (await response.json()) as T;
 }
 
-export async function getStationObservation(
-  latitude: number,
-  longitude: number,
-): Promise<null | StationObservation> {
+export async function getStationData({
+  latitude,
+  longitude,
+}: {
+  latitude: number;
+  longitude: number;
+}) {
   "use cache";
   cacheLife("minutes");
 
-  const points = await fetchJson<{
-    properties?: { observationStations?: string };
-  }>(`https://api.weather.gov/points/${latitude},${longitude}`);
+  const gridData = await fetchJson<{
+    properties?: { observationStations?: string; radarStation?: string };
+  }>(
+    `https://api.weather.gov/points/${latitude.toFixed(4)},${longitude.toFixed(4)}`,
+  );
 
-  const stationsUrl = points?.properties?.observationStations;
+  const stationsUrl = gridData?.properties?.observationStations;
   if (!stationsUrl) return null;
 
   const stations = await fetchJson<{
@@ -40,12 +39,19 @@ export async function getStationObservation(
   const stationId = station?.stationIdentifier;
   if (!stationId) return null;
 
-  const latest = await fetchJson<{
+  const latestObservation = await fetchJson<{
     properties?: { timestamp?: string };
   }>(`https://api.weather.gov/stations/${stationId}/observations/latest`);
 
-  const timestamp = latest?.properties?.timestamp;
+  const timestamp = latestObservation?.properties?.timestamp;
   if (!timestamp) return null;
 
-  return { stationId, stationName: station?.name ?? stationId, timestamp };
+  return {
+    gridData,
+    latestObservation,
+    stationId,
+    stationName: station?.name ?? stationId,
+    stations,
+    timestamp,
+  };
 }

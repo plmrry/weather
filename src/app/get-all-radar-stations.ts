@@ -20,7 +20,7 @@ type RadarStationsResponse = {
   type: "FeatureCollection";
 };
 
-export async function getRadarStations(): Promise<RadarStationFeature[]> {
+export async function getAllRadarStations(): Promise<RadarStationFeature[]> {
   "use cache: remote";
   cacheLife("minutes");
 

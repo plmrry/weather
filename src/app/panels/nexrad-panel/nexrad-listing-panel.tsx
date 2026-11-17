@@ -1,10 +1,14 @@
 import React from "react";
 import { Panel } from "../panel";
-import { fetchNexradListing } from "./fetch-nexrad";
+import { fetchNexradListing } from "./fetch-nexrad-listing";
 import { NexradListingDynamic } from "./nexrad-listing-dynamic";
 
-export function NexradListingPanel(): React.JSX.Element {
-  const listing = fetchNexradListing();
+export function NexradListingPanel({
+  params,
+}: {
+  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
+}): React.JSX.Element {
+  const listing = fetchNexradListing(params);
 
   return (
     <Panel aria-label="NEXRAD Listing" title="NEXRAD Listing">

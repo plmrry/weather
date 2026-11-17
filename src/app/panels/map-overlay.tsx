@@ -1,6 +1,6 @@
 import React from "react";
-import type { Feature, FeatureCollection, Geometry } from "geojson";
-import { geoIdentity, geoPath } from "d3-geo";
+import type { FeatureCollection } from "geojson";
+import { geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { MapBounds } from "./map-bounds";
 import { getMapBounds } from "./map-bounds";
@@ -102,46 +102,19 @@ async function getStateBoundaries(): Promise<FeatureCollection> {
 export async function MapOverlay({
   latitude,
   longitude,
-  projection = "identity",
   radarLayer,
 }: {
   latitude: number;
   longitude: number;
-  projection?: "identity" | "satellite";
   radarLayer?: React.ReactNode;
 }): Promise<React.JSX.Element> {
-  const mapProjection =
-    projection === "satellite"
-      ? getSatelliteProjection(latitude, longitude)
-      : geoIdentity().reflectY(true);
+  const mapProjection = getSatelliteProjection(latitude, longitude);
   const bounds = getMapBounds(latitude, longitude);
   const [countries, roads, states] = await Promise.all([
     getCountryBoundaries(),
     getPrimaryRoads(bounds),
     getStateBoundaries(),
   ]);
-  const boundsGeometry: Feature<Geometry> = {
-    geometry: {
-      coordinates: [
-        [
-          [bounds[0], bounds[1]],
-          [bounds[0], bounds[3]],
-          [bounds[2], bounds[3]],
-          [bounds[2], bounds[1]],
-          [bounds[0], bounds[1]],
-        ],
-      ],
-      type: "Polygon",
-    },
-    properties: {},
-    type: "Feature",
-  };
-  const fitExtent: [[number, number], [number, number]] = [
-    [0, 0],
-    [MAP_DIMENSION, MAP_DIMENSION],
-  ];
-  if (projection === "identity")
-    mapProjection.fitExtent(fitExtent, boundsGeometry);
   const path = geoPath(mapProjection);
   const countryPath = path(getVisibleFeatures(countries, path));
   const roadPath = path(roads);
@@ -186,5 +159,23 @@ export async function MapOverlay({
         />
       ) : null}
     </svg>
+  );
+}
+
+export function MapLayer({
+  params,
+  radarLayer,
+}: {
+  params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
+  radarLayer?: React.ReactNode;
+}): React.JSX.Element {
+  const { latitude, longitude } = React.use(params);
+
+  return (
+    <MapOverlay
+      latitude={Number(latitude)}
+      longitude={Number(longitude)}
+      radarLayer={radarLayer}
+    />
   );
 }

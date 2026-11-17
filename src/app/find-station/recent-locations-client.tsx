@@ -13,7 +13,7 @@ type RecentLocation = {
   name: string;
 };
 
-function getRecentLocations(): RecentLocation[] {
+export function getRecentLocations(): RecentLocation[] {
   try {
     const storedSearches: unknown = JSON.parse(
       localStorage.getItem(STORAGE_KEY) ?? "[]",

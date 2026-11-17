@@ -3,9 +3,9 @@ import type { Sandbox } from "@vercel/sandbox";
 import { fromArrayBuffer } from "geotiff";
 import { PNG } from "pngjs";
 import sharp from "sharp";
-import type { RadarStationFeature } from "./get-radar-stations";
+import type { RadarStationFeature } from "#/app/get-all-radar-stations";
+import { getAllRadarStations } from "#/app/get-all-radar-stations";
 import type { MapBounds } from "./map-bounds";
-import { getRadarStations } from "./get-radar-stations";
 import { getBoundsForRadius } from "./map-bounds";
 import { getSatelliteProjection, MAP_DIMENSION } from "./map-projection";
 
@@ -387,7 +387,7 @@ export async function prepareRadarWorkflowStep(
   "use step";
   console.log("Preparing radar workflow", { latitude, longitude });
 
-  const stations = await getRadarStations();
+  const stations = await getAllRadarStations();
   const nearbyStations = stations
     .map((station) => ({
       distance: getDistanceKilometers(

@@ -24,6 +24,9 @@ declare module "nexrad-level-2-data" {
     constructor(file: Uint8Array);
     getAzimuth(): number[];
     getAzimuth(scan: number): number;
+    getHeader(scan: number): {
+      volume?: { latitude: number; longitude: number };
+    };
     getHighresReflectivity(): HighResData[];
     getHighresReflectivity(scan: number): HighResData;
     setElevation(elevation: number): void;

@@ -61,7 +61,6 @@ function NewMapPanel({
         <MapOverlay
           latitude={latitude}
           longitude={longitude}
-          projection="satellite"
           radarLayer={renderRadarData ? <RadarSvgLayer id={id} /> : null}
         />
       </React.Suspense>
@@ -91,7 +90,7 @@ function MapLoadingSpinner({
 export async function Panels({
   params,
 }: {
-  params?: Promise<{ latitude: string; longitude: string }>;
+  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }): Promise<React.JSX.Element> {
   const resolved = params ? await params : undefined;
   const parsedLatitude = resolved ? Number(resolved.latitude) : Number.NaN;
@@ -157,8 +156,8 @@ export async function Panels({
           renderRadarData={RADAR_DATA_ENABLED}
         />
       ))}
-      <NexradListingPanel />
-      <NexradDataPanel />
+      <NexradListingPanel params={params} />
+      <NexradDataPanel params={params} />
     </>
   );
 
