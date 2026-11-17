@@ -32,6 +32,8 @@ function NexradLayerRendered({
 
   if (paths.length === 0) return null;
 
+  const mapSize = data.mapSize;
+
   const reflectivityExtent = d3.extent(
     paths,
     ({ reflectivity }) => reflectivity,
@@ -43,7 +45,7 @@ function NexradLayerRendered({
       data-extent={reflectivityExtent}
       role="img"
       shapeRendering="crispEdges"
-      viewBox={`0 0 ${data.mapSize} ${data.mapSize}`}
+      viewBox={`0 0 ${mapSize} ${mapSize}`}
     >
       <title>NEXRAD reflectivity projected around the selected location.</title>
       <g data-layers={paths.length}>
