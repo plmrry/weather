@@ -16,6 +16,8 @@ const PRIMARY_ROADS_URL =
 const STATE_BOUNDARIES_URL =
   "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 
+type Topology = Parameters<typeof topoJSON.feature>[0];
+
 export function MapLayer({
   params,
 }: {
@@ -47,20 +49,29 @@ async function MapLayerCached({
 
   const mapProjection = getSatelliteProjection(latitude, longitude);
   const bounds = getMapBounds(latitude, longitude);
-  const [countries, roads, states] = await Promise.allSettled([
-    getCountryBoundaries(),
-    getPrimaryRoads(bounds),
-    getStateBoundaries(),
+  const results = await Promise.allSettled([
+    getCountryBoundaries().then((features) => ["countries", features] as const),
+    getPrimaryRoads(bounds).then((features) => ["roads", features] as const),
+    getStateBoundaries().then((features) => ["states", features] as const),
   ]);
+  const layers = Object.fromEntries(
+    results
+      .filter((result) => result.status === "fulfilled")
+      .map((result) => result.value),
+  );
   const path = d3.geoPath(mapProjection);
-  const visibleCountries = getVisibleFeatures(countries.value, path);
-  const countryPath =
-    countries.status === "fulfilled" ? path(visibleCountries) : null;
-  const roadPath = roads.status === "fulfilled" ? path(roads.value) : null;
-  const statePath =
-    states.status === "fulfilled"
-      ? path(getVisibleFeatures(states.value, path))
-      : null;
+
+  const visibleCountries = layers.countries
+    ? getVisibleFeatures(layers.countries, path)
+    : null;
+  const countryPath = visibleCountries ? path(visibleCountries) : null;
+
+  const roadPath = layers.roads ? path(layers.roads) : null;
+
+  const visibleStates = layers.states
+    ? getVisibleFeatures(layers.states, path)
+    : null;
+  const statePath = visibleStates ? path(visibleStates) : null;
 
   return (
     <svg
@@ -106,7 +117,7 @@ async function MapLayerCached({
 function getVisibleFeatures(
   features: GeoJSON.FeatureCollection,
   path: ReturnType<typeof d3.geoPath>,
-) {
+): GeoJSON.FeatureCollection {
   return {
     features: features.features.filter((featureToCheck) => {
       const [[left, top], [right, bottom]] = path.bounds(featureToCheck);
@@ -116,21 +127,26 @@ function getVisibleFeatures(
   };
 }
 
-async function getCountryBoundaries() {
+async function getCountryBoundaries(): Promise<GeoJSON.FeatureCollection> {
   try {
     const response = await fetch(COUNTRY_BOUNDARIES_URL);
     if (!response.ok) return { features: [], type: "FeatureCollection" };
 
-    const topology = await response.json();
-    const countries = topoJSON.feature(topology, topology.objects.countries);
+    const topology = (await response.json()) as Topology;
+    const countries = topology.objects.countries;
+    if (countries.type !== "GeometryCollection") {
+      return { features: [], type: "FeatureCollection" };
+    }
 
-    return countries;
+    return topoJSON.feature(topology, countries);
   } catch {
     return { features: [], type: "FeatureCollection" };
   }
 }
 
-async function getPrimaryRoads(bounds: MapBounds) {
+async function getPrimaryRoads(
+  bounds: MapBounds,
+): Promise<GeoJSON.FeatureCollection> {
   const searchParams = new URLSearchParams({
     f: "geojson",
     geometry: bounds.join(","),
@@ -149,7 +165,7 @@ async function getPrimaryRoads(bounds: MapBounds) {
     const response = await fetch(`${PRIMARY_ROADS_URL}?${searchParams}`);
     if (!response.ok) return { features: [], type: "FeatureCollection" };
 
-    const roads = await response.json();
+    const roads = (await response.json()) as GeoJSON.FeatureCollection;
     return roads.type === "FeatureCollection"
       ? roads
       : { features: [], type: "FeatureCollection" };
@@ -158,15 +174,18 @@ async function getPrimaryRoads(bounds: MapBounds) {
   }
 }
 
-async function getStateBoundaries() {
+async function getStateBoundaries(): Promise<GeoJSON.FeatureCollection> {
   try {
     const response = await fetch(STATE_BOUNDARIES_URL);
     if (!response.ok) return { features: [], type: "FeatureCollection" };
 
-    const topology = await response.json();
-    const states = topoJSON.feature(topology, topology.objects.states);
+    const topology = (await response.json()) as Topology;
+    const states = topology.objects.states;
+    if (states.type !== "GeometryCollection") {
+      return { features: [], type: "FeatureCollection" };
+    }
 
-    return states;
+    return topoJSON.feature(topology, states);
   } catch {
     return { features: [], type: "FeatureCollection" };
   }

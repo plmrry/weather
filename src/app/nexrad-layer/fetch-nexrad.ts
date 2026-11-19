@@ -79,12 +79,14 @@ async function fetchAndParseNexradData(
 
   const bytes = await fetchNexradFile(key);
 
-  const data = await getRadarData(bytes);
+  const { azimuths, reflectivity, stationCoordinates } =
+    await getRadarData(bytes);
 
   const parsed = parseRadarData({
-    data,
-    latitude: Number(latitude),
-    longitude: Number(longitude),
+    azimuths,
+    mapCoordinates: [Number(longitude), Number(latitude)],
+    reflectivity,
+    stationCoordinates,
   });
 
   return { ...parsed, key };
@@ -101,5 +103,19 @@ async function getRadarData(bytes: Uint8Array) {
   const stationLatitude = header?.volume?.latitude;
   const stationLongitude = header?.volume?.longitude;
 
-  return { azimuths, reflectivity, stationLatitude, stationLongitude };
+  if (
+    stationLatitude === undefined ||
+    stationLongitude === undefined ||
+    !Number.isFinite(stationLatitude) ||
+    !Number.isFinite(stationLongitude)
+  ) {
+    throw new Error("Radar volume is missing station coordinates");
+  }
+
+  const stationCoordinates: [number, number] = [
+    stationLongitude,
+    stationLatitude,
+  ];
+
+  return { azimuths, reflectivity, stationCoordinates };
 }

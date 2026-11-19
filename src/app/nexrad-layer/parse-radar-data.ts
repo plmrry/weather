@@ -17,54 +17,41 @@ const gateCenterX = d3
 const gateCenterY = gateCenterX.copy();
 
 export function parseRadarData({
-  data,
-  latitude,
-  longitude,
+  azimuths,
+  mapCoordinates,
+  reflectivity,
+  stationCoordinates,
 }: {
-  data: {
-    azimuths: number[];
-    reflectivity: HighResData[];
-    stationLatitude: number | undefined;
-    stationLongitude: number | undefined;
-  };
-  latitude: number;
-  longitude: number;
+  azimuths: number[];
+  mapCoordinates: [number, number];
+  reflectivity: HighResData[];
+  stationCoordinates: [number, number];
 }) {
-  if (data.azimuths.length === 0) {
+  if (azimuths.length === 0) {
     throw new Error("Radar data contains no azimuths");
   }
 
-  if (data.azimuths.length !== data.reflectivity.length) {
+  if (azimuths.length !== reflectivity.length) {
     throw new Error("Radar azimuths and reflectivity radials do not align");
   }
 
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+  if (!mapCoordinates.every(Number.isFinite)) {
     throw new Error("Map coordinates must be finite");
   }
 
-  const { stationLatitude, stationLongitude } = data;
-
-  if (
-    stationLatitude === undefined ||
-    stationLongitude === undefined ||
-    !Number.isFinite(stationLatitude) ||
-    !Number.isFinite(stationLongitude)
-  ) {
+  if (!stationCoordinates.every(Number.isFinite)) {
     throw new Error("Radar volume is missing station coordinates");
   }
 
-  const stationCoordinates: [number, number] = [
-    stationLongitude,
-    stationLatitude,
-  ];
-
+  const [longitude, latitude] = mapCoordinates;
   const projection = getSatelliteProjection(latitude, longitude);
+
   const bandValues = new Float32Array(
     reflectivityBands.length * CELL_COUNT,
   ).fill(-Infinity);
+  
   const counts = new Uint32Array(reflectivityBands.length);
-  const azimuths = data.azimuths;
-  const firstRadial = data.reflectivity.find(
+  const firstRadial = reflectivity.find(
     (radial) => radial?.moment_data?.length,
   );
   const lastGateIndex = (firstRadial?.moment_data.length ?? 1) - 1;
@@ -80,7 +67,7 @@ export function parseRadarData({
 
   for (const azimuthIndex of Object.keys(azimuths)) {
     const radialIndex = Number(azimuthIndex);
-    const radial = data.reflectivity[radialIndex];
+    const radial = reflectivity[radialIndex];
     const azimuth = azimuths[radialIndex];
 
     if (!radial || !Number.isFinite(azimuth)) continue;
