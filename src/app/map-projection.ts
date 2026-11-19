@@ -3,19 +3,22 @@ import * as d3 from "d3";
 import { geoSatellite } from "d3-geo-projection";
 
 export const MAP_SIZE = 600;
+
 const HALF_SIZE = MAP_SIZE / 2;
+
 const EDGE_POINTS: [number, number][] = [
   [HALF_SIZE, 0],
   [HALF_SIZE, MAP_SIZE],
   [MAP_SIZE, HALF_SIZE],
   [0, HALF_SIZE],
 ];
+
 const SATELLITE_DISTANCE = 16;
+
 const SATELLITE_SCALE = 7000;
-
-export const reflectivityDomain = [-5, 50];
-
 export const reflectivityRange = d3.range(5, 55, 5);
+
+export const reflectivityDomain = [0, 50];
 
 export const reflectivityColorScale = d3
   .scaleSequential(d3.interpolateTurbo)
@@ -28,9 +31,9 @@ export const bearingQuantizeScale = d3
   .range(d3.range(0, 360).map(String));
 
 export const reflectivityQuantizeScale = d3
-  .scaleQuantize<string>()
+  .scaleQuantize<number>()
   .domain(reflectivityDomain)
-  .range(d3.range(5, 55, 5).map(String));
+  .range(reflectivityRange);
 
 export function getSatelliteProjection(latitude: number, longitude: number) {
   const projection = geoSatellite()

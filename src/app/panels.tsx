@@ -36,7 +36,7 @@ export async function Panels({
         return (
           <Panel icon={<MapIcon />} key={location} title={location}>
             <MapLayer params={params} />
-            {/* <NexradLayer params={params} /> */}
+            <NexradLayer params={params} />
           </Panel>
         );
       })}

@@ -46,7 +46,7 @@ function NexradLayerAnimatedRendered({
       <title>
         NEXRAD reflectivity over the past hour around the selected location.
       </title>
-      {first.paths.map(({ d, fill, reflectivity }, pathIndex) => (
+      {first.paths.map(({ fill, gridPath: d, reflectivity }, pathIndex) => (
         <path d={d} fill={fill} key={reflectivity}>
           {frames.length > 1 ? (
             <animate
@@ -56,7 +56,9 @@ function NexradLayerAnimatedRendered({
               keyTimes={keyTimes}
               repeatCount="indefinite"
               values={[
-                ...frames.map((frame) => frame.paths[pathIndex]?.d ?? "M0,0"),
+                ...frames.map(
+                  (frame) => frame.paths[pathIndex]?.gridPath ?? "M0,0",
+                ),
                 d,
               ].join(";")}
             />

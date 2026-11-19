@@ -38,23 +38,17 @@ function NexradLayerRendered({
       <title>NEXRAD reflectivity projected around the selected location.</title>
       <g
         data-layers={paths.length}
-        style={{ opacity: 0.1, shapeRendering: "optimizeSpeed" }}
+        style={{ shapeRendering: "optimizeSpeed" }}
       >
-        {paths.map(({ count, d, fill, reflectivity }) => {
-          if (!d) return null;
-          return (
-            <g
-              data-count={count}
-              data-reflectivity={reflectivity}
-              key={reflectivity}
-            >
-              <path d={d} fill={fill} />
-            </g>
-          );
-        })}
-      </g>
-      <g style={{ shapeRendering: "optimizeSpeed" }}>
-        <path d={data.gridPath} fill="white" />
+        {paths.map(({ count, fill, gridPath, reflectivity }) => (
+          <g
+            data-count={count}
+            data-reflectivity={reflectivity}
+            key={reflectivity}
+          >
+            <path d={gridPath} fill={fill} />
+          </g>
+        ))}
       </g>
     </>
   );
