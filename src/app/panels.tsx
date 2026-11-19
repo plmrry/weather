@@ -38,11 +38,11 @@ export async function Panels({
         mapLayers={<MapLayers params={params} />}
         radarFrames={[
           <NexradFrame key={0} offsetMinutes={0} params={params} />,
-          <NexradFrame key={15} offsetMinutes={15} params={params} />,
-          <NexradFrame key={30} offsetMinutes={30} params={params} />,
-          <NexradFrame key={45} offsetMinutes={45} params={params} />,
-          <NexradFrame key={60} offsetMinutes={60} params={params} />,
-          <NexradFrame key={75} offsetMinutes={75} params={params} />,
+          // <NexradFrame key={15} offsetMinutes={15} params={params} />,
+          // <NexradFrame key={30} offsetMinutes={30} params={params} />,
+          // <NexradFrame key={45} offsetMinutes={45} params={params} />,
+          // <NexradFrame key={60} offsetMinutes={60} params={params} />,
+          // <NexradFrame key={75} offsetMinutes={75} params={params} />,
         ]}
         radarTimestamps={[
           <NexradTimestamp key={0} offsetMinutes={0} params={params} />,
