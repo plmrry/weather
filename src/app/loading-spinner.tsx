@@ -1,16 +1,31 @@
 import React from "react";
+import { MAP_SIZE } from "#/app/map-projection";
 
 export function LoadingSpinner(): React.JSX.Element {
   return (
-    <div
+    <g
       aria-label="Loading"
-      className="absolute inset-0 flex items-center justify-center bg-transparent"
       role="status"
+      transform={`translate(${MAP_SIZE / 2} ${MAP_SIZE / 2})`}
     >
-      <span
+      <circle
         aria-hidden="true"
-        className="size-8 animate-spin rounded-full border-4 border-white border-r-transparent"
-      />
-    </div>
+        fill="none"
+        pathLength={100}
+        r={16}
+        stroke="white"
+        strokeDasharray="75 25"
+        strokeWidth={4}
+      >
+        <animateTransform
+          attributeName="transform"
+          dur="1s"
+          from="0"
+          repeatCount="indefinite"
+          to="360"
+          type="rotate"
+        />
+      </circle>
+    </g>
   );
 }
