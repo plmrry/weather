@@ -1,19 +1,17 @@
 "use server";
 
-import Level2Radar from "nexrad-level-2-data";
-import { io } from "next/cache";
+import { cacheLife, cacheTag, io } from "next/cache";
 import { fetchStationData } from "#/app/fetch-station-data";
-import { reflectivityColorScale } from "#/app/map-projection";
 import { fetchNexradFile } from "./fetch-nexrad-file";
 import { fetchNexradList } from "./fetch-nexrad-list";
-import { parseRadarData } from "./parse-radar-data";
+import { processRadarData } from "./process-radar-data";
 
 export async function fetchNexradDataLatest(
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
 ) {
-  // "use cache: remote";
-  // cacheLife("minutes");
-  // cacheTag("nexrad-data");
+  "use cache: remote";
+  cacheLife("minutes");
+  cacheTag("nexrad-data");
 
   await io();
 
@@ -31,9 +29,9 @@ export type fetchNexradDataLatest = typeof fetchNexradDataLatest;
 export async function fetchNexradDataOneHour(
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
 ) {
-  // "use cache: remote";
-  // cacheLife("minutes");
-  // cacheTag("nexrad-data");
+  "use cache: remote";
+  cacheLife("minutes");
+  cacheTag("nexrad-data");
 
   await io();
 
@@ -80,48 +78,10 @@ async function fetchAndParseNexradData(
 
   const bytes = await fetchNexradFile(key);
 
-  const { azimuths, reflectivity, stationCoordinates } =
-    await getRadarData(bytes);
+  const parsed = await processRadarData(bytes, [
+    Number(longitude),
+    Number(latitude),
+  ]);
 
-  const parsed = parseRadarData({
-    azimuths,
-    mapCoordinates: [Number(longitude), Number(latitude)],
-    reflectivity,
-    stationCoordinates,
-  });
-
-  const layers = parsed.layers.map((layer) => ({
-    ...layer,
-    fill: reflectivityColorScale(layer.reflectivity),
-  }));
-
-  return { ...parsed, key, layers };
-}
-
-async function getRadarData(bytes: Uint8Array) {
-  const radar = new Level2Radar(new Uint8Array(bytes));
-
-  radar.setElevation(1);
-
-  const reflectivity = radar.getHighresReflectivity();
-  const azimuths = radar.getAzimuth();
-  const header = radar.getHeader(0);
-  const stationLatitude = header?.volume?.latitude;
-  const stationLongitude = header?.volume?.longitude;
-
-  if (
-    stationLatitude === undefined ||
-    stationLongitude === undefined ||
-    !Number.isFinite(stationLatitude) ||
-    !Number.isFinite(stationLongitude)
-  ) {
-    throw new Error("Radar volume is missing station coordinates");
-  }
-
-  const stationCoordinates: [number, number] = [
-    stationLongitude,
-    stationLatitude,
-  ];
-
-  return { azimuths, reflectivity, stationCoordinates };
+  return { ...parsed, key };
 }
