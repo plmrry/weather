@@ -56,10 +56,6 @@ export function getSatelliteProjection(latitude: number, longitude: number) {
   return projection.fitSize([MAP_SIZE, MAP_SIZE], geometry);
 }
 
-const EARTH_RADIUS_KILOMETERS = 6371.0088;
-const MAP_RADIUS_KILOMETERS = 250;
-const RADIANS_TO_DEGREES = 180 / Math.PI;
-
 export type MapBounds = [
   west: number,
   south: number,
@@ -67,25 +63,35 @@ export type MapBounds = [
   north: number,
 ];
 
-function getBoundsForRadius(
-  latitude: number,
-  longitude: number,
-  radiusKilometers: number,
+export function getMapBounds(
+  projection: ReturnType<typeof getSatelliteProjection>,
 ): MapBounds {
-  const center: [longitude: number, latitude: number] = [longitude, latitude];
-  const angularDistance =
-    (radiusKilometers / EARTH_RADIUS_KILOMETERS) * RADIANS_TO_DEGREES;
-  const rotation = d3.geoRotation([-center[0], -center[1]]);
-  const [west] = rotation.invert([-angularDistance, 0]);
-  const [east] = rotation.invert([angularDistance, 0]);
-  const [, south] = rotation.invert([0, -angularDistance]);
-  const [, north] = rotation.invert([0, angularDistance]);
+  const coordinates: [number, number][] = [];
 
-  return [west, south, east, north];
-}
+  for (let position = 0; position <= MAP_SIZE; position += 1) {
+    const points: [number, number][] = [
+      [position, 0],
+      [position, MAP_SIZE],
+      [0, position],
+      [MAP_SIZE, position],
+    ];
 
-export function getMapBounds(latitude: number, longitude: number): MapBounds {
-  return getBoundsForRadius(latitude, longitude, MAP_RADIUS_KILOMETERS);
+    for (const point of points) {
+      const coordinate = projection.invert?.(point);
+      if (coordinate?.every(Number.isFinite)) coordinates.push(coordinate);
+    }
+  }
+
+  if (coordinates.length === 0) {
+    throw new Error("Cannot determine geographic bounds for the map viewport");
+  }
+
+  const [[west, south], [east, north]] = d3.geoBounds({
+    coordinates,
+    type: "MultiPoint",
+  });
+
+  return west > east ? [-180, south, 180, north] : [west, south, east, north];
 }
 
 export function getVisibleFeatures(

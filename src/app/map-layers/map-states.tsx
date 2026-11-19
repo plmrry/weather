@@ -20,31 +20,33 @@ export function MapStates({
 }: {
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
+  if (!params) return null;
+
+  const stateBoundaries = getStateBoundaries();
+
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="MapStates">
-      <MapStatesCached params={params} />
+      <MapStatesRendered params={params} stateBoundaries={stateBoundaries} />
     </React.Suspense>
   );
 }
 
-async function MapStatesCached({
+function MapStatesRendered({
   params: paramsPromise,
+  stateBoundaries,
 }: {
-  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
+  params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
+  stateBoundaries: Promise<GeoJSON.FeatureCollection>;
 }) {
-  "use cache: remote";
-  cacheLife("max");
-  cacheTag("map-layer");
-
-  const params = await paramsPromise;
-  if (!params) return null;
+  const features = React.use(stateBoundaries);
+  const params = React.use(paramsPromise);
 
   const latitude = Number(params.latitude);
   const longitude = Number(params.longitude);
   const mapProjection = getSatelliteProjection(latitude, longitude);
-  const features = await getStateBoundaries();
   const path = d3.geoPath(mapProjection);
-  const layerPath = path(getVisibleFeatures(features, path));
+  const visibleFeatures = getVisibleFeatures(features, path);
+  const layerPath = path(visibleFeatures);
   if (!layerPath) return null;
 
   return (
@@ -61,6 +63,10 @@ async function MapStatesCached({
 }
 
 async function getStateBoundaries(): Promise<GeoJSON.FeatureCollection> {
+  "use cache: remote";
+  cacheLife("max");
+  cacheTag("map-layer");
+
   try {
     const response = await fetch(STATE_BOUNDARIES_URL);
     if (!response.ok) return { features: [], type: "FeatureCollection" };

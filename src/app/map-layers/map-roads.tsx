@@ -37,7 +37,8 @@ async function MapRoadsCached({
   const latitude = Number(params.latitude);
   const longitude = Number(params.longitude);
   const mapProjection = getSatelliteProjection(latitude, longitude);
-  const features = await getPrimaryRoads(getMapBounds(latitude, longitude));
+  const bounds = getMapBounds(mapProjection);
+  const features = await getPrimaryRoads(bounds);
   const path = d3.geoPath(mapProjection);
   const layerPath = path(features);
   if (!layerPath) return null;
