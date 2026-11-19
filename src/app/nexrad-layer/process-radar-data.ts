@@ -175,9 +175,9 @@ function parseRadarData({
         continue;
       }
 
-      const cellIndex = gridX(x) * GRID_SIZE + gridY(y);
+      const gridIndex = gridX(x) * GRID_SIZE + gridY(y);
 
-      const feature = gridFeatures[cellIndex];
+      const feature = gridFeatures[gridIndex];
 
       const quantizedReflectivity = reflectivityQuantizeScale(value);
 
@@ -192,7 +192,7 @@ function parseRadarData({
 
   const contourProjection = d3.geoIdentity().scale(CELL_SIZE);
   const contourGenerator = d3.contours().size([GRID_SIZE, GRID_SIZE]);
-  const path = d3.geoPath(contourProjection);
+  const contourPathGenerator = d3.geoPath(contourProjection);
 
   return reflectivityRange.map((reflectivity) => {
     const matchingFeatures = gridFeatures.filter(
@@ -211,7 +211,7 @@ function parseRadarData({
     }
 
     const contour = contourGenerator.contour(mask, 0.5);
-    const contourPath = path(contour) ?? "";
+    const contourPath = contourPathGenerator(contour) ?? "";
 
     return {
       contourPath,
