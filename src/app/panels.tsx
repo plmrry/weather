@@ -4,7 +4,6 @@ import { getCoordinates } from "#/app/find-station/geocode";
 import { MapLayer } from "#/app/map-layer/map-layer";
 import { Panel } from "#/app/panel";
 import { NexradLayer } from "./nexrad-layer/nexrad-layer";
-import { NexradLayerAnimated } from "./nexrad-layer/nexrad-layer-animated";
 import { NexradTimestamp } from "./nexrad-layer/nexrad-timestamp";
 
 const otherLocations = [
