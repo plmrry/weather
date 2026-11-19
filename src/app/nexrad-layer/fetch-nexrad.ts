@@ -28,6 +28,8 @@ export async function fetchNexradData({
 
   return fetchAndParseNexradData(params, key);
 }
+export type fetchNexradData = typeof fetchNexradData;
+
 async function fetchAndParseNexradData(
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
   key: string,
