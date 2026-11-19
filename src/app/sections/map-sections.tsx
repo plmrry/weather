@@ -1,12 +1,12 @@
 import React from "react";
 import { Map as MapIcon } from "lucide-react";
-import { getCoordinates } from "#/app/find-station/geocode";
 import { MapCountries } from "#/app/map-layers/map-countries";
 import { MapRoads } from "#/app/map-layers/map-roads";
 import { MapStates } from "#/app/map-layers/map-states";
-import { MapPanel } from "#/app/map-panel";
-import { NexradFrame } from "./nexrad-layer/nexrad-frame";
-import { NexradTimestamp } from "./nexrad-layer/nexrad-timestamp";
+import { getCoordinates } from "#/app/sections/find-station/geocode";
+import { NexradFrame } from "../nexrad-layer/nexrad-frame";
+import { NexradTimestamp } from "../nexrad-layer/nexrad-timestamp";
+import { MapSection } from "./map-section";
 
 const otherLocations = [
   "Anchorage, Alaska",
@@ -17,14 +17,14 @@ const otherLocations = [
   "Tampa, Florida",
 ] as const;
 
-export async function Panels({
+export async function MapSections({
   params,
 }: {
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }): Promise<React.JSX.Element> {
   return (
     <>
-      <MapPanel
+      <MapSection
         icon={<MapIcon />}
         mapLayers={[
           <MapCountries key="countries" params={params} />,
@@ -39,7 +39,7 @@ export async function Panels({
         ]}
         title="NEXRAD Data"
       />
-      <MapPanel
+      <MapSection
         icon={<MapIcon />}
         mapLayers={[
           <MapCountries key="countries" params={params} />,
@@ -68,7 +68,7 @@ export async function Panels({
       {otherLocations.map((location) => {
         const params = getCoordinates(location);
         return (
-          <MapPanel
+          <MapSection
             icon={<MapIcon />}
             key={location}
             mapLayers={[

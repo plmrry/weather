@@ -3,7 +3,7 @@ import React from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@base-ui/react/button";
 import { Input } from "@base-ui/react/input";
-import { Field, FieldLabel } from "#/app/ui/field";
+import { Field, FieldLabel } from "#/app/field";
 import { findStation } from "./actions";
 
 function SubmitButton({ disabled }: { disabled: boolean }): React.JSX.Element {

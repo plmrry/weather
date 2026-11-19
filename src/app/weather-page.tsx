@@ -1,8 +1,7 @@
 import React from "react";
-import { CurrentStation } from "./current-station";
-import { FindStation } from "./find-station";
-import { Panels } from "./panels";
-import { TextForecast } from "./text-forecast";
+import { CurrentStation } from "./sections/current-station";
+import { FindStation } from "./sections/find-station";
+import { MapSections } from "./sections/map-sections";
 
 export function WeatherPage({
   params,
@@ -22,20 +21,9 @@ export function WeatherPage({
 
       <FindStation params={params} />
 
-      <React.Suspense
-        fallback={<CurrentStation fallback />}
-        name="CurrentStation"
-      >
-        <CurrentStation params={params} />
-      </React.Suspense>
+      <CurrentStation params={params} />
 
-      <React.Suspense fallback={<TextForecast fallback />} name="TextForecast">
-        <TextForecast params={params} />
-      </React.Suspense>
-
-      <React.Suspense fallback={<Panels />} name="Panels">
-        <Panels params={params} />
-      </React.Suspense>
+      <MapSections params={params} />
     </main>
   );
 }

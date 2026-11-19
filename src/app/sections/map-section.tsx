@@ -1,16 +1,18 @@
 import React from "react";
 import { io } from "next/cache";
-import Card from "#/app/ui/card";
+import { Section } from "#/app/section";
 
-export function MapPanel(props: React.ComponentProps<typeof MapPanelRendered>) {
+export function MapSection(
+  props: React.ComponentProps<typeof MapSectionRendered>,
+) {
   return (
-    <React.Suspense name="MapPanel">
-      <MapPanelRendered {...props} />
+    <React.Suspense name="MapSection">
+      <MapSectionRendered {...props} />
     </React.Suspense>
   );
 }
 
-async function MapPanelRendered({
+async function MapSectionRendered({
   icon,
   mapLayers = [],
   radarFrames = [],
@@ -26,42 +28,30 @@ async function MapPanelRendered({
   await io();
 
   return (
-    <Card.Root aria-label={title}>
-      <Card.Header>
-        <div className="flex flex-row items-center gap-1.5">
-          {icon}
-          <Card.Title>
-            <h2 className="text-xs font-semibold tracking-wider text-foreground uppercase">
-              {title}
-            </h2>
-          </Card.Title>
-        </div>
-        <Card.Description>
-          <span className="inline-flex gap-1">
-            Last updated:
+    <Section ariaLabel={title} icon={icon} title={title}>
+      <span className="inline-flex gap-1">
+        Last updated:
+        <span
+          className="grid"
+          data-panel-radar-timestamps
+          style={
+            {
+              "--frame-count": radarTimestamps.length,
+            } as React.CSSProperties
+          }
+        >
+          {radarTimestamps.map((timestamp, index) => (
             <span
-              className="grid"
-              data-panel-radar-timestamps
-              style={
-                {
-                  "--frame-count": radarTimestamps.length,
-                } as React.CSSProperties
-              }
+              className="invisible min-h-0 min-w-0 animate-frames [grid-area:1/1] only:visible only:animate-none"
+              data-panel-radar-timestamp
+              key={index}
+              style={{ "--frame-index": index } as React.CSSProperties}
             >
-              {radarTimestamps.map((timestamp, index) => (
-                <span
-                  className="invisible min-h-0 min-w-0 animate-frames [grid-area:1/1] only:visible only:animate-none"
-                  data-panel-radar-timestamp
-                  key={index}
-                  style={{ "--frame-index": index } as React.CSSProperties}
-                >
-                  {timestamp}
-                </span>
-              ))}
+              {timestamp}
             </span>
-          </span>
-        </Card.Description>
-      </Card.Header>
+          ))}
+        </span>
+      </span>
       <div className="grid aspect-square w-full overflow-hidden rounded-md border border-white bg-black">
         <div className="contents" data-panel-map-layers>
           {mapLayers.map((layer, index) => (
@@ -91,6 +81,6 @@ async function MapPanelRendered({
           ))}
         </div>
       </div>
-    </Card.Root>
+    </Section>
   );
 }
