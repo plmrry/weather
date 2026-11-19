@@ -1,4 +1,4 @@
-import type { FeatureCollection, Point } from "geojson";
+import type { Feature, Point } from "geojson";
 import type { HighResData } from "nexrad-level-2-data";
 import { destination } from "@turf/destination";
 import * as d3 from "d3";
@@ -111,14 +111,11 @@ function parseRadarData({
 
   const gridY = gridX.copy();
 
-  const grid: FeatureCollection<Point, { reflectivity: null | number }> = {
-    features: [],
-    type: "FeatureCollection",
-  };
+  const gridFeatures: Feature<Point, { reflectivity: null | number }>[] = [];
 
   for (const x of gridPoints) {
     for (const y of gridPoints) {
-      grid.features.push({
+      gridFeatures.push({
         geometry: {
           coordinates: [(x + 0.5) * CELL_SIZE, (y + 0.5) * CELL_SIZE],
           type: "Point",
@@ -180,7 +177,7 @@ function parseRadarData({
 
       const cellIndex = gridX(x) * GRID_SIZE + gridY(y);
 
-      const feature = grid.features[cellIndex];
+      const feature = gridFeatures[cellIndex];
 
       const quantizedReflectivity = reflectivityQuantizeScale(value);
 
@@ -198,10 +195,10 @@ function parseRadarData({
   const path = d3.geoPath(contourProjection);
 
   return reflectivityRange.map((reflectivity) => {
-    const matchingFeatures = grid.features.filter(
+    const matchingFeatures = gridFeatures.filter(
       (cell) => cell.properties.reflectivity === reflectivity,
     );
-    const contourFeatures = grid.features.filter(
+    const contourFeatures = gridFeatures.filter(
       ({ properties }) =>
         properties.reflectivity !== null &&
         properties.reflectivity >= reflectivity,
