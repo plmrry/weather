@@ -1,5 +1,4 @@
 import React from "react";
-import { cacheLife, cacheTag, io } from "next/cache";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { MapSvg } from "#/app/map-svg";
 import { fetchNexradData } from "./fetch-nexrad";
@@ -27,12 +26,6 @@ async function NexradFrameRendered({
   offsetMinutes: number;
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
-  "use cache: remote";
-  cacheLife("minutes");
-  cacheTag("nexrad-frame");
-
-  await io();
-
   const nexradData = await fetchNexradData({ offsetMinutes, params });
 
   const layers = nexradData?.layers ?? [];
