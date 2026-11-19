@@ -6,9 +6,13 @@ import { fetchNexradFile } from "./fetch-nexrad-file";
 import { fetchNexradList } from "./fetch-nexrad-list";
 import { processRadarData } from "./process-radar-data";
 
-export async function fetchNexradDataLatest(
-  params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
-) {
+async function fetchNexradData({
+  offset,
+  params,
+}: {
+  offset: number;
+  params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
+}) {
   "use cache: remote";
   cacheLife("minutes");
   cacheTag("nexrad-data");
@@ -18,11 +22,24 @@ export async function fetchNexradDataLatest(
   const station = await fetchStationData(params);
   const stationId = station?.stationId;
   const listing = await fetchNexradList(stationId);
-  const key = listing?.at(-1);
+  const key = listing?.at(-offset);
 
   if (!key) return null;
 
   return fetchAndParseNexradData(params, key);
+}
+export type fetchNexradData = typeof fetchNexradData;
+
+export async function fetchNexradDataLatest(
+  params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
+) {
+  "use cache: remote";
+  cacheLife("minutes");
+  cacheTag("nexrad-data");
+
+  await io();
+
+  return fetchNexradData({ offset: 1, params });
 }
 export type fetchNexradDataLatest = typeof fetchNexradDataLatest;
 
