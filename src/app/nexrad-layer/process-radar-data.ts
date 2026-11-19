@@ -1,4 +1,3 @@
-import type { Feature, Point } from "geojson";
 import type { HighResData } from "nexrad-level-2-data";
 import { destination } from "@turf/destination";
 import * as d3 from "d3";
@@ -102,31 +101,7 @@ function parseRadarData({
     throw new Error("Radar volume is missing station coordinates");
   }
 
-  const gridPoints = d3.range(GRID_SIZE);
-
-  const gridX = d3
-    .scaleQuantize<number>()
-    .domain([0, MAP_SIZE])
-    .range(gridPoints);
-
-  const gridY = gridX.copy();
-
-  const gridFeatures: Feature<Point, { reflectivity: null | number }>[] = [];
-
-  for (const x of gridPoints) {
-    for (const y of gridPoints) {
-      gridFeatures.push({
-        geometry: {
-          coordinates: [(x + 0.5) * CELL_SIZE, (y + 0.5) * CELL_SIZE],
-          type: "Point",
-        },
-        properties: {
-          reflectivity: null,
-        },
-        type: "Feature",
-      });
-    }
-  }
+  const grid = new Float64Array(GRID_SIZE * GRID_SIZE).fill(-Infinity);
 
   const [longitude, latitude] = mapCoordinates;
   const projection = getSatelliteProjection(latitude, longitude);
@@ -175,47 +150,31 @@ function parseRadarData({
         continue;
       }
 
-      const gridIndex = gridX(x) * GRID_SIZE + gridY(y);
-
-      const feature = gridFeatures[gridIndex];
-
+      const gridIndex =
+        Math.floor(y / CELL_SIZE) * GRID_SIZE + Math.floor(x / CELL_SIZE);
       const quantizedReflectivity = reflectivityQuantizeScale(value);
-
-      const newMaximum = Math.max(
-        feature?.properties?.reflectivity ?? -Infinity,
-        quantizedReflectivity,
-      );
-
-      feature.properties.reflectivity = newMaximum;
+      grid[gridIndex] = Math.max(grid[gridIndex], quantizedReflectivity);
     }
   }
 
   const contourProjection = d3.geoIdentity().scale(CELL_SIZE);
   const contourGenerator = d3.contours().size([GRID_SIZE, GRID_SIZE]);
   const contourPathGenerator = d3.geoPath(contourProjection);
+  const mask = new Uint8Array(grid.length);
 
   return reflectivityRange.map((reflectivity) => {
-    const matchingFeatures = gridFeatures.filter(
-      (cell) => cell.properties.reflectivity === reflectivity,
-    );
-    const contourFeatures = gridFeatures.filter(
-      ({ properties }) =>
-        properties.reflectivity !== null &&
-        properties.reflectivity >= reflectivity,
-    );
-    const mask = Array.from({ length: GRID_SIZE * GRID_SIZE }, () => 0);
-    for (const cell of contourFeatures) {
-      const [x, y] = cell.geometry.coordinates;
-      const gridIndex = gridY(y) * GRID_SIZE + gridX(x);
-      mask[gridIndex] = 1;
+    let count = 0;
+    for (const [index, value] of grid.entries()) {
+      if (value === reflectivity) count += 1;
+      mask[index] = value >= reflectivity ? 1 : 0;
     }
 
-    const contour = contourGenerator.contour(mask, 0.5);
+    const contour = contourGenerator.contour(mask as any, 0.5);
     const contourPath = contourPathGenerator(contour) ?? "";
 
     return {
       contourPath,
-      count: matchingFeatures.length,
+      count,
       fill: reflectivityColorScale(reflectivity),
       reflectivity,
     };
