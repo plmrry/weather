@@ -34,9 +34,9 @@ export async function Panels({
         <MapLayer params={params} />
         <NexradLayer offset={1} params={params} />
       </Panel>
-      <Panel icon={<MapIcon />} title="NEXRAD Data Animated">
+      {/* <Panel icon={<MapIcon />} title="NEXRAD Data Animated">
         <MapLayer params={params} />
-      </Panel>
+      </Panel> */}
       <h1 className="w-full text-center text-2xl font-bold">Other Locations</h1>
       {otherLocations.map((location) => {
         const params = getCoordinates(location);
