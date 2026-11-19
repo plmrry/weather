@@ -38,13 +38,13 @@ export function NexradLayerRendered({
       className="only:visible only:animate-none"
       data-layers={layers.length}
       data-map-layer="radar"
-      data-nexrad-layers
+      data-nexrad-frame
       data-offset-minutes={offsetMinutes}
       data-timestamp={data?.timestamp}
       role="img"
     >
       <title>NEXRAD reflectivity projected around the selected location.</title>
-      <g className="[shape-rendering:optimizeSpeed]">
+      <g className="[shape-rendering:optimizeSpeed]" data-nexrad-layers>
         {layers.map(({ contourPath, count, fill, reflectivity }) => (
           <g
             data-layer-count={count}
