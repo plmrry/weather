@@ -27,41 +27,39 @@ function NexradLayerAnimatedRendered({
   const first = frames?.at(0);
   if (!frames || !first) return null;
 
-  const keyTimes = Array.from(
-    { length: frames.length + 1 },
-    (_, index) => index / frames.length,
+  const keyTimes = Array.from({ length: frames.length + 1 }, (_, index) =>
+    (index / frames.length).toFixed(1),
   ).join(";");
 
   return (
-    <svg
-      className="absolute inset-0 size-full"
-      data-frames={frames.length}
-      role="img"
-      shapeRendering="crispEdges"
-      viewBox={`0 0 ${first.mapSize} ${first.mapSize}`}
-    >
+    <g data-frames={frames.length} style={{ shapeRendering: "optimizeSpeed" }}>
       <title>
         NEXRAD reflectivity over the past hour around the selected location.
       </title>
-      {first.layers.map(({ fill, gridPath: d, reflectivity }, layerIndex) => (
-        <path d={d} fill={fill} key={reflectivity}>
-          {frames.length > 1 ? (
-            <animate
-              attributeName="d"
-              calcMode="discrete"
-              dur={`${frames.length * 0.5}s`}
-              keyTimes={keyTimes}
-              repeatCount="indefinite"
-              values={[
-                ...frames.map(
-                  (frame) => frame.layers[layerIndex]?.gridPath ?? "M0,0",
-                ),
-                d,
-              ].join(";")}
-            />
-          ) : null}
-        </path>
+      {frames.map((frame, frameIndex) => (
+        <g
+          data-frame={frameIndex}
+          key={frame.key}
+          opacity={frameIndex === 0 ? 1 : 0}
+        >
+          <animate
+            attributeName="opacity"
+            calcMode="linear"
+            dur={`${frames.length * 0.5}s`}
+            keyTimes={keyTimes}
+            repeatCount="indefinite"
+            values={[
+              ...frames.map((_, index) => (index === frameIndex ? 1 : 0)),
+              frameIndex === 0 ? 1 : 0,
+            ].join(";")}
+          />
+          {frame.layers.map(({ contourPath, fill, reflectivity }) => (
+            <g data-reflectivity-layer={reflectivity}>
+              <path d={contourPath} fill={fill} key={reflectivity} />
+            </g>
+          ))}
+        </g>
       ))}
-    </svg>
+    </g>
   );
 }

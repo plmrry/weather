@@ -10,22 +10,14 @@ export function LoadingSpinner(): React.JSX.Element {
     >
       <circle
         aria-hidden="true"
+        className="origin-center animate-spin transform-fill"
         fill="none"
         pathLength={100}
         r={16}
         stroke="white"
         strokeDasharray="75 25"
         strokeWidth={4}
-      >
-        <animateTransform
-          attributeName="transform"
-          dur="1s"
-          from="0"
-          repeatCount="indefinite"
-          to="360"
-          type="rotate"
-        />
-      </circle>
+      />
     </g>
   );
 }
