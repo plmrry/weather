@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import dynamic from "next/dynamic";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import type { RadarCoordinates } from "./types";
@@ -21,9 +20,5 @@ export function NexradLayerClient({
 }) {
   const promise = useNexradData(coordinates, "latest");
 
-  return (
-    <React.Suspense fallback={<LoadingSpinner />} name="NexradLayerClient">
-      <NexradLayerRendered data={promise} />
-    </React.Suspense>
-  );
+  return <NexradLayerRendered data={promise} />;
 }

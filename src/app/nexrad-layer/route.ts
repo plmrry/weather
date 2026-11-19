@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { cacheLife, cacheTag } from "next/cache";
 import {
   fetchNexradDataLatest,
   fetchNexradDataOneHour,
@@ -24,11 +25,35 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const data = await getNexradData({
+    latitude: String(Number(latitude)),
+    longitude: String(Number(longitude)),
+    mode,
+  });
+
+  return Response.json(data);
+}
+
+async function getNexradData({
+  latitude,
+  longitude,
+  mode,
+}: {
+  latitude: string;
+  longitude: string;
+  mode: "hour" | "latest";
+}) {
+  "use cache: remote";
+
+  const cacheKey = `nexrad-data:${mode}:${latitude}:${longitude}`;
+  cacheLife("minutes");
+  cacheTag("nexrad-data", cacheKey);
+
   const params = Promise.resolve({ latitude, longitude });
   const data =
     mode === "hour"
       ? await fetchNexradDataOneHour(params)
       : await fetchNexradDataLatest(params);
 
-  return Response.json(data);
+  return data;
 }

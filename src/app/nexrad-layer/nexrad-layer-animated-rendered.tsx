@@ -8,13 +8,9 @@ export function NexradLayerAnimatedRendered({
 }: {
   data: Promise<NexradResponses["hour"]>;
 }) {
-  const frames = React.use(promise);
+  const { frames, keyTimes } = React.use(promise);
 
   if (frames.length === 0) return null;
-
-  const keyTimes = Array.from({ length: frames.length + 1 }, (_, index) =>
-    (index / frames.length).toFixed(1),
-  ).join(";");
 
   return (
     <g data-frames={frames.length} style={{ shapeRendering: "optimizeSpeed" }}>
@@ -33,10 +29,7 @@ export function NexradLayerAnimatedRendered({
             dur={`${frames.length * 0.5}s`}
             keyTimes={keyTimes}
             repeatCount="indefinite"
-            values={[
-              ...frames.map((_, index) => (index === frameIndex ? 1 : 0)),
-              frameIndex === 0 ? 1 : 0,
-            ].join(";")}
+            values={frame.animateValues}
           />
           {frame.layers.map(({ contourPath, fill, reflectivity }) => (
             <g data-reflectivity-layer={reflectivity} key={reflectivity}>

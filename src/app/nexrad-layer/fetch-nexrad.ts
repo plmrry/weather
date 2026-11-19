@@ -39,13 +39,11 @@ export async function fetchNexradDataOneHour(
   const stationId = station?.stationId;
   const listing = await fetchNexradList(stationId);
 
-  if (!listing?.length) return [];
-
   const now = Date.now();
   const startTime = now - 60 * 60 * 1000;
   const keys: string[] = [];
 
-  for (const candidate of listing) {
+  for (const candidate of listing ?? []) {
     const timestamp = candidate.match(
       /(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})_(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})/,
     );
@@ -64,9 +62,26 @@ export async function fetchNexradDataOneHour(
     keys.map((key) => fetchAndParseNexradData(params, key)),
   );
 
-  return results.flatMap((result) =>
+  const frames = results.flatMap((result) =>
     result.status === "fulfilled" ? [result.value] : [],
   );
+
+  const keyTimes = frames.length
+    ? Array.from({ length: frames.length + 1 }, (_, index) =>
+        (index / frames.length).toFixed(1),
+      ).join(";")
+    : "";
+
+  return {
+    frames: frames.map((frame, frameIndex) => ({
+      ...frame,
+      animateValues: [
+        ...frames.map((_, index) => (index === frameIndex ? 1 : 0)),
+        frameIndex === 0 ? 1 : 0,
+      ].join(";"),
+    })),
+    keyTimes,
+  };
 }
 export type fetchNexradDataOneHour = typeof fetchNexradDataOneHour;
 

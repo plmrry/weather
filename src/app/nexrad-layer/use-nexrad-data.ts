@@ -42,9 +42,9 @@ function createRadarRequest<Data>(url: string) {
 export function useNexradData<Mode extends keyof NexradResponses>(
   coordinates: RadarCoordinates,
   mode: Mode,
-) {
+): Promise<NexradResponses[Mode]> {
   const query = new URLSearchParams({ ...coordinates, mode });
-  const url = `/api/nexrad?${query}`;
+  const url = `/nexrad-layer?${query}`;
   const request = React.useMemo(
     () => createRadarRequest<NexradResponses[Mode]>(url),
     [url],
