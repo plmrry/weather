@@ -24,7 +24,7 @@ export async function Panels({
     <>
       <Panel icon={<MapIcon />} title="NEXRAD Data">
         <MapLayer params={params} />
-        {/* <NexradLayer params={params} /> */}
+        <NexradLayer params={params} />
       </Panel>
       <Panel icon={<MapIcon />} title="NEXRAD Data Animated">
         <MapLayer params={params} />
