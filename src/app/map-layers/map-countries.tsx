@@ -22,23 +22,16 @@ export function MapCountries({
 }) {
   if (!params) return null;
 
-  const countryBoundaries = getCountryBoundaries();
-
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="MapCountries">
-      <MapCountriesRendered
-        countryBoundaries={countryBoundaries}
-        params={params}
-      />
+      <MapCountriesRendered params={params} />
     </React.Suspense>
   );
 }
 
 async function MapCountriesRendered({
-  countryBoundaries,
   params: paramsPromise,
 }: {
-  countryBoundaries: Promise<GeoJSON.FeatureCollection>;
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
   "use cache: remote";
@@ -48,7 +41,7 @@ async function MapCountriesRendered({
   await io();
 
   const [features, params] = await Promise.all([
-    countryBoundaries,
+    getCountryBoundaries(),
     paramsPromise,
   ]);
 
