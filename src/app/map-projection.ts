@@ -19,7 +19,7 @@ const SATELLITE_SCALE = 7000;
 
 const reflectivityMin = 20;
 
-const reflectivityMax = 55;
+const reflectivityMax = 40;
 
 export const reflectivityRange = d3.range(reflectivityMin, reflectivityMax, 5);
 
