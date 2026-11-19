@@ -54,7 +54,7 @@ function getRadarData(bytes: Uint8Array) {
     (day - 1) * 86_400_000 + milliseconds,
   ).toISOString();
 
-  radar.setElevation(1);
+  radar.setElevation(2);
 
   const reflectivity = radar.getHighresReflectivity();
   const azimuths = radar.getAzimuth();
