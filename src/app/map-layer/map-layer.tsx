@@ -1,8 +1,8 @@
 import React from "react";
-import type { FeatureCollection } from "geojson";
-import { geoPath } from "d3";
+import * as d3 from "d3";
+import * as GeoJSON from "geojson";
 import { cacheLife, cacheTag } from "next/cache";
-import { feature } from "topojson-client";
+import * as topoJSON from "topojson-client";
 import type { MapBounds } from "#/app/map-layer/map-bounds";
 import { ErrorBoundary } from "#/app/error-boundary";
 import { LoadingSpinner } from "#/app/loading-spinner";
@@ -15,12 +15,6 @@ const PRIMARY_ROADS_URL =
   "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/Transportation/MapServer/1/query";
 const STATE_BOUNDARIES_URL =
   "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
-type CountriesTopology = {
-  objects: { countries: Parameters<typeof feature>[1] };
-} & Parameters<typeof feature>[0];
-type StatesTopology = {
-  objects: { states: Parameters<typeof feature>[1] };
-} & Parameters<typeof feature>[0];
 
 export function MapLayer({
   params,
@@ -40,7 +34,7 @@ async function MapLayerCached({
   params: paramsPromise,
 }: {
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
-}): Promise<React.JSX.Element | null> {
+}) {
   "use cache: remote";
   cacheLife("max");
   cacheTag("map-layer");
@@ -58,11 +52,10 @@ async function MapLayerCached({
     getPrimaryRoads(bounds),
     getStateBoundaries(),
   ]);
-  const path = geoPath(mapProjection);
+  const path = d3.geoPath(mapProjection);
+  const visibleCountries = getVisibleFeatures(countries.value, path);
   const countryPath =
-    countries.status === "fulfilled"
-      ? path(getVisibleFeatures(countries.value, path))
-      : null;
+    countries.status === "fulfilled" ? path(visibleCountries) : null;
   const roadPath = roads.status === "fulfilled" ? path(roads.value) : null;
   const statePath =
     states.status === "fulfilled"
@@ -111,9 +104,9 @@ async function MapLayerCached({
 }
 
 function getVisibleFeatures(
-  features: FeatureCollection,
-  path: ReturnType<typeof geoPath>,
-): FeatureCollection {
+  features: GeoJSON.FeatureCollection,
+  path: ReturnType<typeof d3.geoPath>,
+) {
   return {
     features: features.features.filter((featureToCheck) => {
       const [[left, top], [right, bottom]] = path.bounds(featureToCheck);
@@ -123,16 +116,13 @@ function getVisibleFeatures(
   };
 }
 
-async function getCountryBoundaries(): Promise<FeatureCollection> {
+async function getCountryBoundaries() {
   try {
     const response = await fetch(COUNTRY_BOUNDARIES_URL);
     if (!response.ok) return { features: [], type: "FeatureCollection" };
 
-    const topology = (await response.json()) as CountriesTopology;
-    const countries = feature(
-      topology,
-      topology.objects.countries,
-    ) as FeatureCollection;
+    const topology = await response.json();
+    const countries = topoJSON.feature(topology, topology.objects.countries);
 
     return countries;
   } catch {
@@ -140,7 +130,7 @@ async function getCountryBoundaries(): Promise<FeatureCollection> {
   }
 }
 
-async function getPrimaryRoads(bounds: MapBounds): Promise<FeatureCollection> {
+async function getPrimaryRoads(bounds: MapBounds) {
   const searchParams = new URLSearchParams({
     f: "geojson",
     geometry: bounds.join(","),
@@ -159,7 +149,7 @@ async function getPrimaryRoads(bounds: MapBounds): Promise<FeatureCollection> {
     const response = await fetch(`${PRIMARY_ROADS_URL}?${searchParams}`);
     if (!response.ok) return { features: [], type: "FeatureCollection" };
 
-    const roads = (await response.json()) as FeatureCollection;
+    const roads = await response.json();
     return roads.type === "FeatureCollection"
       ? roads
       : { features: [], type: "FeatureCollection" };
@@ -168,16 +158,13 @@ async function getPrimaryRoads(bounds: MapBounds): Promise<FeatureCollection> {
   }
 }
 
-async function getStateBoundaries(): Promise<FeatureCollection> {
+async function getStateBoundaries() {
   try {
     const response = await fetch(STATE_BOUNDARIES_URL);
     if (!response.ok) return { features: [], type: "FeatureCollection" };
 
-    const topology = (await response.json()) as StatesTopology;
-    const states = feature(
-      topology,
-      topology.objects.states,
-    ) as FeatureCollection;
+    const topology = await response.json();
+    const states = topoJSON.feature(topology, topology.objects.states);
 
     return states;
   } catch {

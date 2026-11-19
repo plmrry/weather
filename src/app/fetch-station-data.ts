@@ -33,7 +33,7 @@ async function getRadarStations() {
   );
 }
 
-export async function getStationData({
+async function getStationData({
   latitude,
   longitude,
 }: {
@@ -64,4 +64,18 @@ export async function getStationData({
     stationName: station.properties.name,
     timestamp: station.properties.latency?.levelTwoLastReceivedTime,
   };
+}
+
+export async function fetchStationData(
+  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
+) {
+  "use server";
+
+  if (!params) return null;
+
+  const { latitude, longitude } = await params;
+  return getStationData({
+    latitude: Number(latitude),
+    longitude: Number(longitude),
+  });
 }

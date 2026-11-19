@@ -1,4 +1,3 @@
-import type Level2Radar from "nexrad-level-2-data";
 import type { HighResData } from "nexrad-level-2-data";
 import { destination } from "@turf/destination";
 import * as d3 from "d3";
@@ -22,7 +21,12 @@ export function parseRadarData({
   latitude,
   longitude,
 }: {
-  data: { azimuths: number[]; radar: Level2Radar; reflectivity: HighResData[] };
+  data: {
+    azimuths: number[];
+    reflectivity: HighResData[];
+    stationLatitude: number | undefined;
+    stationLongitude: number | undefined;
+  };
   latitude: number;
   longitude: number;
 }) {
@@ -38,9 +42,7 @@ export function parseRadarData({
     throw new Error("Map coordinates must be finite");
   }
 
-  const header = data.radar.getHeader(0);
-  const stationLatitude = header?.volume?.latitude;
-  const stationLongitude = header?.volume?.longitude;
+  const { stationLatitude, stationLongitude } = data;
 
   if (
     stationLatitude === undefined ||

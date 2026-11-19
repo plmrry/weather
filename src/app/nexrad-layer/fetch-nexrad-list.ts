@@ -2,19 +2,6 @@
 
 import { XMLParser } from "fast-xml-parser";
 import { cacheLife, cacheTag, io } from "next/cache";
-import { getStationData } from "#/app/get-station-data";
-
-export async function fetchStationData(
-  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
-) {
-  if (!params) return null;
-
-  const { latitude, longitude } = await params;
-  return getStationData({
-    latitude: Number(latitude),
-    longitude: Number(longitude),
-  });
-}
 
 export async function fetchNexradList(
   stationId?: string,

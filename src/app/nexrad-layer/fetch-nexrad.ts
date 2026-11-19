@@ -2,8 +2,9 @@
 
 import Level2Radar from "nexrad-level-2-data";
 import { io } from "next/cache";
+import { fetchStationData } from "#/app/fetch-station-data";
 import { fetchNexradFile } from "./fetch-nexrad-file";
-import { fetchNexradList, fetchStationData } from "./fetch-nexrad-listing";
+import { fetchNexradList } from "./fetch-nexrad-list";
 import { parseRadarData } from "./parse-radar-data";
 
 export async function fetchNexradDataLatest(
@@ -96,6 +97,9 @@ async function getRadarData(bytes: Uint8Array) {
 
   const reflectivity = radar.getHighresReflectivity();
   const azimuths = radar.getAzimuth();
+  const header = radar.getHeader(0);
+  const stationLatitude = header?.volume?.latitude;
+  const stationLongitude = header?.volume?.longitude;
 
-  return { azimuths, radar, reflectivity };
+  return { azimuths, reflectivity, stationLatitude, stationLongitude };
 }

@@ -79,6 +79,18 @@ export function parseCoordinates(
 }
 
 export async function getLocationName(
+  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
+): Promise<null | string> {
+  const coordinates = parseCoordinates(await params);
+  if (!coordinates) return null;
+
+  return getLocationNameForCoordinates(
+    coordinates.latitude,
+    coordinates.longitude,
+  );
+}
+
+async function getLocationNameForCoordinates(
   latitude: number,
   longitude: number,
 ): Promise<string> {

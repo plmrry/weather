@@ -1,7 +1,7 @@
 import React from "react";
 import Card from "#/app/ui/card";
+import { fetchStationData } from "./fetch-station-data";
 import { getLocationName, parseCoordinates } from "./find-station/geocode";
-import { getStationData } from "./get-station-data";
 import { LastUpdated } from "./last-updated";
 
 type Params = Promise<{ latitude: string; longitude: string }>;
@@ -13,10 +13,7 @@ export async function CurrentStation({
 }): Promise<React.JSX.Element> {
   const coordinates = parseCoordinates(params ? await params : undefined);
   const [name, station] = coordinates
-    ? await Promise.all([
-        getLocationName(coordinates.latitude, coordinates.longitude),
-        getStationData(coordinates),
-      ])
+    ? await Promise.all([getLocationName(params), fetchStationData(params)])
     : ["No station selected", null];
 
   return (
