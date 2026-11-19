@@ -26,34 +26,29 @@
   --font-mono: "Geist Mono", "Geist Mono Fallback";
   --font-serif: "Geist Mono", "Geist Mono Fallback";
   --color-destructive-foreground: var(--destructive-foreground);
+}
 
-  --animate-frames: hide calc(var(--frame-count, 1) * var(--frame-time, 1s))
-    linear(
-      0,
-      0 calc(100% / var(--frame-count, 1)),
-      1 calc(100% / var(--frame-count, 1)),
-      1
-    )
-    calc(var(--frame-index, 0) * var(--frame-time, 1s)) infinite;
+@utility animate-frames {
+  --frame-time: 1s;
+  animation-name: hide;
+  animation-duration: calc(var(--frame-count, 1) * var(--frame-time, 1s));
+  animation-timing-function: linear(
+    0,
+    0 calc(100% / var(--frame-count, 1)),
+    1 calc(100% / var(--frame-count, 1)),
+    1
+  );
+  animation-delay: calc(var(--frame-index, 0) * var(--frame-time, 1s));
+  animation-iteration-count: infinite;
+}
 
-  @keyframes hide {
-    from {
-      visibility: visible;
-    }
-
-    to {
-      visibility: hidden;
-    }
+@keyframes hide {
+  from {
+    visibility: visible;
   }
 
-  @keyframes show {
-    from {
-      visibility: hidden;
-    }
-
-    to {
-      visibility: visible;
-    }
+  to {
+    visibility: hidden;
   }
 }
 
@@ -69,7 +64,6 @@
   --destructive-foreground: #262626;
   --destructive: #ff6467;
   --foreground: #fafafa;
-  --frame-time: 1s;
   --input: #525252;
   --muted-foreground: #a1a1a1;
   --muted: #262626;

@@ -31,15 +31,21 @@ export function MapStates({
   );
 }
 
-function MapStatesRendered({
+async function MapStatesRendered({
   params: paramsPromise,
   stateBoundaries,
 }: {
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
   stateBoundaries: Promise<GeoJSON.FeatureCollection>;
 }) {
-  const features = React.use(stateBoundaries);
-  const params = React.use(paramsPromise);
+  "use cache: remote";
+  cacheLife("max");
+  cacheTag("map-layer");
+
+  const [features, params] = await Promise.all([
+    stateBoundaries,
+    paramsPromise,
+  ]);
 
   const latitude = Number(params.latitude);
   const longitude = Number(params.longitude);

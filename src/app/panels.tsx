@@ -28,8 +28,8 @@ export async function Panels({
         icon={<MapIcon />}
         mapLayers={[
           <MapCountries key="countries" params={params} />,
-          <MapRoads key="roads" params={params} />,
           <MapStates key="states" params={params} />,
+          <MapRoads key="roads" params={params} />,
         ]}
         radarFrames={[
           <NexradFrame key={0} offsetMinutes={0} params={params} />,
@@ -43,8 +43,8 @@ export async function Panels({
         icon={<MapIcon />}
         mapLayers={[
           <MapCountries key="countries" params={params} />,
-          <MapRoads key="roads" params={params} />,
           <MapStates key="states" params={params} />,
+          <MapRoads key="roads" params={params} />,
         ]}
         radarFrames={[
           <NexradFrame key={0} offsetMinutes={0} params={params} />,
@@ -56,6 +56,11 @@ export async function Panels({
         ]}
         radarTimestamps={[
           <NexradTimestamp key={0} offsetMinutes={0} params={params} />,
+          <NexradTimestamp key={15} offsetMinutes={15} params={params} />,
+          <NexradTimestamp key={30} offsetMinutes={30} params={params} />,
+          <NexradTimestamp key={45} offsetMinutes={45} params={params} />,
+          <NexradTimestamp key={60} offsetMinutes={60} params={params} />,
+          <NexradTimestamp key={75} offsetMinutes={75} params={params} />,
         ]}
         title="NEXRAD Data Animated"
       />
@@ -68,8 +73,8 @@ export async function Panels({
             key={location}
             mapLayers={[
               <MapCountries key="countries" params={params} />,
-              <MapRoads key="roads" params={params} />,
               <MapStates key="states" params={params} />,
+              <MapRoads key="roads" params={params} />,
             ]}
             radarFrames={[
               <NexradFrame key={0} offsetMinutes={0} params={params} />,

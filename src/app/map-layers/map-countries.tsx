@@ -34,15 +34,21 @@ export function MapCountries({
   );
 }
 
-function MapCountriesRendered({
+async function MapCountriesRendered({
   countryBoundaries,
   params: paramsPromise,
 }: {
   countryBoundaries: Promise<GeoJSON.FeatureCollection>;
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
-  const features = React.use(countryBoundaries);
-  const params = React.use(paramsPromise);
+  "use cache: remote";
+  cacheLife("max");
+  cacheTag("map-layer");
+
+  const [features, params] = await Promise.all([
+    countryBoundaries,
+    paramsPromise,
+  ]);
 
   const latitude = Number(params.latitude);
   const longitude = Number(params.longitude);
