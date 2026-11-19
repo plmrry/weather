@@ -1,4 +1,4 @@
-import type { MultiPoint } from "geojson";
+import type { FeatureCollection, MultiPoint } from "geojson";
 import * as d3 from "d3";
 import { geoSatellite } from "d3-geo-projection";
 
@@ -54,4 +54,49 @@ export function getSatelliteProjection(latitude: number, longitude: number) {
     type: "MultiPoint",
   };
   return projection.fitSize([MAP_SIZE, MAP_SIZE], geometry);
+}
+
+const EARTH_RADIUS_KILOMETERS = 6371.0088;
+const MAP_RADIUS_KILOMETERS = 250;
+const RADIANS_TO_DEGREES = 180 / Math.PI;
+
+export type MapBounds = [
+  west: number,
+  south: number,
+  east: number,
+  north: number,
+];
+
+function getBoundsForRadius(
+  latitude: number,
+  longitude: number,
+  radiusKilometers: number,
+): MapBounds {
+  const center: [longitude: number, latitude: number] = [longitude, latitude];
+  const angularDistance =
+    (radiusKilometers / EARTH_RADIUS_KILOMETERS) * RADIANS_TO_DEGREES;
+  const rotation = d3.geoRotation([-center[0], -center[1]]);
+  const [west] = rotation.invert([-angularDistance, 0]);
+  const [east] = rotation.invert([angularDistance, 0]);
+  const [, south] = rotation.invert([0, -angularDistance]);
+  const [, north] = rotation.invert([0, angularDistance]);
+
+  return [west, south, east, north];
+}
+
+export function getMapBounds(latitude: number, longitude: number): MapBounds {
+  return getBoundsForRadius(latitude, longitude, MAP_RADIUS_KILOMETERS);
+}
+
+export function getVisibleFeatures(
+  features: FeatureCollection,
+  path: ReturnType<typeof d3.geoPath>,
+): FeatureCollection {
+  return {
+    features: features.features.filter((featureToCheck) => {
+      const [[left, top], [right, bottom]] = path.bounds(featureToCheck);
+      return left <= MAP_SIZE && top <= MAP_SIZE && right >= 0 && bottom >= 0;
+    }),
+    type: "FeatureCollection",
+  };
 }

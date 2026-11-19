@@ -10,7 +10,7 @@ export function Panel({
   title,
 }: {
   icon?: React.ReactNode;
-  mapLayers: React.ReactNode;
+  mapLayers: React.ReactNode[];
   radarFrames: React.ReactNode[];
   radarTimestamps: React.ReactNode[];
   title: string;
@@ -33,7 +33,15 @@ export function Panel({
           className="grid min-h-0 min-w-0 [grid-area:1/1]"
           data-panel-map-layers
         >
-          {mapLayers}
+          {mapLayers.map((layer, index) => (
+            <div
+              className="min-h-0 min-w-0 [grid-area:1/1]"
+              data-panel-map-layer
+              key={index}
+            >
+              {layer}
+            </div>
+          ))}
         </div>
         <div
           className="[grid-area:1/1]"

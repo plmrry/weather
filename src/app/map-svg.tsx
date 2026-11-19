@@ -8,7 +8,7 @@ export function MapSvg({
 }: React.ComponentProps<"svg">) {
   return (
     <svg
-      className={`pointer-events-none size-full [grid-area:1/1] ${className}`}
+      className={`pointer-events-none size-full ${className}`}
       viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
       {...props}
     >
