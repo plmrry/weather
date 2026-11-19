@@ -5,9 +5,11 @@ import {
   fetchNexradDataOneHour,
 } from "#/app/nexrad-layer/fetch-nexrad";
 
-export async function GET(request: NextRequest) {
-  const latitude = request.nextUrl.searchParams.get("latitude");
-  const longitude = request.nextUrl.searchParams.get("longitude");
+export async function GET(
+  request: NextRequest,
+  context: RouteContext<"/latitude/[latitude]/longitude/[longitude]/nexrad-layer">,
+) {
+  const { latitude, longitude } = await context.params;
   const mode = request.nextUrl.searchParams.get("mode") ?? "latest";
 
   if (

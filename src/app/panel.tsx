@@ -1,6 +1,5 @@
 import React from "react";
 import { ErrorBoundary } from "#/app/error-boundary";
-import { MAP_SIZE } from "#/app/map-projection";
 import Card from "#/app/ui/card";
 
 export function Panel({
@@ -27,14 +26,7 @@ export function Panel({
         {description}
       </Card.Header>
       <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-white bg-black">
-        <svg
-          aria-label={title}
-          className="size-full"
-          role="img"
-          viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
-        >
-          <ErrorBoundary>{children}</ErrorBoundary>
-        </svg>
+        <ErrorBoundary>{children}</ErrorBoundary>
       </div>
     </Card.Root>
   );

@@ -1,5 +1,4 @@
-import React from "react";
-import { LoadingSpinner } from "#/app/loading-spinner";
+import { fetchNexradDataLatest } from "./fetch-nexrad";
 import { NexradLayerClient } from "./nexrad-layer-client";
 
 export function NexradLayer({
@@ -9,20 +8,7 @@ export function NexradLayer({
 }) {
   if (!params) return null;
 
-  return (
-    <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
-      <NexradLayerResolved params={params} />
-    </React.Suspense>
-  );
-}
+  const data = fetchNexradDataLatest(params)
 
-async function NexradLayerResolved({
-  params,
-}: {
-  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
-}) {
-  const coordinates = await params;
-  if (!coordinates) return null;
-
-  return <NexradLayerClient coordinates={coordinates} />;
+  return <NexradLayerClient data={data} />;
 }

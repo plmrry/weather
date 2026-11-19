@@ -1,6 +1,5 @@
-"use client";
-
 import React from "react";
+import { MapSvg } from "#/app/map-svg";
 import type { NexradResponses } from "./types";
 
 export function NexradLayerRendered({
@@ -9,17 +8,15 @@ export function NexradLayerRendered({
   data: Promise<NexradResponses["latest"]>;
 }) {
   const data = React.use(promise);
-  if (!data) return null;
 
-  const layers = data.layers ?? [];
-
-  if (layers.length === 0) return null;
+  const layers = data?.layers ?? [];
 
   return (
-    <>
+    <MapSvg aria-label="NEXRAD reflectivity" data-map-layer="radar" role="img">
       <title>NEXRAD reflectivity projected around the selected location.</title>
       <g
         data-layers={layers.length}
+        data-timestamp='timestamp'
         style={{ shapeRendering: "optimizeSpeed" }}
       >
         {layers.map(({ contourPath, count, fill, reflectivity }) => (
@@ -32,6 +29,6 @@ export function NexradLayerRendered({
           </g>
         ))}
       </g>
-    </>
+    </MapSvg>
   );
 }

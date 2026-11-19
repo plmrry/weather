@@ -2,8 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { LoadingSpinner } from "#/app/loading-spinner";
-import type { RadarCoordinates } from "./types";
-import { useNexradData } from "./use-nexrad-data";
+import type { NexradResponses } from "./types";
 
 const NexradLayerRendered = dynamic(
   () =>
@@ -14,11 +13,9 @@ const NexradLayerRendered = dynamic(
 );
 
 export function NexradLayerClient({
-  coordinates,
+  data,
 }: {
-  coordinates: RadarCoordinates;
+  data: Promise<NexradResponses["latest"]>;
 }) {
-  const promise = useNexradData(coordinates, "latest");
-
-  return <NexradLayerRendered data={promise} />;
+  return <NexradLayerRendered data={data} />;
 }

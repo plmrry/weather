@@ -1,42 +1,50 @@
-import workerThreads from "node:worker_threads";
-import type { parseRadarData } from "./parse-radar-data";
-
-type RadarData = {
-  layers: ({
-    fill: string;
-  } & ReturnType<typeof parseRadarData>["layers"][number])[];
-  mapSize: number;
-};
-
-let pending: Promise<unknown> = Promise.resolve();
+import Level2Radar from "nexrad-level-2-data";
+import { MAP_SIZE, reflectivityColorScale } from "#/app/map-projection";
+import { parseRadarData } from "./parse-radar-data";
 
 export function processRadarData(
   bytes: Uint8Array,
   mapCoordinates: [number, number],
-): Promise<RadarData> {
-  const result = pending.then(
-    () =>
-      new Promise<RadarData>((resolve, reject) => {
-        const worker = new workerThreads.Worker(
-          new URL("./radar-worker.ts", import.meta.url),
-          { workerData: { bytes, mapCoordinates } },
-        );
-        let data: RadarData | undefined;
-        worker.once("message", (result: RadarData) => {
-          data = result;
-        });
-        worker.once("error", reject);
-        worker.once("exit", (code) => {
-          if (code === 0 && data) {
-            resolve(data);
-          } else {
-            reject(
-              new Error(`Radar worker exited without a result (code ${code})`),
-            );
-          }
-        });
-      }),
-  );
-  pending = result.catch(() => undefined);
-  return result;
+) {
+  const { azimuths, reflectivity, stationCoordinates } = getRadarData(bytes);
+  const parsed = parseRadarData({
+    azimuths,
+    mapCoordinates,
+    reflectivity,
+    stationCoordinates,
+  });
+  const layers = parsed.layers.map((layer) => ({
+    ...layer,
+    fill: reflectivityColorScale(layer.reflectivity),
+  }));
+
+  return { layers, mapSize: MAP_SIZE };
+}
+
+function getRadarData(bytes: Uint8Array) {
+  const radar = new Level2Radar(new Uint8Array(bytes));
+
+  radar.setElevation(1);
+
+  const reflectivity = radar.getHighresReflectivity();
+  const azimuths = radar.getAzimuth();
+  const header = radar.getHeader(0);
+  const stationLatitude = header?.volume?.latitude;
+  const stationLongitude = header?.volume?.longitude;
+
+  if (
+    stationLatitude === undefined ||
+    stationLongitude === undefined ||
+    !Number.isFinite(stationLatitude) ||
+    !Number.isFinite(stationLongitude)
+  ) {
+    throw new Error("Radar volume is missing station coordinates");
+  }
+
+  const stationCoordinates: [number, number] = [
+    stationLongitude,
+    stationLatitude,
+  ];
+
+  return { azimuths, reflectivity, stationCoordinates };
 }

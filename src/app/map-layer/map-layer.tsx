@@ -6,6 +6,7 @@ import * as topoJSON from "topojson-client";
 import type { MapBounds } from "#/app/map-layer/map-bounds";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { getMapBounds } from "#/app/map-layer/map-bounds";
+import { MapSvg } from "#/app/map-svg";
 import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
 
 const COUNTRY_BOUNDARIES_URL =
@@ -71,38 +72,43 @@ async function MapLayerCached({
   const statePath = visibleStates ? path(visibleStates) : null;
 
   return (
-    <g aria-hidden="true" className="pointer-events-none" data-map-layers>
-      <rect fill="black" height={MAP_SIZE} width={MAP_SIZE} />
+    <>
       {countryPath ? (
-        <path
-          d={countryPath}
-          fill="white"
-          fillOpacity="0.3"
-          fillRule="evenodd"
-          stroke="white"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-        />
+        <MapSvg aria-hidden="true" data-map-layer="countries">
+          <path
+            d={countryPath}
+            fill="white"
+            fillOpacity="0.3"
+            fillRule="evenodd"
+            stroke="white"
+            strokeWidth="2"
+            vectorEffect="non-scaling-stroke"
+          />
+        </MapSvg>
       ) : null}
       {roadPath ? (
-        <path
-          d={roadPath}
-          fill="none"
-          stroke="white"
-          strokeOpacity="0.7"
-          strokeWidth="1"
-        />
+        <MapSvg aria-hidden="true" data-map-layer="roads">
+          <path
+            d={roadPath}
+            fill="none"
+            stroke="white"
+            strokeOpacity="0.7"
+            strokeWidth="1"
+          />
+        </MapSvg>
       ) : null}
       {statePath ? (
-        <path
-          d={statePath}
-          fill="none"
-          stroke="white"
-          strokeWidth="2"
-          vectorEffect="non-scaling-stroke"
-        />
+        <MapSvg aria-hidden="true" data-map-layer="states">
+          <path
+            d={statePath}
+            fill="none"
+            stroke="white"
+            strokeWidth="2"
+            vectorEffect="non-scaling-stroke"
+          />
+        </MapSvg>
       ) : null}
-    </g>
+    </>
   );
 }
 

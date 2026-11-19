@@ -44,15 +44,7 @@ export async function fetchNexradDataOneHour(
   const keys: string[] = [];
 
   for (const candidate of listing ?? []) {
-    const timestamp = candidate.match(
-      /(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})_(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})/,
-    );
-    if (!timestamp?.groups) continue;
-
-    const { day, hour, minute, month, second, year } = timestamp.groups;
-    const scanTime = Date.parse(
-      `${year}-${month}-${day}T${hour}:${minute}:${second}Z`,
-    );
+    const scanTime = Date.parse(getNexradTimestamp(candidate));
     if (scanTime >= startTime && scanTime <= now) {
       keys.push(candidate);
     }
@@ -76,8 +68,10 @@ export async function fetchNexradDataOneHour(
     frames: frames.map((frame, frameIndex) => ({
       ...frame,
       animateValues: [
-        ...frames.map((_, index) => (index === frameIndex ? 1 : 0)),
-        frameIndex === 0 ? 1 : 0,
+        ...frames.map((_, index) =>
+          index === frameIndex ? "visible" : "hidden",
+        ),
+        frameIndex === 0 ? "visible" : "hidden",
       ].join(";"),
     })),
     keyTimes,
@@ -93,10 +87,19 @@ async function fetchAndParseNexradData(
 
   const bytes = await fetchNexradFile(key);
 
-  const parsed = await processRadarData(bytes, [
-    Number(longitude),
-    Number(latitude),
-  ]);
+  const parsed = processRadarData(bytes, [Number(longitude), Number(latitude)]);
 
-  return { ...parsed, key };
+  return { ...parsed, key, timestamp: getNexradTimestamp(key) };
+}
+
+function getNexradTimestamp(key: string): string {
+  const match = key.match(
+    /(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})_(?<hour>\d{2})(?<minute>\d{2})(?<second>\d{2})/,
+  );
+  if (!match?.groups)
+    throw new Error(`NEXRAD filename is missing a timestamp: ${key}`);
+  const { day, hour, minute, month, second, year } = match.groups;
+  return new Date(
+    `${year}-${month}-${day}T${hour}:${minute}:${second}Z`,
+  ).toISOString();
 }

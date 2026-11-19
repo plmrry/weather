@@ -1,5 +1,5 @@
-import React from "react";
-import { LoadingSpinner } from "#/app/loading-spinner";
+import { MapLayer } from "#/app/map-layer/map-layer";
+import { fetchNexradDataOneHour } from "./fetch-nexrad";
 import { NexradLayerAnimatedClient } from "./nexrad-layer-animated-client";
 
 export function NexradLayerAnimated({
@@ -10,19 +10,8 @@ export function NexradLayerAnimated({
   if (!params) return null;
 
   return (
-    <React.Suspense fallback={<LoadingSpinner />} name="NexradLayerAnimated">
-      <NexradLayerAnimatedResolved params={params} />
-    </React.Suspense>
+    <NexradLayerAnimatedClient data={fetchNexradDataOneHour(params)}>
+      <MapLayer params={params} />
+    </NexradLayerAnimatedClient>
   );
-}
-
-async function NexradLayerAnimatedResolved({
-  params,
-}: {
-  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
-}) {
-  const coordinates = await params;
-  if (!coordinates) return null;
-
-  return <NexradLayerAnimatedClient coordinates={coordinates} />;
 }
