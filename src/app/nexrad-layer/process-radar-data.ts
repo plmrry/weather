@@ -178,18 +178,18 @@ function parseRadarData({
         continue;
       }
 
-      const quantizedReflectivity = reflectivityQuantizeScale(value);
-
       const cellIndex = gridX(x) * GRID_SIZE + gridY(y);
 
-      const cell = grid.features[cellIndex];
+      const feature = grid.features[cellIndex];
+
+      const quantizedReflectivity = reflectivityQuantizeScale(value);
 
       const newMaximum = Math.max(
-        cell?.properties?.reflectivity ?? -Infinity,
+        feature?.properties?.reflectivity ?? -Infinity,
         quantizedReflectivity,
       );
 
-      cell.properties.reflectivity = newMaximum;
+      feature.properties.reflectivity = newMaximum;
     }
   }
 
