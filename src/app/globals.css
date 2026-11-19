@@ -26,6 +26,29 @@
   --font-mono: "Geist Mono", "Geist Mono Fallback";
   --font-serif: "Geist Mono", "Geist Mono Fallback";
   --color-destructive-foreground: var(--destructive-foreground);
+
+  --frame-time: 1s;
+
+  --animate-frames: show-frame
+    calc(var(--frame-count, 1) * var(--frame-time, 200ms))
+    linear(
+      0,
+      0 calc(100% / var(--frame-count, 1)),
+      1 calc(100% / var(--frame-count, 1)),
+      1
+    )
+    calc(var(--frame-index, 0) * var(--frame-time, 200ms))
+    infinite;
+
+  @keyframes show-frame {
+    from {
+      visibility: hidden;
+    }
+
+    to {
+      visibility: visible;
+    }
+  }
 }
 
 :root {

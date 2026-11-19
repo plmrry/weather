@@ -36,13 +36,13 @@ export function Panel({
           {mapLayers}
         </div>
         <div
-          className="grid min-h-0 min-w-0 [grid-area:1/1]"
+          className="grid min-h-0 min-w-0 [--frame-time:200ms] [grid-area:1/1]"
           data-panel-radar-frames
           style={{ "--frame-count": radarFrames.length } as React.CSSProperties}
         >
           {radarFrames.map((frame, index) => (
             <div
-              className="grid min-h-0 min-w-0 [grid-area:1/1] only:visible only:animate-none"
+              className="animate-frames invisible min-h-0 min-w-0 [grid-area:1/1] only:visible only:animate-none"
               data-panel-radar-frame
               key={index}
               style={{ "--frame-index": index } as React.CSSProperties}
