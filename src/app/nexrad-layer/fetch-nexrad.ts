@@ -89,7 +89,7 @@ async function fetchAndParseNexradData(
 
   const parsed = processRadarData(bytes, [Number(longitude), Number(latitude)]);
 
-  return { ...parsed, key, timestamp: getNexradTimestamp(key) };
+  return { ...parsed, key };
 }
 
 function getNexradTimestamp(key: string): string {

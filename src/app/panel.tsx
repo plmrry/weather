@@ -4,12 +4,12 @@ import Card from "#/app/ui/card";
 
 export function Panel({
   children,
-  description,
   icon,
+  timestamp,
   title,
 }: {
-  description?: React.ReactNode;
   icon?: React.ReactNode;
+  timestamp?: React.ReactNode;
   title: string;
 } & Omit<React.ComponentProps<"div">, "title">): React.JSX.Element {
   return (
@@ -23,7 +23,7 @@ export function Panel({
             </h2>
           </Card.Title>
         </div>
-        {description}
+        <Card.Description>Last updated: {timestamp}</Card.Description>
       </Card.Header>
       <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-white bg-black">
         <ErrorBoundary>{children}</ErrorBoundary>

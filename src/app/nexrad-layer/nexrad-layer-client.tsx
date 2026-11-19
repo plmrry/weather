@@ -1,21 +1,18 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import React from "react";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import type { NexradResponses } from "./types";
-
-const NexradLayerRendered = dynamic(
-  () =>
-    import("./nexrad-layer-rendered").then(
-      (module) => module.NexradLayerRendered,
-    ),
-  { loading: LoadingSpinner, ssr: false },
-);
+import { NexradLayerRendered } from "./nexrad-layer-rendered";
 
 export function NexradLayerClient({
   data,
 }: {
   data: Promise<NexradResponses["latest"]>;
 }) {
-  return <NexradLayerRendered data={data} />;
+  return (
+    <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
+      <NexradLayerRendered data={data} />
+    </React.Suspense>
+  );
 }

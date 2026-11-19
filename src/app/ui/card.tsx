@@ -3,17 +3,14 @@ import React from "react";
 function Root({
   "aria-label": ariaLabel,
   children,
-  size = "default",
 }: {
   "aria-label"?: string;
   children?: React.ReactNode;
-  size?: "default" | "sm";
 }) {
   return (
     <div
       aria-label={ariaLabel}
-      className="group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card p-[calc(var(--card-spacing)*2)] text-sm text-card-foreground ring-4 ring-foreground/10"
-      data-size={size}
+      className="group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card p-[calc(var(--card-spacing)*2)] text-sm text-card-foreground ring-4 ring-foreground/10 [contain-intrinsic-block-size:auto_800px] [content-visibility:auto]"
       data-slot="card"
     >
       {children}

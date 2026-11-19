@@ -2,26 +2,13 @@
 
 import React from "react";
 import { Map as MapIcon } from "lucide-react";
-import dynamic from "next/dynamic";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { Panel } from "#/app/panel";
 import type { NexradResponses } from "./types";
-
-const NexradLayerAnimatedRendered = dynamic(
-  () =>
-    import("./nexrad-layer-animated-rendered").then(
-      (module) => module.NexradLayerAnimatedRendered,
-    ),
-  { loading: LoadingSpinner, ssr: false },
-);
-
-const NexradLayerAnimatedTimestamp = dynamic(
-  () =>
-    import("./nexrad-layer-animated-rendered").then(
-      (module) => module.NexradLayerAnimatedTimestamp,
-    ),
-  { ssr: false },
-);
+import {
+  NexradLayerAnimatedRendered,
+  NexradLayerAnimatedTimestamp,
+} from "./nexrad-layer-animated-rendered";
 
 export function NexradLayerAnimatedClient({
   children,
@@ -34,14 +21,21 @@ export function NexradLayerAnimatedClient({
 
   return (
     <Panel
-      description={
-        <NexradLayerAnimatedTimestamp animationRef={animationRef} data={data} />
-      }
       icon={<MapIcon />}
+      timestamp={
+        <React.Suspense name="NexradLayerAnimatedTimestamp">
+          <NexradLayerAnimatedTimestamp
+            animationRef={animationRef}
+            data={data}
+          />
+        </React.Suspense>
+      }
       title="NEXRAD Data Animated"
     >
       {children}
-      <NexradLayerAnimatedRendered animationRef={animationRef} data={data} />
+      <React.Suspense fallback={<LoadingSpinner />} name="NexradLayerAnimated">
+        <NexradLayerAnimatedRendered animationRef={animationRef} data={data} />
+      </React.Suspense>
     </Panel>
   );
 }

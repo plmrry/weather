@@ -16,7 +16,7 @@ export function NexradLayerRendered({
       <title>NEXRAD reflectivity projected around the selected location.</title>
       <g
         data-layers={layers.length}
-        data-timestamp='timestamp'
+        data-timestamp={data?.timestamp}
         style={{ shapeRendering: "optimizeSpeed" }}
       >
         {layers.map(({ contourPath, count, fill, reflectivity }) => (

@@ -5,6 +5,7 @@ import { MapLayer } from "#/app/map-layer/map-layer";
 import { Panel } from "#/app/panel";
 import { NexradLayer } from "./nexrad-layer/nexrad-layer";
 import { NexradLayerAnimated } from "./nexrad-layer/nexrad-layer-animated";
+import { NexradTimestamp } from "./nexrad-layer/nexrad-timestamp";
 
 const otherLocations = [
   "Anchorage, Alaska",
@@ -22,7 +23,15 @@ export async function Panels({
 }): Promise<React.JSX.Element> {
   return (
     <>
-      <Panel icon={<MapIcon />} title="NEXRAD Data">
+      <Panel
+        icon={<MapIcon />}
+        timestamp={
+          <React.Suspense name="NexradTimestamp">
+            <NexradTimestamp params={params} />
+          </React.Suspense>
+        }
+        title="NEXRAD Data"
+      >
         <MapLayer params={params} />
         <NexradLayer params={params} />
       </Panel>
@@ -33,7 +42,16 @@ export async function Panels({
       {otherLocations.map((location) => {
         const params = getCoordinates(location);
         return (
-          <Panel icon={<MapIcon />} key={location} title={location}>
+          <Panel
+            icon={<MapIcon />}
+            key={location}
+            timestamp={
+              <React.Suspense name="NexradTimestamp">
+                <NexradTimestamp params={params} />
+              </React.Suspense>
+            }
+            title={location}
+          >
             <MapLayer params={params} />
             <NexradLayer params={params} />
           </Panel>

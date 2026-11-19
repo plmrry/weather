@@ -88,12 +88,13 @@ export function NexradLayerAnimatedTimestamp({
       data-timestamp={frame.timestamp}
       dateTime={frame.timestamp}
     >
-      {new Date(frame.timestamp).toLocaleString(undefined, {
+      {new Date(frame.timestamp).toLocaleString("en-US", {
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",
         month: "short",
         second: "2-digit",
+        timeZone: "America/New_York",
         timeZoneName: "short",
       })}
     </time>

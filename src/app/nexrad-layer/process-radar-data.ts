@@ -6,7 +6,8 @@ export function processRadarData(
   bytes: Uint8Array,
   mapCoordinates: [number, number],
 ) {
-  const { azimuths, reflectivity, stationCoordinates } = getRadarData(bytes);
+  const { azimuths, reflectivity, stationCoordinates, timestamp } =
+    getRadarData(bytes);
   const parsed = parseRadarData({
     azimuths,
     mapCoordinates,
@@ -18,11 +19,28 @@ export function processRadarData(
     fill: reflectivityColorScale(layer.reflectivity),
   }));
 
-  return { layers, mapSize: MAP_SIZE };
+  return { layers, mapSize: MAP_SIZE, timestamp };
 }
 
 function getRadarData(bytes: Uint8Array) {
   const radar = new Level2Radar(new Uint8Array(bytes));
+  const { milliseconds, modified_julian_date: day } = radar.header;
+
+  if (
+    typeof day !== "number" ||
+    !Number.isInteger(day) ||
+    day < 1 ||
+    typeof milliseconds !== "number" ||
+    !Number.isInteger(milliseconds) ||
+    milliseconds < 0 ||
+    milliseconds >= 86_401_000
+  ) {
+    throw new Error("Radar archive is missing a valid timestamp");
+  }
+
+  const timestamp = new Date(
+    (day - 1) * 86_400_000 + milliseconds,
+  ).toISOString();
 
   radar.setElevation(1);
 
@@ -46,5 +64,5 @@ function getRadarData(bytes: Uint8Array) {
     stationLatitude,
   ];
 
-  return { azimuths, reflectivity, stationCoordinates };
+  return { azimuths, reflectivity, stationCoordinates, timestamp };
 }
