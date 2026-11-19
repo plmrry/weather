@@ -21,15 +21,13 @@ export function processRadarData(
 ) {
   const { azimuths, reflectivity, stationCoordinates, timestamp } =
     getRadarData(bytes);
+
   const layers = parseRadarData({
     azimuths,
     mapCoordinates,
     reflectivity,
     stationCoordinates,
-  }).map((layer) => ({
-    ...layer,
-    fill: reflectivityColorScale(layer.reflectivity),
-  }));
+  });
 
   return { layers, timestamp };
 }
@@ -55,8 +53,6 @@ function getRadarData(bytes: Uint8Array) {
   ).toISOString();
 
   const elevations = radar.listElevations();
-
-  console.log('elevations', elevations)
 
   radar.setElevation(elevations.at(4) ?? 1);
 
@@ -106,14 +102,22 @@ function parseRadarData({
     throw new Error("Radar volume is missing station coordinates");
   }
 
-  const indices = d3.range(GRID_SIZE);
+  const gridPoints = d3.range(GRID_SIZE);
+
+  const gridX = d3
+    .scaleQuantize<number>()
+    .domain([0, MAP_SIZE])
+    .range(gridPoints);
+
+  const gridY = gridX.copy();
+
   const grid: FeatureCollection<Point, { reflectivity: null | number }> = {
     features: [],
     type: "FeatureCollection",
   };
 
-  for (const x of indices) {
-    for (const y of indices) {
+  for (const x of gridPoints) {
+    for (const y of gridPoints) {
       grid.features.push({
         geometry: {
           coordinates: [(x + 0.5) * CELL_SIZE, (y + 0.5) * CELL_SIZE],
@@ -129,8 +133,6 @@ function parseRadarData({
 
   const [longitude, latitude] = mapCoordinates;
   const projection = getSatelliteProjection(latitude, longitude);
-  const gridX = d3.scaleQuantize<number>().domain([0, MAP_SIZE]).range(indices);
-  const gridY = gridX.copy();
 
   for (const [radialIndex, azimuth] of azimuths.entries()) {
     const radial = reflectivity[radialIndex];
@@ -176,7 +178,7 @@ function parseRadarData({
         continue;
       }
 
-      const alignedReflectivity = reflectivityQuantizeScale(value);
+      const quantizedReflectivity = reflectivityQuantizeScale(value);
 
       const cellIndex = gridX(x) * GRID_SIZE + gridY(y);
 
@@ -184,7 +186,7 @@ function parseRadarData({
 
       const newMaximum = Math.max(
         cell?.properties?.reflectivity ?? -Infinity,
-        alignedReflectivity,
+        quantizedReflectivity,
       );
 
       cell.properties.reflectivity = newMaximum;
@@ -217,6 +219,7 @@ function parseRadarData({
     return {
       contourPath,
       count: matchingFeatures.length,
+      fill: reflectivityColorScale(reflectivity),
       reflectivity,
     };
   });
