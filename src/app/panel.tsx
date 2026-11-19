@@ -1,7 +1,16 @@
 import React from "react";
+import { io } from "next/cache";
 import Card from "#/app/ui/card";
 
-export function Panel({
+export function Panel(props: React.ComponentProps<typeof PanelRendered>) {
+  return (
+    <React.Suspense name="Panel">
+      <PanelRendered {...props} />
+    </React.Suspense>
+  );
+}
+
+async function PanelRendered({
   icon,
   mapLayers,
   radarFrames,
@@ -13,7 +22,9 @@ export function Panel({
   radarFrames: React.ReactNode[];
   radarTimestamps: React.ReactNode[];
   title: string;
-}): React.JSX.Element {
+}): Promise<React.JSX.Element> {
+  await io();
+
   return (
     <Card.Root aria-label={title}>
       <Card.Header>
