@@ -22,21 +22,17 @@ export function MapStates({
 }) {
   if (!params) return null;
 
-  const stateBoundaries = getStateBoundaries();
-
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="MapStates">
-      <MapStatesRendered params={params} stateBoundaries={stateBoundaries} />
+      <MapStatesRendered params={params} />
     </React.Suspense>
   );
 }
 
 async function MapStatesRendered({
   params: paramsPromise,
-  stateBoundaries,
 }: {
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
-  stateBoundaries: Promise<GeoJSON.FeatureCollection>;
 }) {
   "use cache: remote";
   cacheLife("max");
@@ -45,7 +41,7 @@ async function MapStatesRendered({
   await io();
 
   const [features, params] = await Promise.all([
-    stateBoundaries,
+    getStateBoundaries(),
     paramsPromise,
   ]);
 
@@ -71,14 +67,10 @@ async function MapStatesRendered({
 }
 
 async function getStateBoundaries(): Promise<GeoJSON.FeatureCollection> {
-  "use cache: remote";
-  cacheLife("max");
-  cacheTag("map-layer");
-
   await io();
 
   try {
-    const response = await fetch(STATE_BOUNDARIES_URL);
+    const response = await fetch(STATE_BOUNDARIES_URL, { cache: "no-store" });
     if (!response.ok) return { features: [], type: "FeatureCollection" };
 
     const topology = (await response.json()) as Topology;

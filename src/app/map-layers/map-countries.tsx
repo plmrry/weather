@@ -69,14 +69,10 @@ async function MapCountriesRendered({
 }
 
 async function getCountryBoundaries(): Promise<GeoJSON.FeatureCollection> {
-  "use cache: remote";
-  cacheLife("max");
-  cacheTag("map-layer");
-
   await io();
 
   try {
-    const response = await fetch(COUNTRY_BOUNDARIES_URL);
+    const response = await fetch(COUNTRY_BOUNDARIES_URL, { cache: "no-store" });
     if (!response.ok) return { features: [], type: "FeatureCollection" };
 
     const topology = (await response.json()) as Topology;

@@ -13,24 +13,19 @@ export function NexradFrame({
 }) {
   if (!params) return null;
 
-  const nexradData = fetchNexradData({ offsetMinutes, params });
-
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="NexradFrame">
-      <NexradFrameRendered
-        nexradData={nexradData}
-        offsetMinutes={offsetMinutes}
-      />
+      <NexradFrameRendered offsetMinutes={offsetMinutes} params={params} />
     </React.Suspense>
   );
 }
 
 async function NexradFrameRendered({
-  nexradData: promise,
   offsetMinutes,
+  params,
 }: {
-  nexradData: ReturnType<fetchNexradData>;
   offsetMinutes: number;
+  params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
   "use cache: remote";
   cacheLife("minutes");
@@ -38,7 +33,7 @@ async function NexradFrameRendered({
 
   await io();
 
-  const nexradData = await promise;
+  const nexradData = await fetchNexradData({ offsetMinutes, params });
 
   const layers = nexradData?.layers ?? [];
 
