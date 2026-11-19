@@ -29,15 +29,27 @@ export function Panel({
         <Card.Description>Last updated: {radarTimestamps}</Card.Description>
       </Card.Header>
       <div className="grid aspect-square w-full overflow-hidden rounded-md border border-white bg-black">
-        <div className="grid min-h-0 min-w-0 [grid-area:1/1]" data-map-layers>
+        <div
+          className="grid min-h-0 min-w-0 [grid-area:1/1]"
+          data-panel-map-layers
+        >
           {mapLayers}
         </div>
         <div
           className="grid min-h-0 min-w-0 [grid-area:1/1]"
-          data-radar-frames
+          data-panel-radar-frames
           style={{ "--frame-count": radarFrames.length } as React.CSSProperties}
         >
-          {radarFrames}
+          {radarFrames.map((frame, index) => (
+            <div
+              className="grid min-h-0 min-w-0 [grid-area:1/1] only:visible only:animate-none"
+              data-panel-radar-frame
+              key={index}
+              style={{ "--frame-index": index } as React.CSSProperties}
+            >
+              {frame}
+            </div>
+          ))}
         </div>
       </div>
     </Card.Root>

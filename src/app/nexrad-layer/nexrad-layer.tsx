@@ -3,7 +3,7 @@ import { LoadingSpinner } from "#/app/loading-spinner";
 import { MapSvg } from "#/app/map-svg";
 import { fetchNexradData } from "./fetch-nexrad";
 
-export function NexradLayer({
+export function NexradFrame({
   offsetMinutes,
   params,
 }: {
@@ -15,13 +15,13 @@ export function NexradLayer({
   const data = fetchNexradData({ offsetMinutes, params });
 
   return (
-    <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
-      <NexradLayerRendered data={data} offsetMinutes={offsetMinutes} />
+    <React.Suspense fallback={<LoadingSpinner />} name="NexradFrame">
+      <NexradFrameRendered data={data} offsetMinutes={offsetMinutes} />
     </React.Suspense>
   );
 }
 
-export function NexradLayerRendered({
+function NexradFrameRendered({
   data: promise,
   offsetMinutes,
 }: {
@@ -35,21 +35,19 @@ export function NexradLayerRendered({
   return (
     <MapSvg
       aria-label="NEXRAD reflectivity"
-      className="only:visible only:animate-none"
       data-layers={layers.length}
-      data-map-layer="radar"
       data-nexrad-frame
       data-offset-minutes={offsetMinutes}
       data-timestamp={data?.timestamp}
       role="img"
     >
       <title>NEXRAD reflectivity projected around the selected location.</title>
-      <g className="[shape-rendering:optimizeSpeed]" data-nexrad-layers>
+      <g className="[shape-rendering:optimizeSpeed]" data-nexrad-frame-layers>
         {layers.map(({ contourPath, count, fill, reflectivity }) => (
           <g
             data-layer-count={count}
             data-layer-reflectivity={reflectivity}
-            data-nexrad-layer
+            data-nexrad-frame-layer
             key={reflectivity}
           >
             <path d={contourPath} fill={fill} />
