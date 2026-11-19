@@ -35,20 +35,18 @@ export function NexradLayerRendered({
   return (
     <MapSvg
       aria-label="NEXRAD reflectivity"
+      data-layers={layers.length}
       data-map-layer="radar"
       data-offset-minutes={offsetMinutes}
+      data-timestamp={data?.timestamp}
       role="img"
     >
       <title>NEXRAD reflectivity projected around the selected location.</title>
-      <g
-        data-layers={layers.length}
-        data-timestamp={data?.timestamp}
-        style={{ shapeRendering: "optimizeSpeed" }}
-      >
+      <g className="[shape-rendering:optimizeSpeed]">
         {layers.map(({ contourPath, count, fill, reflectivity }) => (
           <g
-            data-count={count}
-            data-reflectivity={reflectivity}
+            data-layer-count={count}
+            data-layer-reflectivity={reflectivity}
             key={reflectivity}
           >
             <path d={contourPath} fill={fill} />
