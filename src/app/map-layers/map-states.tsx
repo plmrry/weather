@@ -1,7 +1,7 @@
 import React from "react";
 import * as d3 from "d3";
 import * as GeoJSON from "geojson";
-import { cacheLife, cacheTag } from "next/cache";
+import { cacheLife, cacheTag, io } from "next/cache";
 import * as topoJSON from "topojson-client";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import {
@@ -42,6 +42,8 @@ async function MapStatesRendered({
   cacheLife("max");
   cacheTag("map-layer");
 
+  await io();
+
   const [features, params] = await Promise.all([
     stateBoundaries,
     paramsPromise,
@@ -72,6 +74,8 @@ async function getStateBoundaries(): Promise<GeoJSON.FeatureCollection> {
   "use cache: remote";
   cacheLife("max");
   cacheTag("map-layer");
+
+  await io();
 
   try {
     const response = await fetch(STATE_BOUNDARIES_URL);

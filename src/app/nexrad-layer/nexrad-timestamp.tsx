@@ -20,12 +20,12 @@ async function NexradTimestampRendered({
 }) {
   if (!params) return null;
 
-  const data = await fetchNexradData({ offsetMinutes, params });
-  if (!data) return null;
+  const nexradData = await fetchNexradData({ offsetMinutes, params });
+  if (!nexradData) return null;
 
   return (
-    <time dateTime={data.timestamp}>
-      {new Date(data.timestamp).toLocaleString("en-US", {
+    <time dateTime={nexradData.timestamp}>
+      {new Date(nexradData.timestamp).toLocaleString("en-US", {
         day: "numeric",
         hour: "numeric",
         minute: "2-digit",

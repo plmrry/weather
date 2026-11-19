@@ -1,7 +1,7 @@
 import React from "react";
 import * as d3 from "d3";
 import * as GeoJSON from "geojson";
-import { cacheLife, cacheTag } from "next/cache";
+import { cacheLife, cacheTag, io } from "next/cache";
 import type { MapBounds } from "#/app/map-projection";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { getMapBounds, getSatelliteProjection } from "#/app/map-projection";
@@ -30,6 +30,8 @@ async function MapRoadsCached({
   "use cache: remote";
   cacheLife("max");
   cacheTag("map-layer");
+
+  await io();
 
   const params = await paramsPromise;
   if (!params) return null;

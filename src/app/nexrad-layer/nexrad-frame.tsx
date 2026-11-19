@@ -1,4 +1,5 @@
 import React from "react";
+import { io } from "next/cache";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { MapSvg } from "#/app/map-svg";
 import { fetchNexradData } from "./fetch-nexrad";
@@ -12,25 +13,30 @@ export function NexradFrame({
 }) {
   if (!params) return null;
 
-  const data = fetchNexradData({ offsetMinutes, params });
+  const nexradData = fetchNexradData({ offsetMinutes, params });
 
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="NexradFrame">
-      <NexradFrameRendered data={data} offsetMinutes={offsetMinutes} />
+      <NexradFrameRendered
+        nexradData={nexradData}
+        offsetMinutes={offsetMinutes}
+      />
     </React.Suspense>
   );
 }
 
-function NexradFrameRendered({
-  data: promise,
+async function NexradFrameRendered({
+  nexradData: promise,
   offsetMinutes,
 }: {
-  data: ReturnType<fetchNexradData>;
+  nexradData: ReturnType<fetchNexradData>;
   offsetMinutes: number;
 }) {
-  const data = React.use(promise);
+  await io();
 
-  const layers = data?.layers ?? [];
+  const nexradData = await promise;
+
+  const layers = nexradData?.layers ?? [];
 
   return (
     <MapSvg
@@ -38,7 +44,7 @@ function NexradFrameRendered({
       data-layers={layers.length}
       data-nexrad-frame
       data-offset-minutes={offsetMinutes}
-      data-timestamp={data?.timestamp}
+      data-timestamp={nexradData?.timestamp}
       role="img"
     >
       <title>NEXRAD reflectivity projected around the selected location.</title>

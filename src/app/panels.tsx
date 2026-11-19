@@ -5,7 +5,7 @@ import { MapCountries } from "#/app/map-layers/map-countries";
 import { MapRoads } from "#/app/map-layers/map-roads";
 import { MapStates } from "#/app/map-layers/map-states";
 import { Panel } from "#/app/panel";
-import { NexradFrame } from "./nexrad-layer/nexrad-layer";
+import { NexradFrame } from "./nexrad-layer/nexrad-frame";
 import { NexradTimestamp } from "./nexrad-layer/nexrad-timestamp";
 
 const otherLocations = [
