@@ -11,7 +11,7 @@ import {
 import { MapSvg } from "#/app/map-svg";
 
 const COUNTRY_BOUNDARIES_URL =
-  "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-10m.json";
+  "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json";
 
 type Topology = Parameters<typeof topoJSON.feature>[0];
 
@@ -69,11 +69,16 @@ async function MapCountriesRendered({
 }
 
 async function getCountryBoundaries(): Promise<GeoJSON.FeatureCollection> {
+  "use cache: remote";
+  cacheLife("max");
+  cacheTag("map-layer", "map-boundaries", "map-countries");
+
   await io();
 
   try {
-    const response = await fetch(COUNTRY_BOUNDARIES_URL, { cache: "no-store" });
-    if (!response.ok) return { features: [], type: "FeatureCollection" };
+    const response = await fetch(COUNTRY_BOUNDARIES_URL);
+    if (!response.ok)
+      throw new Error(`Boundary request failed: ${response.status}`);
 
     const topology = (await response.json()) as Topology;
     const countries = topology.objects.countries;
@@ -83,6 +88,7 @@ async function getCountryBoundaries(): Promise<GeoJSON.FeatureCollection> {
 
     return topoJSON.feature(topology, countries);
   } catch {
+    cacheLife("minutes");
     return { features: [], type: "FeatureCollection" };
   }
 }

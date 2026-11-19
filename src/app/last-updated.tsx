@@ -2,20 +2,21 @@
 
 import React from "react";
 
-function formatTimestamp(date: Date): string {
-  return date.toLocaleString(undefined, {
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    month: "short",
-    timeZoneName: "short",
-  });
+const relativeTime = new Intl.RelativeTimeFormat("en-US", {
+  numeric: "always",
+});
+
+function subscribe(onStoreChange: () => void): () => void {
+  const interval = setInterval(onStoreChange, 60_000);
+  return () => clearInterval(interval);
 }
 
-function parseTimestamp(timestamp: string): Date | null {
-  const date = new Date(timestamp);
+function getSnapshot(): number {
+  return Math.floor(Date.now() / 60_000);
+}
 
-  return Number.isNaN(date.getTime()) ? null : date;
+function getServerSnapshot(): null {
+  return null;
 }
 
 export function LastUpdated({
@@ -23,16 +24,22 @@ export function LastUpdated({
 }: {
   timestamp?: string;
 }): React.JSX.Element {
-  const [date, setDate] = React.useState<Date | null>(null);
+  const currentMinute = React.useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  );
+  const date = timestamp ? new Date(timestamp) : null;
 
-  React.useEffect(() => {
-    if (!timestamp) return;
-    setDate(parseTimestamp(timestamp));
-  }, [timestamp]);
-
-  if (!date) {
+  if (!date || Number.isNaN(date.getTime()) || currentMinute === null) {
     return <span>—</span>;
   }
 
-  return <time dateTime={date.toISOString()}>{formatTimestamp(date)}</time>;
+  const minutes = Math.floor(date.getTime() / 60_000) - currentMinute;
+
+  return (
+    <time dateTime={date.toISOString()}>
+      {relativeTime.format(minutes || -0, "minute")}
+    </time>
+  );
 }

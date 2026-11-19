@@ -67,11 +67,16 @@ async function MapStatesRendered({
 }
 
 async function getStateBoundaries(): Promise<GeoJSON.FeatureCollection> {
+  "use cache: remote";
+  cacheLife("max");
+  cacheTag("map-layer", "map-boundaries", "map-states");
+
   await io();
 
   try {
-    const response = await fetch(STATE_BOUNDARIES_URL, { cache: "no-store" });
-    if (!response.ok) return { features: [], type: "FeatureCollection" };
+    const response = await fetch(STATE_BOUNDARIES_URL);
+    if (!response.ok)
+      throw new Error(`Boundary request failed: ${response.status}`);
 
     const topology = (await response.json()) as Topology;
     const states = topology.objects.states;
@@ -81,6 +86,7 @@ async function getStateBoundaries(): Promise<GeoJSON.FeatureCollection> {
 
     return topoJSON.feature(topology, states);
   } catch {
+    cacheLife("minutes");
     return { features: [], type: "FeatureCollection" };
   }
 }
