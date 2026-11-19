@@ -35,19 +35,12 @@ function NexradLayerRendered({
 
   if (paths.length === 0) return null;
 
-  const reflectivityExtent = d3.extent(
-    paths,
-    ({ reflectivity }) => reflectivity,
-  );
-
   return (
     <>
       <title>NEXRAD reflectivity projected around the selected location.</title>
       <g
-        data-extent={reflectivityExtent}
         data-layers={paths.length}
-        shapeRendering="crispEdges"
-        style={{ opacity: 0.1 }}
+        style={{ opacity: 0.1, shapeRendering: "optimizeSpeed" }}
       >
         {paths.map(({ count, d, reflectivity }) => {
           if (!d) return null;
@@ -63,7 +56,7 @@ function NexradLayerRendered({
           );
         })}
       </g>
-      <g shapeRendering="crispEdges">
+      <g style={{ shapeRendering: "optimizeSpeed" }}>
         <path d={data.gridPath} fill="white" />
       </g>
     </>
