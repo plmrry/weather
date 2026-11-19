@@ -42,7 +42,7 @@ export function Panel({
         >
           {radarFrames.map((frame, index) => (
             <div
-              className="animate-frames invisible min-h-0 min-w-0 [grid-area:1/1] only:visible only:animate-none"
+              className="invisible min-h-0 min-w-0 animate-frames [grid-area:1/1] only:visible only:animate-none"
               data-panel-radar-frame
               key={index}
               style={{ "--frame-index": index } as React.CSSProperties}
