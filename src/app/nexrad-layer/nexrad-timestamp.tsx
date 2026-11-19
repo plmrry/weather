@@ -1,15 +1,15 @@
 import { fetchNexradData } from "./fetch-nexrad";
 
 export async function NexradTimestamp({
-  offset,
+  offsetMinutes,
   params,
 }: {
-  offset: number;
+  offsetMinutes: number;
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
   if (!params) return null;
 
-  const data = await fetchNexradData({ offset, params });
+  const data = await fetchNexradData({ offsetMinutes, params });
   if (!data) return null;
 
   return (

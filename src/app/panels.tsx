@@ -26,29 +26,30 @@ export async function Panels({
         icon={<MapIcon />}
         timestamp={
           <React.Suspense name="NexradTimestamp">
-            <NexradTimestamp offset={1} params={params} />
+            <NexradTimestamp offsetMinutes={0} params={params} />
           </React.Suspense>
         }
         title="NEXRAD Data"
       >
         <MapLayer params={params} />
-        <NexradLayer offset={1} params={params} />
+        <NexradLayer offsetMinutes={0} params={params} />
       </Panel>
       <Panel
         icon={<MapIcon />}
         timestamp={
           <React.Suspense name="NexradTimestamp">
-            <NexradTimestamp offset={1} params={params} />
+            <NexradTimestamp offsetMinutes={0} params={params} />
           </React.Suspense>
         }
         title="NEXRAD Data Animated"
       >
         <MapLayer params={params} />
-        <NexradLayer offset={1} params={params} />
-        <NexradLayer offset={2} params={params} />
-        <NexradLayer offset={3} params={params} />
-        <NexradLayer offset={4} params={params} />
-        <NexradLayer offset={5} params={params} />
+        <NexradLayer offsetMinutes={0} params={params} />
+        <NexradLayer offsetMinutes={15} params={params} />
+        <NexradLayer offsetMinutes={30} params={params} />
+        <NexradLayer offsetMinutes={45} params={params} />
+        <NexradLayer offsetMinutes={60} params={params} />
+        <NexradLayer offsetMinutes={75} params={params} />
       </Panel>
       <h1 className="w-full text-center text-2xl font-bold">Other Locations</h1>
       {otherLocations.map((location) => {
@@ -59,13 +60,13 @@ export async function Panels({
             key={location}
             timestamp={
               <React.Suspense name="NexradTimestamp">
-                <NexradTimestamp offset={1} params={params} />
+                <NexradTimestamp offsetMinutes={0} params={params} />
               </React.Suspense>
             }
             title={location}
           >
             <MapLayer params={params} />
-            <NexradLayer offset={1} params={params} />
+            <NexradLayer offsetMinutes={0} params={params} />
           </Panel>
         );
       })}

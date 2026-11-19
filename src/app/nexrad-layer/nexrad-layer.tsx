@@ -4,29 +4,29 @@ import { MapSvg } from "#/app/map-svg";
 import { fetchNexradData } from "./fetch-nexrad";
 
 export function NexradLayer({
-  offset,
+  offsetMinutes,
   params,
 }: {
-  offset: number;
+  offsetMinutes: number;
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
   if (!params) return null;
 
-  const data = fetchNexradData({ offset, params });
+  const data = fetchNexradData({ offsetMinutes, params });
 
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
-      <NexradLayerRendered data={data} offset={offset} />
+      <NexradLayerRendered data={data} offsetMinutes={offsetMinutes} />
     </React.Suspense>
   );
 }
 
 export function NexradLayerRendered({
   data: promise,
-  offset,
+  offsetMinutes,
 }: {
   data: ReturnType<fetchNexradData>;
-  offset: number;
+  offsetMinutes: number;
 }) {
   const data = React.use(promise);
 
@@ -36,7 +36,7 @@ export function NexradLayerRendered({
     <MapSvg
       aria-label="NEXRAD reflectivity"
       data-map-layer="radar"
-      data-offset={offset}
+      data-offset-minutes={offsetMinutes}
       role="img"
     >
       <title>NEXRAD reflectivity projected around the selected location.</title>

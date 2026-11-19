@@ -7,10 +7,10 @@ import { fetchNexradList } from "./fetch-nexrad-list";
 import { processRadarData } from "./process-radar-data";
 
 export async function fetchNexradData({
-  offset,
+  offsetMinutes,
   params,
 }: {
-  offset: number;
+  offsetMinutes: number;
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
   "use cache: remote";
@@ -22,13 +22,43 @@ export async function fetchNexradData({
   const station = await fetchStationData(params);
   const stationId = station?.stationId;
   const listing = await fetchNexradList(stationId);
-  const key = listing?.at(-offset);
+  const files = (listing ?? []).map((key) => ({
+    key,
+    timestamp: getNexradFileTimestamp(key),
+  }));
+  const latest = files.at(-1);
 
-  if (!key) return null;
+  if (!latest) return null;
 
-  return fetchAndParseNexradData(params, key);
+  const targetTimestamp = latest.timestamp - offsetMinutes * 60_000;
+  const nearest = files.reduce(
+    (nearest, file) =>
+      Math.abs(file.timestamp - targetTimestamp) <
+      Math.abs(nearest.timestamp - targetTimestamp)
+        ? file
+        : nearest,
+    latest,
+  );
+
+  return fetchAndParseNexradData(params, nearest.key);
 }
 export type fetchNexradData = typeof fetchNexradData;
+
+function getNexradFileTimestamp(key: string) {
+  const match = key.match(/(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/);
+  if (!match)
+    throw new Error(`Radar archive is missing a valid timestamp: ${key}`);
+
+  const [, year, month, day, hour, minute, second] = match;
+  return Date.UTC(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second),
+  );
+}
 
 async function fetchAndParseNexradData(
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
