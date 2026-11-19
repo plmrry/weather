@@ -29,6 +29,7 @@ declare module "nexrad-level-2-data" {
     };
     getHighresReflectivity(): HighResData[];
     getHighresReflectivity(scan: number): HighResData;
+    listElevations(): number[]
     setElevation(elevation: number): void;
   }
 }

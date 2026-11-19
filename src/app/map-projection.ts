@@ -17,7 +17,7 @@ const SATELLITE_DISTANCE = 16;
 
 const SATELLITE_SCALE = 7000;
 
-const reflectivityMin = 10;
+const reflectivityMin = 20;
 
 const reflectivityMax = 55;
 
