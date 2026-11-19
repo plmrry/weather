@@ -3,6 +3,7 @@
 import Level2Radar from "nexrad-level-2-data";
 import { io } from "next/cache";
 import { fetchStationData } from "#/app/fetch-station-data";
+import { reflectivityColorScale } from "#/app/map-projection";
 import { fetchNexradFile } from "./fetch-nexrad-file";
 import { fetchNexradList } from "./fetch-nexrad-list";
 import { parseRadarData } from "./parse-radar-data";
@@ -89,7 +90,12 @@ async function fetchAndParseNexradData(
     stationCoordinates,
   });
 
-  return { ...parsed, key };
+  const paths = parsed.paths.map((path) => ({
+    ...path,
+    fill: reflectivityColorScale(path.reflectivity),
+  }));
+
+  return { ...parsed, key, paths };
 }
 
 async function getRadarData(bytes: Uint8Array) {

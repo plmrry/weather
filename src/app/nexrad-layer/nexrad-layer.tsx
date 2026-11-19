@@ -1,8 +1,6 @@
 import React from "react";
-import * as d3 from "d3";
 import { ErrorBoundary } from "#/app/error-boundary";
 import { LoadingSpinner } from "#/app/loading-spinner";
-import { reflectivityColorScale } from "#/app/map-projection";
 import { fetchNexradDataLatest } from "./fetch-nexrad";
 
 export function NexradLayer({
@@ -42,9 +40,8 @@ function NexradLayerRendered({
         data-layers={paths.length}
         style={{ opacity: 0.1, shapeRendering: "optimizeSpeed" }}
       >
-        {paths.map(({ count, d, reflectivity }) => {
+        {paths.map(({ count, d, fill, reflectivity }) => {
           if (!d) return null;
-          const fill = reflectivityColorScale(reflectivity);
           return (
             <g
               data-count={count}

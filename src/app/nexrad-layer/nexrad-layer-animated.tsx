@@ -1,7 +1,6 @@
 import React from "react";
 import { ErrorBoundary } from "#/app/error-boundary";
 import { LoadingSpinner } from "#/app/loading-spinner";
-import { reflectivityColorScale } from "#/app/map-projection";
 import { fetchNexradDataOneHour } from "./fetch-nexrad";
 
 export function NexradLayerAnimated({
@@ -47,12 +46,8 @@ function NexradLayerAnimatedRendered({
       <title>
         NEXRAD reflectivity over the past hour around the selected location.
       </title>
-      {first.paths.map(({ d, reflectivity }, pathIndex) => (
-        <path
-          d={d}
-          fill={reflectivityColorScale(reflectivity)}
-          key={reflectivity}
-        >
+      {first.paths.map(({ d, fill, reflectivity }, pathIndex) => (
+        <path d={d} fill={fill} key={reflectivity}>
           {frames.length > 1 ? (
             <animate
               attributeName="d"
