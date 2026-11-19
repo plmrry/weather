@@ -35,23 +35,20 @@ function NexradLayerRendered({
 
   if (paths.length === 0) return null;
 
-  const mapSize = data.mapSize;
-
   const reflectivityExtent = d3.extent(
     paths,
     ({ reflectivity }) => reflectivity,
   );
 
   return (
-    <svg
-      className="absolute inset-0 size-full"
-      data-extent={reflectivityExtent}
-      role="img"
-      shapeRendering="crispEdges"
-      viewBox={`0 0 ${mapSize} ${mapSize}`}
-    >
+    <>
       <title>NEXRAD reflectivity projected around the selected location.</title>
-      <g data-layers={paths.length}>
+      <g
+        data-extent={reflectivityExtent}
+        data-layers={paths.length}
+        shapeRendering="crispEdges"
+        style={{ opacity: 0.1 }}
+      >
         {paths.map(({ count, d, reflectivity }) => {
           if (!d) return null;
           const fill = reflectivityColorScale(reflectivity);
@@ -66,6 +63,9 @@ function NexradLayerRendered({
           );
         })}
       </g>
-    </svg>
+      <g shapeRendering="crispEdges">
+        <path d={data.gridPath} fill="white" />
+      </g>
+    </>
   );
 }

@@ -74,12 +74,7 @@ async function MapLayerCached({
   const statePath = visibleStates ? path(visibleStates) : null;
 
   return (
-    <svg
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 size-full"
-      preserveAspectRatio="none"
-      viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
-    >
+    <g aria-hidden="true" className="pointer-events-none">
       <rect fill="black" height={MAP_SIZE} width={MAP_SIZE} />
       {countryPath ? (
         <path
@@ -110,7 +105,7 @@ async function MapLayerCached({
           vectorEffect="non-scaling-stroke"
         />
       ) : null}
-    </svg>
+    </g>
   );
 }
 

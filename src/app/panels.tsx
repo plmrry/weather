@@ -24,11 +24,11 @@ export async function Panels({
     <>
       <Panel icon={<MapIcon />} title="NEXRAD Data">
         <MapLayer params={params} />
-        <NexradLayer params={params} />
+        {/* <NexradLayer params={params} /> */}
       </Panel>
       <Panel icon={<MapIcon />} title="NEXRAD Data Animated">
         <MapLayer params={params} />
-        <NexradLayerAnimated params={params} />
+        {/* <NexradLayerAnimated params={params} /> */}
       </Panel>
       <h1 className="w-full text-center text-2xl font-bold">Other Locations</h1>
       {otherLocations.map((location) => {
@@ -36,7 +36,7 @@ export async function Panels({
         return (
           <Panel icon={<MapIcon />} key={location} title={location}>
             <MapLayer params={params} />
-            <NexradLayer params={params} />
+            {/* <NexradLayer params={params} /> */}
           </Panel>
         );
       })}
