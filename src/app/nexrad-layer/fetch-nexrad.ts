@@ -13,13 +13,25 @@ export async function fetchNexradData({
   offsetMinutes: number;
   params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
+  return fetchNexradDataCached({ offsetMinutes, params: await params });
+}
+
+async function fetchNexradDataCached({
+  offsetMinutes,
+  params,
+}: {
+  offsetMinutes: number;
+  params: Awaited<
+    PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"]
+  >;
+}) {
   "use cache: remote";
   cacheLife("minutes");
   cacheTag("nexrad-data");
 
   await io();
 
-  const station = await fetchStationData(params);
+  const station = await fetchStationData(Promise.resolve(params));
   const stationId = station?.stationId;
   const listing = await fetchNexradList(stationId);
   const files = (listing ?? []).map((key) => ({
@@ -61,10 +73,12 @@ function getNexradFileTimestamp(key: string) {
 }
 
 async function fetchAndParseNexradData(
-  params: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"],
+  params: Awaited<
+    PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"]
+  >,
   key: string,
 ) {
-  const { latitude, longitude } = await params;
+  const { latitude, longitude } = params;
 
   const bytes = await fetchNexradFile(key);
 
