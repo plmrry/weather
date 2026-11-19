@@ -1,52 +1,28 @@
 import React from "react";
 import { LoadingSpinner } from "#/app/loading-spinner";
-import { fetchNexradDataLatest } from "./fetch-nexrad";
+import { NexradLayerClient } from "./nexrad-layer-client";
 
 export function NexradLayer({
   params,
 }: {
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
-  const data = params ? fetchNexradDataLatest(params) : null;
-
-  if (!data) return null;
+  if (!params) return null;
 
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
-      <NexradLayerRendered data={data} />
+      <NexradLayerResolved params={params} />
     </React.Suspense>
   );
 }
 
-function NexradLayerRendered({
-  data: dataPromise,
+async function NexradLayerResolved({
+  params,
 }: {
-  data?: ReturnType<fetchNexradDataLatest>;
+  params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
-  const data = dataPromise ? React.use(dataPromise) : null;
-  if (!data) return null;
+  const coordinates = await params;
+  if (!coordinates) return null;
 
-  const layers = data.layers ?? [];
-
-  if (layers.length === 0) return null;
-
-  return (
-    <>
-      <title>NEXRAD reflectivity projected around the selected location.</title>
-      <g
-        data-layers={layers.length}
-        style={{ shapeRendering: "optimizeSpeed" }}
-      >
-        {layers.map(({ contourPath, count, fill, reflectivity }) => (
-          <g
-            data-count={count}
-            data-reflectivity={reflectivity}
-            key={reflectivity}
-          >
-            <path d={contourPath} fill={fill} />
-          </g>
-        ))}
-      </g>
-    </>
-  );
+  return <NexradLayerClient coordinates={coordinates} />;
 }
