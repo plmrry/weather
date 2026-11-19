@@ -1,5 +1,7 @@
+import React from "react";
+import { LoadingSpinner } from "#/app/loading-spinner";
 import { fetchNexradDataLatest } from "./fetch-nexrad";
-import { NexradLayerClient } from "./nexrad-layer-client";
+import { NexradLayerRendered } from "./nexrad-layer-rendered";
 
 export function NexradLayer({
   params,
@@ -8,7 +10,11 @@ export function NexradLayer({
 }) {
   if (!params) return null;
 
-  const data = fetchNexradDataLatest(params)
+  const data = fetchNexradDataLatest(params);
 
-  return <NexradLayerClient data={data} />;
+  return (
+    <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
+      <NexradLayerRendered data={data} />
+    </React.Suspense>
+  );
 }
