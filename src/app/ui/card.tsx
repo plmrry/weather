@@ -40,9 +40,18 @@ function Title({ children }: { children?: React.ReactNode }) {
   );
 }
 
-function Description({ children }: { children?: React.ReactNode }) {
+function Description({
+  children,
+  className,
+}: {
+  children?: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <div className="text-sm text-muted-foreground" data-slot="card-description">
+    <div
+      className={`text-sm text-muted-foreground ${className}`}
+      data-slot="card-description"
+    >
       {children}
     </div>
   );

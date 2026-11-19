@@ -4,7 +4,7 @@ import { getCoordinates } from "#/app/find-station/geocode";
 import { MapCountries } from "#/app/map-layers/map-countries";
 import { MapRoads } from "#/app/map-layers/map-roads";
 import { MapStates } from "#/app/map-layers/map-states";
-import { Panel } from "#/app/panel";
+import { MapPanel } from "#/app/map-panel";
 import { NexradFrame } from "./nexrad-layer/nexrad-frame";
 import { NexradTimestamp } from "./nexrad-layer/nexrad-timestamp";
 
@@ -24,7 +24,7 @@ export async function Panels({
 }): Promise<React.JSX.Element> {
   return (
     <>
-      <Panel
+      <MapPanel
         icon={<MapIcon />}
         mapLayers={[
           <MapCountries key="countries" params={params} />,
@@ -39,7 +39,7 @@ export async function Panels({
         ]}
         title="NEXRAD Data"
       />
-      <Panel
+      <MapPanel
         icon={<MapIcon />}
         mapLayers={[
           <MapCountries key="countries" params={params} />,
@@ -68,7 +68,7 @@ export async function Panels({
       {otherLocations.map((location) => {
         const params = getCoordinates(location);
         return (
-          <Panel
+          <MapPanel
             icon={<MapIcon />}
             key={location}
             mapLayers={[

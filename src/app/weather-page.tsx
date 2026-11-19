@@ -2,6 +2,7 @@ import React from "react";
 import { CurrentStation } from "./current-station";
 import { FindStation } from "./find-station";
 import { Panels } from "./panels";
+import { TextForecast } from "./text-forecast";
 
 export function WeatherPage({
   params,
@@ -26,6 +27,10 @@ export function WeatherPage({
         name="CurrentStation"
       >
         <CurrentStation params={params} />
+      </React.Suspense>
+
+      <React.Suspense fallback={<TextForecast fallback />} name="TextForecast">
+        <TextForecast params={params} />
       </React.Suspense>
 
       <React.Suspense fallback={<Panels />} name="Panels">

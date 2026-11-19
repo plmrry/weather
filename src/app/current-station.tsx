@@ -29,7 +29,7 @@ export async function CurrentStation({
         <Card.Header>
           <Card.Title>Current station</Card.Title>
         </Card.Header>
-        <Card.Description>
+        <Card.Description className="relative">
           <dl className="grid grid-cols-2 gap-4 text-sm">
             <div className="col-span-full">
               <dt className="text-muted-foreground">Location name</dt>
@@ -67,17 +67,20 @@ export async function CurrentStation({
               </dd>
             </div>
           </dl>
+          {fallback ? (
+            <div
+              aria-label="Loading current station"
+              className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/50 text-white"
+              role="status"
+            >
+              <LoaderCircle
+                aria-hidden="true"
+                className="size-6 animate-spin"
+              />
+            </div>
+          ) : null}
         </Card.Description>
       </Card.Root>
-      {fallback ? (
-        <div
-          aria-label="Loading current station"
-          className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/50 text-white"
-          role="status"
-        >
-          <LoaderCircle aria-hidden="true" className="size-6 animate-spin" />
-        </div>
-      ) : null}
     </section>
   );
 }

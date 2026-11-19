@@ -2,27 +2,27 @@ import React from "react";
 import { io } from "next/cache";
 import Card from "#/app/ui/card";
 
-export function Panel(props: React.ComponentProps<typeof PanelRendered>) {
+export function MapPanel(props: React.ComponentProps<typeof MapPanelRendered>) {
   return (
-    <React.Suspense name="Panel">
-      <PanelRendered {...props} />
+    <React.Suspense name="MapPanel">
+      <MapPanelRendered {...props} />
     </React.Suspense>
   );
 }
 
-async function PanelRendered({
+async function MapPanelRendered({
   icon,
-  mapLayers,
-  radarFrames,
-  radarTimestamps,
+  mapLayers = [],
+  radarFrames = [],
+  radarTimestamps = [],
   title,
 }: {
   icon?: React.ReactNode;
-  mapLayers: React.ReactNode[];
-  radarFrames: React.ReactNode[];
-  radarTimestamps: React.ReactNode[];
-  title: string;
-}): Promise<React.JSX.Element> {
+  mapLayers?: React.ReactNode[];
+  radarFrames?: React.ReactNode[];
+  radarTimestamps?: React.ReactNode[];
+  title?: string;
+} = {}): Promise<React.JSX.Element> {
   await io();
 
   return (
