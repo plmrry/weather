@@ -16,9 +16,9 @@ const EDGE_POINTS: [number, number][] = [
 const SATELLITE_DISTANCE = 16;
 
 const SATELLITE_SCALE = 7000;
-export const reflectivityRange = d3.range(5, 55, 5);
+export const reflectivityRange = d3.range(10, 55, 5);
 
-export const reflectivityDomain = [0, 50];
+export const reflectivityDomain = [10, 50];
 
 export const reflectivityColorScale = d3
   .scaleSequential(d3.interpolateTurbo)

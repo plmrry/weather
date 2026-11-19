@@ -7,6 +7,7 @@ import {
   getSatelliteProjection,
   MAP_SIZE,
   reflectivityColorScale,
+  reflectivityDomain,
   reflectivityQuantizeScale,
   reflectivityRange,
 } from "#/app/map-projection";
@@ -147,7 +148,13 @@ function parseRadarData({
     }
 
     for (const [gateIndex, value] of radial.moment_data.entries()) {
-      if (value === null || !Number.isFinite(value)) continue;
+      if (
+        value === null ||
+        !Number.isFinite(value) ||
+        value < reflectivityDomain[0]
+      ) {
+        continue;
+      }
 
       const gateFeature = destination(
         stationCoordinates,
