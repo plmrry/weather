@@ -3,15 +3,18 @@ import { ErrorBoundary } from "#/app/error-boundary";
 import Card from "#/app/ui/card";
 
 export function Panel({
-  children,
   icon,
-  timestamp,
+  mapLayers,
+  radarFrames,
+  radarTimestamps,
   title,
 }: {
   icon?: React.ReactNode;
-  timestamp?: React.ReactNode;
+  mapLayers: React.ReactNode;
+  radarFrames: React.ReactNode[];
+  radarTimestamps: React.ReactNode[];
   title: string;
-} & Omit<React.ComponentProps<"div">, "title">): React.JSX.Element {
+}): React.JSX.Element {
   return (
     <Card.Root aria-label={title}>
       <Card.Header>
@@ -23,10 +26,19 @@ export function Panel({
             </h2>
           </Card.Title>
         </div>
-        <Card.Description>Last updated: {timestamp}</Card.Description>
+        <Card.Description>Last updated: {radarTimestamps}</Card.Description>
       </Card.Header>
-      <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-white bg-black">
-        <ErrorBoundary>{children}</ErrorBoundary>
+      <div className="grid aspect-square w-full overflow-hidden rounded-md border border-white bg-black">
+        <div className="grid min-h-0 min-w-0 [grid-area:1/1]" data-map-layers>
+          {mapLayers}
+        </div>
+        <div
+          className="grid min-h-0 min-w-0 [grid-area:1/1]"
+          data-radar-frames
+          style={{ "--frame-count": radarFrames.length } as React.CSSProperties}
+        >
+          {radarFrames}
+        </div>
       </div>
     </Card.Root>
   );

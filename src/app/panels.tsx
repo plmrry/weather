@@ -1,7 +1,7 @@
 import React from "react";
 import { Map as MapIcon } from "lucide-react";
 import { getCoordinates } from "#/app/find-station/geocode";
-import { MapLayer } from "#/app/map-layer/map-layer";
+import { MapLayers } from "#/app/map-layer/map-layers";
 import { Panel } from "#/app/panel";
 import { NexradLayer } from "./nexrad-layer/nexrad-layer";
 import { NexradTimestamp } from "./nexrad-layer/nexrad-timestamp";
@@ -24,33 +24,31 @@ export async function Panels({
     <>
       <Panel
         icon={<MapIcon />}
-        timestamp={
-          <React.Suspense name="NexradTimestamp">
-            <NexradTimestamp offsetMinutes={0} params={params} />
-          </React.Suspense>
-        }
+        mapLayers={<MapLayers params={params} />}
+        radarFrames={[
+          <NexradLayer key={0} offsetMinutes={0} params={params} />,
+        ]}
+        radarTimestamps={[
+          <NexradTimestamp key={0} offsetMinutes={0} params={params} />,
+        ]}
         title="NEXRAD Data"
-      >
-        <MapLayer params={params} />
-        <NexradLayer offsetMinutes={0} params={params} />
-      </Panel>
+      />
       <Panel
         icon={<MapIcon />}
-        timestamp={
-          <React.Suspense name="NexradTimestamp">
-            <NexradTimestamp offsetMinutes={0} params={params} />
-          </React.Suspense>
-        }
+        mapLayers={<MapLayers params={params} />}
+        radarFrames={[
+          <NexradLayer key={0} offsetMinutes={0} params={params} />,
+          <NexradLayer key={15} offsetMinutes={15} params={params} />,
+          <NexradLayer key={30} offsetMinutes={30} params={params} />,
+          <NexradLayer key={45} offsetMinutes={45} params={params} />,
+          <NexradLayer key={60} offsetMinutes={60} params={params} />,
+          <NexradLayer key={75} offsetMinutes={75} params={params} />,
+        ]}
+        radarTimestamps={[
+          <NexradTimestamp key={0} offsetMinutes={0} params={params} />,
+        ]}
         title="NEXRAD Data Animated"
-      >
-        <MapLayer params={params} />
-        <NexradLayer offsetMinutes={0} params={params} />
-        <NexradLayer offsetMinutes={15} params={params} />
-        <NexradLayer offsetMinutes={30} params={params} />
-        <NexradLayer offsetMinutes={45} params={params} />
-        <NexradLayer offsetMinutes={60} params={params} />
-        <NexradLayer offsetMinutes={75} params={params} />
-      </Panel>
+      />
       <h1 className="w-full text-center text-2xl font-bold">Other Locations</h1>
       {otherLocations.map((location) => {
         const params = getCoordinates(location);
@@ -58,16 +56,15 @@ export async function Panels({
           <Panel
             icon={<MapIcon />}
             key={location}
-            timestamp={
-              <React.Suspense name="NexradTimestamp">
-                <NexradTimestamp offsetMinutes={0} params={params} />
-              </React.Suspense>
-            }
+            mapLayers={<MapLayers params={params} />}
+            radarFrames={[
+              <NexradLayer key={0} offsetMinutes={0} params={params} />,
+            ]}
+            radarTimestamps={[
+              <NexradTimestamp key={0} offsetMinutes={0} params={params} />,
+            ]}
             title={location}
-          >
-            <MapLayer params={params} />
-            <NexradLayer offsetMinutes={0} params={params} />
-          </Panel>
+          />
         );
       })}
     </>

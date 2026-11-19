@@ -1,6 +1,17 @@
+import React from "react";
 import { fetchNexradData } from "./fetch-nexrad";
 
-export async function NexradTimestamp({
+export function NexradTimestamp(
+  props: React.ComponentProps<typeof NexradTimestampRendered>,
+) {
+  return (
+    <React.Suspense name="NexradTimestamp">
+      <NexradTimestampRendered {...props} />
+    </React.Suspense>
+  );
+}
+
+async function NexradTimestampRendered({
   offsetMinutes,
   params,
 }: {

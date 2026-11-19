@@ -35,8 +35,10 @@ export function NexradLayerRendered({
   return (
     <MapSvg
       aria-label="NEXRAD reflectivity"
+      className="only:visible only:animate-none"
       data-layers={layers.length}
       data-map-layer="radar"
+      data-nexrad-layers
       data-offset-minutes={offsetMinutes}
       data-timestamp={data?.timestamp}
       role="img"
@@ -47,6 +49,7 @@ export function NexradLayerRendered({
           <g
             data-layer-count={count}
             data-layer-reflectivity={reflectivity}
+            data-nexrad-layer
             key={reflectivity}
           >
             <path d={contourPath} fill={fill} />

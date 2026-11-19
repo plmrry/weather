@@ -6,8 +6,8 @@ import * as topoJSON from "topojson-client";
 import type { MapBounds } from "#/app/map-layer/map-bounds";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { getMapBounds } from "#/app/map-layer/map-bounds";
-import { MapSvg } from "#/app/map-svg";
 import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
+import { MapSvg } from "#/app/map-svg";
 
 const COUNTRY_BOUNDARIES_URL =
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-10m.json";
@@ -18,19 +18,19 @@ const STATE_BOUNDARIES_URL =
 
 type Topology = Parameters<typeof topoJSON.feature>[0];
 
-export function MapLayer({
+export function MapLayers({
   params,
 }: {
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
 }) {
   return (
-    <React.Suspense fallback={<LoadingSpinner />} name="MapLayer">
-      <MapLayerCached params={params} />
+    <React.Suspense fallback={<LoadingSpinner />} name="MapLayers">
+      <MapLayersCached params={params} />
     </React.Suspense>
   );
 }
 
-async function MapLayerCached({
+async function MapLayersCached({
   params: paramsPromise,
 }: {
   params?: PageProps<"/latitude/[latitude]/longitude/[longitude]">["params"];
