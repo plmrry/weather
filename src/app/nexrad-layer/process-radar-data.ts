@@ -14,7 +14,6 @@ import {
 
 const GRID_SIZE = 100;
 const CELL_SIZE = MAP_SIZE / GRID_SIZE;
-const collator = new Intl.Collator("en", { numeric: true });
 
 export function processRadarData(
   bytes: Uint8Array,
@@ -22,18 +21,17 @@ export function processRadarData(
 ) {
   const { azimuths, reflectivity, stationCoordinates, timestamp } =
     getRadarData(bytes);
-  const parsed = parseRadarData({
+  const layers = parseRadarData({
     azimuths,
     mapCoordinates,
     reflectivity,
     stationCoordinates,
-  });
-  const layers = parsed.layers.map((layer) => ({
+  }).map((layer) => ({
     ...layer,
     fill: reflectivityColorScale(layer.reflectivity),
   }));
 
-  return { layers, mapSize: MAP_SIZE, timestamp };
+  return { layers, timestamp };
 }
 
 function getRadarData(bytes: Uint8Array) {
@@ -105,10 +103,7 @@ function parseRadarData({
   }
 
   const indices = d3.range(GRID_SIZE);
-  const grid: FeatureCollection<
-    Point,
-    { fill: null | string; reflectivity: null | number }
-  > = {
+  const grid: FeatureCollection<Point, { reflectivity: null | number }> = {
     features: [],
     type: "FeatureCollection",
   };
@@ -121,7 +116,6 @@ function parseRadarData({
           type: "Point",
         },
         properties: {
-          fill: null,
           reflectivity: null,
         },
         type: "Feature",
@@ -190,49 +184,36 @@ function parseRadarData({
       );
 
       cell.properties.reflectivity = newMaximum;
-      cell.properties.fill = reflectivityColorScale(newMaximum);
     }
   }
 
   const contourProjection = d3.geoIdentity().scale(CELL_SIZE);
   const contourGenerator = d3.contours().size([GRID_SIZE, GRID_SIZE]);
-  const path = d3.geoPath().pointRadius(CELL_SIZE / 6);
+  const path = d3.geoPath(contourProjection);
 
-  const layers = reflectivityRange
-    .map((reflectivity) => {
-      const matchingFeatures = grid.features.filter(
-        (cell) => cell.properties.reflectivity === reflectivity,
-      );
-      const matchingCells: FeatureCollection<Point> = {
-        features: matchingFeatures,
-        type: "FeatureCollection",
-      };
-      const contourFeatures = grid.features.filter(
-        ({ properties }) =>
-          properties.reflectivity !== null &&
-          properties.reflectivity >= reflectivity,
-      );
-      const mask = Array.from({ length: GRID_SIZE * GRID_SIZE }, () => 0);
-      for (const cell of contourFeatures) {
-        const [x, y] = cell.geometry.coordinates;
-        const gridIndex = gridY(y) * GRID_SIZE + gridX(x);
-        mask[gridIndex] = 1;
-      }
-
-      const contour = contourGenerator.contour(mask, 0.5);
-      const gridPath = path.projection(null)(matchingCells) ?? "";
-      const contourPath = path.projection(contourProjection)(contour) ?? "";
-
-      return {
-        contourPath,
-        count: matchingCells.features.length,
-        gridPath,
-        reflectivity,
-      };
-    })
-    .toSorted((a, b) =>
-      collator.compare(String(a.reflectivity), String(b.reflectivity)),
+  return reflectivityRange.map((reflectivity) => {
+    const matchingFeatures = grid.features.filter(
+      (cell) => cell.properties.reflectivity === reflectivity,
     );
+    const contourFeatures = grid.features.filter(
+      ({ properties }) =>
+        properties.reflectivity !== null &&
+        properties.reflectivity >= reflectivity,
+    );
+    const mask = Array.from({ length: GRID_SIZE * GRID_SIZE }, () => 0);
+    for (const cell of contourFeatures) {
+      const [x, y] = cell.geometry.coordinates;
+      const gridIndex = gridY(y) * GRID_SIZE + gridX(x);
+      mask[gridIndex] = 1;
+    }
 
-  return { grid, layers };
+    const contour = contourGenerator.contour(mask, 0.5);
+    const contourPath = path(contour) ?? "";
+
+    return {
+      contourPath,
+      count: matchingFeatures.length,
+      reflectivity,
+    };
+  });
 }

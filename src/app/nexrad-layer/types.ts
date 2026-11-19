@@ -1,9 +1,3 @@
-import type {
-  fetchNexradDataLatest,
-  fetchNexradDataOneHour,
-} from "./fetch-nexrad";
+import type { fetchNexradData } from "./fetch-nexrad";
 
-export type NexradResponses = {
-  hour: Awaited<ReturnType<fetchNexradDataOneHour>>;
-  latest: Awaited<ReturnType<fetchNexradDataLatest>>;
-};
+export type NexradData = Awaited<ReturnType<typeof fetchNexradData>>;

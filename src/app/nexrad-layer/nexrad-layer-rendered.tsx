@@ -1,11 +1,11 @@
 import React from "react";
 import { MapSvg } from "#/app/map-svg";
-import type { NexradResponses } from "./types";
+import type { NexradData } from "./types";
 
 export function NexradLayerRendered({
   data: promise,
 }: {
-  data: Promise<NexradResponses["latest"]>;
+  data: Promise<NexradData>;
 }) {
   const data = React.use(promise);
 

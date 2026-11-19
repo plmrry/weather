@@ -26,14 +26,9 @@ export const reflectivityRange = d3.range(reflectivityMin, reflectivityMax, 5);
 export const reflectivityDomain = [reflectivityMin, reflectivityMax];
 
 export const reflectivityColorScale = d3
-  .scaleSequential(d3.interpolateTurbo)
+  .scaleSequential(d3.interpolatePlasma)
   .domain(reflectivityDomain)
   .clamp(true);
-
-export const bearingQuantizeScale = d3
-  .scaleQuantize<string>()
-  .domain([0, 360])
-  .range(d3.range(0, 360).map(String));
 
 export const reflectivityQuantizeScale = d3
   .scaleQuantize<number>()
