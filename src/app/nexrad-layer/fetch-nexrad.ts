@@ -6,7 +6,7 @@ import { fetchNexradFile } from "./fetch-nexrad-file";
 import { fetchNexradList } from "./fetch-nexrad-list";
 import { processRadarData } from "./process-radar-data";
 
-async function fetchNexradData({
+export async function fetchNexradData({
   offset,
   params,
 }: {

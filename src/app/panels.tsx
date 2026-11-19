@@ -33,7 +33,7 @@ export async function Panels({
         title="NEXRAD Data"
       >
         <MapLayer params={params} />
-        <NexradLayer params={params} />
+        <NexradLayer offset={1} params={params} />
       </Panel>
       <Panel icon={<MapIcon />} title="NEXRAD Data Animated">
         <MapLayer params={params} />
@@ -53,7 +53,7 @@ export async function Panels({
             title={location}
           >
             <MapLayer params={params} />
-            <NexradLayer params={params} />
+            <NexradLayer offset={1} params={params} />
           </Panel>
         );
       })}
