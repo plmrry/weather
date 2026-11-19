@@ -1,5 +1,4 @@
 import React from "react";
-import { ErrorBoundary } from "#/app/error-boundary";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { fetchNexradDataOneHour } from "./fetch-nexrad";
 
@@ -14,9 +13,7 @@ export function NexradLayerAnimated({
 
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="NexradLayerAnimated">
-      <ErrorBoundary>
-        <NexradLayerAnimatedRendered data={data} />
-      </ErrorBoundary>
+      <NexradLayerAnimatedRendered data={data} />
     </React.Suspense>
   );
 }
@@ -46,7 +43,7 @@ function NexradLayerAnimatedRendered({
       <title>
         NEXRAD reflectivity over the past hour around the selected location.
       </title>
-      {first.paths.map(({ fill, gridPath: d, reflectivity }, pathIndex) => (
+      {first.layers.map(({ fill, gridPath: d, reflectivity }, layerIndex) => (
         <path d={d} fill={fill} key={reflectivity}>
           {frames.length > 1 ? (
             <animate
@@ -57,7 +54,7 @@ function NexradLayerAnimatedRendered({
               repeatCount="indefinite"
               values={[
                 ...frames.map(
-                  (frame) => frame.paths[pathIndex]?.gridPath ?? "M0,0",
+                  (frame) => frame.layers[layerIndex]?.gridPath ?? "M0,0",
                 ),
                 d,
               ].join(";")}

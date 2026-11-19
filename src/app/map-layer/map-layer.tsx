@@ -4,7 +4,6 @@ import * as GeoJSON from "geojson";
 import { cacheLife, cacheTag } from "next/cache";
 import * as topoJSON from "topojson-client";
 import type { MapBounds } from "#/app/map-layer/map-bounds";
-import { ErrorBoundary } from "#/app/error-boundary";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { getMapBounds } from "#/app/map-layer/map-bounds";
 import { getSatelliteProjection, MAP_SIZE } from "#/app/map-projection";
@@ -25,9 +24,7 @@ export function MapLayer({
 }) {
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="MapLayer">
-      <ErrorBoundary>
-        <MapLayerCached params={params} />
-      </ErrorBoundary>
+      <MapLayerCached params={params} />
     </React.Suspense>
   );
 }
@@ -74,7 +71,7 @@ async function MapLayerCached({
   const statePath = visibleStates ? path(visibleStates) : null;
 
   return (
-    <g aria-hidden="true" className="pointer-events-none">
+    <g aria-hidden="true" className="pointer-events-none" data-map-layers>
       <rect fill="black" height={MAP_SIZE} width={MAP_SIZE} />
       {countryPath ? (
         <path

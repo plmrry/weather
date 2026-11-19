@@ -12,6 +12,7 @@ import {
 
 const GRID_SIZE = 100;
 const CELL_SIZE = MAP_SIZE / GRID_SIZE;
+const collator = new Intl.Collator("en", { numeric: true });
 
 export function parseRadarData({
   azimuths,
@@ -120,24 +121,45 @@ export function parseRadarData({
     }
   }
 
-  const path = d3.geoPath(d3.geoIdentity()).pointRadius(CELL_SIZE / 6);
+  const contourProjection = d3.geoIdentity().scale(CELL_SIZE);
+  const contourGenerator = d3.contours().size([GRID_SIZE, GRID_SIZE]);
+  const path = d3.geoPath().pointRadius(CELL_SIZE / 6);
 
-  const paths = reflectivityRange.map((reflectivity) => {
-    const matchingCells: FeatureCollection<Point> = {
-      features: grid.features.filter(
+  const layers = reflectivityRange
+    .map((reflectivity) => {
+      const matchingFeatures = grid.features.filter(
         (cell) => cell.properties.reflectivity === reflectivity,
-      ),
-      type: "FeatureCollection",
-    };
-    
-    const gridPath = path(matchingCells) ?? "";
+      );
+      const matchingCells: FeatureCollection<Point> = {
+        features: matchingFeatures,
+        type: "FeatureCollection",
+      };
+      const contourFeatures = grid.features.filter(
+        ({ properties }) =>
+          properties.reflectivity !== null &&
+          properties.reflectivity >= reflectivity,
+      );
+      const mask = Array.from({ length: GRID_SIZE * GRID_SIZE }, () => 0);
+      for (const cell of contourFeatures) {
+        const [x, y] = cell.geometry.coordinates;
+        const gridIndex = gridY(y) * GRID_SIZE + gridX(x);
+        mask[gridIndex] = 1;
+      }
 
-    return {
-      count: matchingCells.features.length,
-      gridPath,
-      reflectivity,
-    };
-  });
+      const contour = contourGenerator.contour(mask, 0.5);
+      const gridPath = path.projection(null)(matchingCells) ?? "";
+      const contourPath = path.projection(contourProjection)(contour) ?? "";
 
-  return { grid, paths };
+      return {
+        contourPath,
+        count: matchingCells.features.length,
+        gridPath,
+        reflectivity,
+      };
+    })
+    .toSorted((a, b) =>
+      collator.compare(String(a.reflectivity), String(b.reflectivity)),
+    );
+
+  return { grid, layers };
 }

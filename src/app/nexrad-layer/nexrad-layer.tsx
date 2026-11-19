@@ -1,5 +1,4 @@
 import React from "react";
-import { ErrorBoundary } from "#/app/error-boundary";
 import { LoadingSpinner } from "#/app/loading-spinner";
 import { fetchNexradDataLatest } from "./fetch-nexrad";
 
@@ -14,9 +13,7 @@ export function NexradLayer({
 
   return (
     <React.Suspense fallback={<LoadingSpinner />} name="NexradLayer">
-      <ErrorBoundary>
-        <NexradLayerRendered data={data} />
-      </ErrorBoundary>
+      <NexradLayerRendered data={data} />
     </React.Suspense>
   );
 }
@@ -29,24 +26,24 @@ function NexradLayerRendered({
   const data = dataPromise ? React.use(dataPromise) : null;
   if (!data) return null;
 
-  const paths = data.paths ?? [];
+  const layers = data.layers ?? [];
 
-  if (paths.length === 0) return null;
+  if (layers.length === 0) return null;
 
   return (
     <>
       <title>NEXRAD reflectivity projected around the selected location.</title>
       <g
-        data-layers={paths.length}
+        data-layers={layers.length}
         style={{ shapeRendering: "optimizeSpeed" }}
       >
-        {paths.map(({ count, fill, gridPath, reflectivity }) => (
+        {layers.map(({ contourPath, count, fill, reflectivity }) => (
           <g
             data-count={count}
             data-reflectivity={reflectivity}
             key={reflectivity}
           >
-            <path d={gridPath} fill={fill} />
+            <path d={contourPath} fill={fill} />
           </g>
         ))}
       </g>

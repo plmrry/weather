@@ -1,4 +1,5 @@
 import React from "react";
+import { ErrorBoundary } from "#/app/error-boundary";
 import { MAP_SIZE } from "#/app/map-projection";
 import Card from "#/app/ui/card";
 
@@ -32,7 +33,7 @@ export function Panel({
           role="img"
           viewBox={`0 0 ${MAP_SIZE} ${MAP_SIZE}`}
         >
-          {children}
+          <ErrorBoundary>{children}</ErrorBoundary>
         </svg>
       </div>
     </Card.Root>

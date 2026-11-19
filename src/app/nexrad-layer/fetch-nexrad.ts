@@ -90,12 +90,12 @@ async function fetchAndParseNexradData(
     stationCoordinates,
   });
 
-  const paths = parsed.paths.map((path) => ({
-    ...path,
-    fill: reflectivityColorScale(path.reflectivity),
+  const layers = parsed.layers.map((layer) => ({
+    ...layer,
+    fill: reflectivityColorScale(layer.reflectivity),
   }));
 
-  return { ...parsed, key, paths };
+  return { ...parsed, key, layers };
 }
 
 async function getRadarData(bytes: Uint8Array) {
