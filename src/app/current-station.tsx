@@ -1,23 +1,30 @@
 import React from "react";
+import { LoaderCircle } from "lucide-react";
 import Card from "#/app/ui/card";
 import { fetchStationData } from "./fetch-station-data";
 import { getLocationName, parseCoordinates } from "./find-station/geocode";
 import { LastUpdated } from "./last-updated";
 
-type Params = Promise<{ latitude: string; longitude: string }>;
-
 export async function CurrentStation({
+  fallback = false,
   params,
 }: {
-  params?: Params;
+  fallback?: boolean;
+  params?: Promise<{ latitude: string; longitude: string }>;
 }): Promise<React.JSX.Element> {
-  const coordinates = parseCoordinates(params ? await params : undefined);
+  const coordinates = parseCoordinates(
+    !fallback && params ? await params : undefined,
+  );
   const [name, station] = coordinates
     ? await Promise.all([getLocationName(params), fetchStationData(params)])
     : ["No station selected", null];
 
   return (
-    <section aria-label="Current station">
+    <section
+      aria-busy={fallback}
+      aria-label="Current station"
+      className="relative"
+    >
       <Card.Root>
         <Card.Header>
           <Card.Title>Current station</Card.Title>
@@ -62,6 +69,15 @@ export async function CurrentStation({
           </dl>
         </Card.Description>
       </Card.Root>
+      {fallback ? (
+        <div
+          aria-label="Loading current station"
+          className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/50 text-white"
+          role="status"
+        >
+          <LoaderCircle aria-hidden="true" className="size-6 animate-spin" />
+        </div>
+      ) : null}
     </section>
   );
 }
