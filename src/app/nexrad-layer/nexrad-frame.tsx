@@ -34,7 +34,7 @@ async function NexradFrameRendered({
 }) {
   "use cache: remote";
   cacheLife("minutes");
-  cacheTag("nexrad-data");
+  cacheTag("nexrad-frame");
 
   await io();
 

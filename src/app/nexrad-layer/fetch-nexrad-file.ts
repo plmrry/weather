@@ -2,8 +2,8 @@ import { cacheLife, cacheTag } from "next/cache";
 
 export async function fetchNexradFile(key: string) {
   "use cache: remote";
-  cacheLife("minutes");
-  cacheTag("nexrad-data");
+  cacheLife("max");
+  cacheTag("nexrad-file");
 
   const url = new URL(key, "https://unidata-nexrad-level2.s3.amazonaws.com/");
   const response = await fetch(url, { cache: "no-store" });

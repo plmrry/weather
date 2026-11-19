@@ -8,7 +8,7 @@ export async function fetchNexradList(
 ): Promise<null | string[]> {
   "use cache: remote";
   cacheLife("minutes");
-  cacheTag("nexrad-listing");
+  cacheTag("nexrad-list");
 
   await io();
 

@@ -1,5 +1,4 @@
 import React from "react";
-import { ClearButton } from "./clear-button";
 import { CurrentStation } from "./current-station";
 import { FindStation } from "./find-station";
 import { Panels } from "./panels";
@@ -32,8 +31,6 @@ export function WeatherPage({
       <React.Suspense fallback={<Panels />} name="Panels">
         <Panels params={params} />
       </React.Suspense>
-
-      <ClearButton />
     </main>
   );
 }

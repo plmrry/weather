@@ -25,8 +25,8 @@ type RadarStation = {
 
 async function getRadarStations() {
   "use cache: remote";
-  cacheLife("minutes");
-  cacheTag("station-data");
+  cacheLife("max");
+  cacheTag("station-list");
 
   return fetchJson<{ features: RadarStation[] }>(
     "https://api.weather.gov/radar/stations?stationType=WSR-88D",
