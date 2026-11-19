@@ -27,7 +27,7 @@ export async function Panels({
         icon={<MapIcon />}
         timestamp={
           <React.Suspense name="NexradTimestamp">
-            <NexradTimestamp params={params} />
+            <NexradTimestamp offset={1} params={params} />
           </React.Suspense>
         }
         title="NEXRAD Data"
@@ -47,7 +47,7 @@ export async function Panels({
             key={location}
             timestamp={
               <React.Suspense name="NexradTimestamp">
-                <NexradTimestamp params={params} />
+                <NexradTimestamp offset={1} params={params} />
               </React.Suspense>
             }
             title={location}
